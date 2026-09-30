@@ -1,0 +1,1175 @@
+﻿/* Student dashboard only. All colors inherit KnightCode's existing theme tokens. */
+.quest-dashboard {
+  --quest-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  display: block;
+  padding-top: 34px;
+}
+.quest-dashboard ::selection {
+  background: var(--purple);
+  color: #fff;
+}
+.quest-dashboard :is(h1, h2, h3) {
+  text-wrap: balance;
+}
+.quest-dashboard :is(a, button):focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 5px;
+}
+.quest-dashboard .dashboard-welcome {
+  margin-bottom: 28px;
+  align-items: center;
+}
+.quest-dashboard .dashboard-welcome h1 {
+  font-size: clamp(24px, 2.5vw, 36px);
+  max-width: 28ch;
+}
+.quest-dashboard .dashboard-welcome p {
+  font-size: 14px;
+  margin-top: 10px;
+}
+.quest-dashboard .welcome-link {
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--text-soft);
+}
+.quest-dashboard .panel {
+  box-shadow: none;
+  border: 0;
+  background: none;
+  border-radius: 0;
+  padding: 0;
+}
+.quest-dashboard .panel::before,
+.quest-dashboard .panel::after {
+  content: none;
+}
+.quest-dashboard .panel-title-row {
+  margin-bottom: 22px;
+  gap: 14px;
+}
+.quest-dashboard .panel-title-row h2 {
+  font-size: 18px;
+}
+.quest-dashboard .panel-title-row a {
+  font-size: 12px;
+  color: var(--text-soft);
+  text-underline-offset: 5px;
+}
+.quest-dashboard .panel-title-row a:hover {
+  text-decoration: underline;
+  color: var(--text);
+}
+.quest-dashboard .panel-title-row p {
+  font-size: 13px;
+  margin-top: 8px;
+}
+/* A single composition: the next learning action and the student's knight. */
+.quest-dashboard .quest-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(260px, 1fr);
+  position: relative;
+  isolation: isolate;
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 40px;
+}
+.quest-dashboard .quest-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 92% 0%,
+    rgba(101, 71, 239, 0.17),
+    transparent 58%
+  );
+  z-index: -1;
+}
+.quest-dashboard .continue-card {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.quest-dashboard .continue-card .panel-title-row h2 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-soft);
+}
+.quest-dashboard .continue-content {
+  position: relative;
+  display: block;
+  min-height: 0;
+}
+.quest-dashboard .continue-art {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: auto;
+  min-height: 0;
+  border: 0;
+  background: none;
+  display: block;
+  text-align: right;
+}
+.quest-dashboard .continue-art span {
+  display: none;
+}
+.quest-dashboard .continue-art small {
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  margin: 0;
+  color: var(--text-soft);
+}
+.quest-dashboard .muted-kicker {
+  display: block;
+  padding-right: 70px;
+  color: var(--text-soft);
+  font-size: 12px;
+  line-height: 1.6;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.quest-dashboard .continue-copy h3 {
+  font-size: clamp(26px, 3vw, 40px);
+  line-height: 1.15;
+  margin: 20px 0 16px;
+  max-width: 19ch;
+}
+.quest-dashboard .continue-copy p {
+  font-size: 14px;
+  line-height: 1.8;
+  max-width: 55ch;
+  margin-bottom: 24px;
+}
+.quest-dashboard .inline-progress {
+  height: 5px;
+  max-width: 360px;
+}
+.quest-dashboard .continue-copy > small {
+  font-size: 11px;
+  margin-top: 10px;
+  color: var(--text-soft);
+}
+.quest-dashboard .card-actions {
+  margin-top: 26px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.quest-dashboard .btn {
+  min-height: 46px;
+  font-size: 13px;
+  border-radius: 10px;
+  padding: 12px 19px;
+}
+.quest-dashboard .quest-play {
+  order: -1;
+}
+.quest-dashboard .quest-play span {
+  transition: transform 0.25s var(--quest-ease);
+}
+.quest-dashboard .quest-play:hover span {
+  transform: translate(3px, -3px);
+}
+.quest-dashboard .quest-rank {
+  margin: 0;
+  min-height: 0;
+  padding: 28px 30px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: linear-gradient(
+    150deg,
+    rgba(101, 71, 239, 0.09),
+    rgba(22, 139, 255, 0.06)
+  );
+  color: var(--text);
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 20px;
+  align-content: center;
+  text-align: center;
+}
+.quest-dashboard .quest-rank::after {
+  content: none;
+}
+.quest-dashboard .hero-character {
+  grid-column: 1/-1;
+  height: 156px;
+  margin-bottom: 2px;
+}
+.quest-dashboard .hero-character-glow {
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(
+    circle,
+    rgba(101, 71, 239, 0.19),
+    transparent 70%
+  );
+  position: relative;
+  z-index: 2;
+}
+.quest-dashboard .hero-character-glow img {
+  width: 116px;
+  height: 116px;
+  filter: drop-shadow(0 16px 16px rgba(101, 71, 239, 0.24));
+  animation:
+    quest-arrive 1.2s var(--quest-ease) both,
+    quest-float 6s ease-in-out 1.2s 2;
+}
+.quest-dashboard .crest-orbit {
+  position: absolute;
+  width: 166px;
+  height: 166px;
+  border: 1px solid rgba(101, 71, 239, 0.3);
+  border-radius: 50%;
+  transform: rotateX(58deg) rotate(-24deg);
+  pointer-events: none;
+}
+.quest-dashboard .orbit-b {
+  width: 210px;
+  height: 210px;
+  transform: rotateX(58deg) rotate(24deg);
+  border-color: rgba(22, 139, 255, 0.24);
+}
+.quest-dashboard .crest-orbit::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  top: 22px;
+  left: 20px;
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 3px 12px rgba(22, 139, 255, 0.25);
+}
+.quest-dashboard .orbit-b::after {
+  background: var(--purple);
+  left: auto;
+  right: 26px;
+}
+.quest-dashboard .hero-level-copy {
+  grid-column: 1/-1;
+}
+.quest-dashboard .hero-level-copy h2 {
+  font-size: 24px;
+}
+.quest-dashboard .hero-level-copy > strong {
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+.quest-dashboard .hero-level-copy p {
+  color: var(--text-soft);
+  font-size: 12px;
+}
+.quest-dashboard .hero-stat {
+  padding: 12px 0 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.quest-dashboard .hero-stat-icon {
+  display: none;
+}
+.quest-dashboard .hero-stat b {
+  font-size: 19px;
+}
+.quest-dashboard .hero-stat small {
+  color: var(--text-soft);
+  font-size: 11px;
+}
+.quest-dashboard .hero-progress {
+  grid-column: 1/-1;
+  padding: 0;
+  border: 0;
+  text-align: left;
+}
+.quest-dashboard .hero-progress-head {
+  color: var(--text-soft);
+  font-size: 11px;
+}
+.quest-dashboard .hero-progress-head strong {
+  color: var(--text);
+}
+.quest-dashboard .hero-progress > small {
+  color: var(--text-soft);
+  font-size: 10px;
+}
+.quest-dashboard .progress-track-hero {
+  background: var(--surface-muted);
+}
+.quest-dashboard .progress-track-hero span {
+  background: linear-gradient(90deg, var(--purple), var(--blue));
+}
+/* Learning route: actual assigned lessons are the destinations. */
+.quest-dashboard .learning-path-card {
+  margin: 0 0 38px;
+}
+.quest-dashboard .learning-path {
+  gap: 0;
+  padding: 8px 4px 16px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--purple) var(--surface-muted);
+}
+.quest-dashboard .path-node {
+  position: relative;
+  min-width: 210px;
+  grid-template-columns: 44px 1fr;
+  gap: 3px 14px;
+  padding: 18px 16px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  transition:
+    background 0.3s,
+    transform 0.3s var(--quest-ease);
+}
+.quest-dashboard .path-node:hover {
+  background: var(--surface-soft);
+  transform: translateY(-4px);
+}
+.quest-dashboard .path-dot {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  font-size: 17px;
+}
+.quest-dashboard .path-node.current {
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.quest-dashboard .path-node.current .path-dot {
+  box-shadow: 0 6px 16px rgba(101, 71, 239, 0.25);
+}
+.quest-dashboard .path-copy b {
+  font-size: 13px;
+  white-space: normal;
+  line-height: 1.5;
+}
+.quest-dashboard .path-copy small,
+.quest-dashboard .path-percent {
+  font-size: 11px;
+  color: var(--text-soft);
+}
+.quest-dashboard .path-connector {
+  min-width: 24px;
+  height: 2px;
+  border-radius: 0;
+}
+/* Quiet, open statistics balance the expressive learning area. */
+.quest-dashboard .dashboard-grid-mid {
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 0.9fr);
+  gap: 28px;
+  padding: 30px 0;
+  margin-bottom: 28px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.quest-dashboard .summary-stat-grid {
+  gap: 22px 14px;
+}
+.quest-dashboard .summary-stat-grid > div {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: none;
+}
+.quest-dashboard .summary-icon {
+  display: none;
+}
+.quest-dashboard .summary-stat-grid small {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+.quest-dashboard .summary-stat-grid strong {
+  font-size: 27px;
+  font-variant-numeric: tabular-nums;
+  margin-top: 6px;
+}
+.quest-dashboard .summary-footer {
+  font-size: 11px;
+  margin-top: 20px;
+  color: var(--text-soft);
+}
+.quest-dashboard .streak-flame {
+  font-size: 24px;
+}
+.quest-dashboard .streak-number strong {
+  font-size: 42px;
+}
+.quest-dashboard .streak-card p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-soft);
+}
+.quest-dashboard .week-row {
+  margin-top: 20px;
+  gap: 5px;
+}
+.quest-dashboard .week-row small {
+  font-size: 11px;
+  color: var(--text-soft);
+}
+.quest-dashboard .day-dot {
+  width: 28px;
+  height: 28px;
+}
+.quest-dashboard .progress-overview-card {
+  grid-column: auto;
+}
+.quest-dashboard .overview-flex {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+}
+.quest-dashboard .donut {
+  width: 100%;
+  height: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  background: none;
+  border-radius: 0;
+}
+.quest-dashboard .donut::after {
+  content: none;
+}
+.quest-dashboard .donut strong {
+  font-size: 42px;
+}
+.quest-dashboard .donut small {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-soft);
+}
+.quest-dashboard .overview-list > div {
+  padding: 7px 0;
+}
+.quest-dashboard .overview-list span,
+.quest-dashboard .overview-list b {
+  font-size: 12px;
+}
+.quest-dashboard .overview-list span {
+  color: var(--text-soft);
+}
+.quest-dashboard .quest-practice-row {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 28px;
+  margin-bottom: 38px;
+}
+.quest-dashboard .challenge-card {
+  position: relative;
+  padding: 24px;
+  border-radius: 14px;
+  background: linear-gradient(
+    110deg,
+    rgba(101, 71, 239, 0.1),
+    rgba(22, 139, 255, 0.06)
+  );
+}
+.quest-dashboard .challenge-card .panel-title-row {
+  margin-bottom: 14px;
+}
+.quest-dashboard .challenge-card .panel-title-row h2 {
+  font-size: 14px;
+  color: var(--text-soft);
+  font-weight: 500;
+}
+.quest-dashboard .challenge-badge {
+  display: none;
+}
+.quest-dashboard .challenge-art {
+  position: absolute;
+  right: 24px;
+  top: 22px;
+  margin: 0;
+}
+.quest-dashboard .challenge-art > span {
+  display: none;
+}
+.quest-dashboard .challenge-art b,
+.quest-dashboard .challenge-art small {
+  font-size: 10px;
+}
+.quest-dashboard .challenge-card h3 {
+  font-size: 20px;
+  padding-right: 70px;
+}
+.quest-dashboard .challenge-card p {
+  font-size: 12px;
+  margin: 12px 0 16px;
+  max-width: 50ch;
+}
+.quest-dashboard .challenge-card .btn {
+  width: auto;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: none;
+  border: 1px solid var(--border);
+  min-height: 40px;
+  padding: 10px 16px;
+  font-size: 12px;
+}
+.quest-dashboard .daily-goal-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  padding: 24px 0;
+  gap: 18px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+.quest-dashboard .daily-goal-strip > div:first-child {
+  width: 100%;
+}
+.quest-dashboard .daily-goal-strip strong {
+  font-size: 16px;
+}
+.quest-dashboard .daily-goal-strip small {
+  font-size: 12px;
+  color: var(--text-soft);
+  margin-top: 8px;
+}
+.quest-dashboard .goal-progress {
+  flex: 1;
+  min-width: 100px;
+}
+.quest-dashboard .daily-goal-strip > b {
+  font-size: 14px;
+  color: var(--text);
+}
+.quest-dashboard .dashboard-grid-bottom {
+  grid-template-columns: 1fr 1.2fr 1fr;
+  gap: 28px;
+  align-items: start;
+  margin-bottom: 0;
+}
+.quest-dashboard .upcoming-item {
+  padding: 14px 0;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: none;
+  gap: 10px;
+}
+.quest-dashboard .upcoming-item:hover {
+  background: var(--surface-soft);
+}
+.quest-dashboard .number-box {
+  width: 32px;
+  height: 36px;
+  flex: 0 0 32px;
+  border-radius: 8px;
+}
+.quest-dashboard .upcoming-item b,
+.quest-dashboard .feed-row b,
+.quest-dashboard .achievement-mini b {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.quest-dashboard .upcoming-item small,
+.quest-dashboard .feed-row small,
+.quest-dashboard .achievement-mini small {
+  font-size: 11px;
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+.quest-dashboard .upcoming-status {
+  font-size: 10px;
+  color: var(--text-soft);
+}
+.quest-dashboard .feed-row {
+  padding: 14px 0;
+  align-items: start;
+}
+.quest-dashboard .feed-icon {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+}
+.quest-dashboard .achievement-mini {
+  background: none;
+  border: 0;
+  padding: 12px 0;
+  gap: 14px;
+}
+.quest-dashboard .achievement-mini > span {
+  width: 44px;
+  height: 48px;
+  flex: 0 0 44px;
+  border-radius: 12px 12px 18px 18px;
+  font-size: 23px;
+  box-shadow: 0 5px 12px rgba(101, 71, 239, 0.12);
+  transition: transform 0.35s var(--quest-ease);
+}
+.quest-dashboard .achievement-mini:hover > span {
+  transform: translateY(-4px) rotate(-6deg);
+}
+.quest-dashboard .empty-state {
+  font-size: 14px;
+  padding: 25px 16px;
+}
+.quest-dashboard .progress-track > span,
+.quest-dashboard .inline-progress > span,
+.quest-dashboard .goal-progress > span {
+  transform-origin: left;
+}
+.quest-dashboard .quest-fill {
+  animation: quest-fill 0.9s var(--quest-ease) both;
+}
+.quest-dashboard .quest-stage {
+  animation: quest-stage 0.8s var(--quest-ease) both;
+}
+@keyframes quest-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes quest-stage {
+  from {
+    transform: translateY(10px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes quest-arrive {
+  from {
+    transform: translateY(16px) scale(0.9);
+  }
+  to {
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes quest-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+html[data-theme="light"] .quest-dashboard .quest-stage {
+  box-shadow: 0 18px 48px rgba(32, 58, 94, 0.1);
+}
+html[data-theme="light"] .quest-dashboard .hero-character-glow img {
+  filter: drop-shadow(0 16px 18px rgba(101, 71, 239, 0.18));
+}
+@media (min-width: 1600px) {
+  .quest-dashboard .continue-card {
+    padding: 44px;
+  }
+  .quest-dashboard .quest-stage {
+    grid-template-columns: 1.65fr 1fr;
+  }
+}
+@media (max-width: 1200px) {
+  .quest-dashboard .dashboard-grid-mid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .quest-dashboard .progress-overview-card {
+    grid-column: 1/-1;
+  }
+  .quest-dashboard .overview-flex {
+    flex-direction: row;
+    align-items: center;
+  }
+  .quest-dashboard .donut {
+    width: auto;
+    min-width: 160px;
+  }
+  .quest-dashboard .overview-list {
+    display: flex;
+    gap: 22px;
+    justify-content: space-between;
+  }
+  .quest-dashboard .overview-list > div {
+    gap: 14px;
+    border: 0;
+  }
+  .quest-dashboard .dashboard-grid-bottom {
+    grid-template-columns: 1fr 1fr;
+  }
+  .quest-dashboard .achievements-card {
+    grid-column: 1/-1;
+  }
+  .quest-dashboard .achievement-mini-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .quest-dashboard .quest-stage {
+    grid-template-columns: minmax(0, 1.3fr) minmax(240px, 1fr);
+  }
+  .quest-dashboard .continue-card {
+    padding: 26px;
+  }
+}
+@media (max-width: 700px) {
+  .quest-dashboard {
+    padding-top: 24px;
+  }
+  .quest-dashboard .dashboard-welcome {
+    gap: 15px;
+    align-items: start;
+  }
+  .quest-dashboard .dashboard-welcome h1 {
+    font-size: 27px;
+  }
+  .quest-dashboard .quest-stage {
+    grid-template-columns: 1fr;
+    margin-bottom: 30px;
+  }
+  .quest-dashboard .continue-card {
+    padding: 24px 20px;
+  }
+  .quest-dashboard .continue-copy h3 {
+    font-size: 32px;
+  }
+  .quest-dashboard .quest-rank {
+    grid-template-columns: 88px 1fr 1fr;
+    gap: 12px;
+    padding: 22px 20px;
+    text-align: left;
+  }
+  .quest-dashboard .hero-character {
+    grid-column: 1;
+    grid-row: 1/3;
+    height: 88px;
+    margin: 0;
+  }
+  .quest-dashboard .hero-character-glow {
+    width: 88px;
+    height: 88px;
+  }
+  .quest-dashboard .hero-character-glow img {
+    width: 76px;
+    height: 76px;
+  }
+  .quest-dashboard .crest-orbit {
+    width: 88px;
+    height: 88px;
+  }
+  .quest-dashboard .orbit-b {
+    width: 110px;
+    height: 110px;
+  }
+  .quest-dashboard .hero-level-copy {
+    grid-column: 2/-1;
+  }
+  .quest-dashboard .hero-level-copy h2 {
+    font-size: 20px;
+  }
+  .quest-dashboard .hero-level-copy p {
+    margin-top: 4px;
+    font-size: 11px;
+  }
+  .quest-dashboard .hero-stat {
+    grid-column: auto;
+    padding: 0;
+    border: 0;
+    justify-content: start;
+  }
+  .quest-dashboard .hero-stat:nth-of-type(3) {
+    grid-column: 2;
+  }
+  .quest-dashboard .hero-progress {
+    grid-column: 1/-1;
+  }
+  .quest-dashboard .hero-stat b {
+    font-size: 16px;
+  }
+  .quest-dashboard .hero-stat small {
+    font-size: 10px;
+  }
+  .quest-dashboard .dashboard-grid-mid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 26px 0;
+  }
+  .quest-dashboard .summary-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .quest-dashboard .progress-overview-card {
+    grid-column: auto;
+  }
+  .quest-dashboard .overview-flex {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .quest-dashboard .overview-list {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .quest-dashboard .quest-practice-row,
+  .quest-dashboard .dashboard-grid-bottom {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .quest-dashboard .achievements-card {
+    grid-column: auto;
+  }
+  .quest-dashboard .achievement-mini-grid {
+    grid-template-columns: 1fr;
+  }
+  .quest-dashboard .daily-goal-strip {
+    padding: 0;
+  }
+  .quest-dashboard .path-node {
+    min-width: 230px;
+  }
+  .quest-dashboard .week-row {
+    max-width: 380px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .quest-dashboard *,
+  .quest-dashboard *::before,
+  .quest-dashboard *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+/* Long completion labels stay in normal flow, including narrow screens. */
+.quest-dashboard .challenge-art {
+  position: static;
+  margin: 0 0 10px;
+}
+.quest-dashboard .challenge-art > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+.quest-dashboard .challenge-card h3 {
+  padding-right: 0;
+}
+.quest-dashboard .challenge-card .btn {
+  margin-top: 0;
+}
+/* Clear lesson-to-lesson connections and distinct information groups. */
+.quest-dashboard .path-node {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+.quest-dashboard .path-node.completed {
+  border-color: rgba(40, 199, 111, 0.35);
+}
+.quest-dashboard .path-node.current {
+  border-color: var(--purple);
+  box-shadow: none;
+}
+.quest-dashboard .path-node:hover {
+  transform: none;
+  border-color: var(--blue);
+  background: var(--surface-soft);
+}
+.quest-dashboard .path-connector {
+  position: relative;
+  flex: 0 0 32px;
+  min-width: 32px;
+  height: 2px;
+  background: var(--border-strong);
+}
+.quest-dashboard .path-connector.complete {
+  background: linear-gradient(90deg, var(--green), var(--purple));
+}
+.quest-dashboard .path-connector::after {
+  content: "";
+  position: absolute;
+  right: 1px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid var(--purple);
+  border-right: 2px solid var(--purple);
+  transform: rotate(45deg);
+}
+.quest-dashboard .dashboard-grid-mid {
+  gap: 18px;
+  border: 0;
+  padding: 0;
+}
+.quest-dashboard .dashboard-grid-mid > .panel,
+.quest-dashboard .dashboard-grid-bottom > .panel {
+  min-width: 0;
+  padding: 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.quest-dashboard .dashboard-grid-bottom {
+  gap: 18px;
+}
+.quest-dashboard .dashboard-grid-mid .panel-title-row {
+  align-items: start;
+}
+.quest-dashboard .dashboard-grid-mid .panel-title-row > a {
+  flex-shrink: 0;
+}
+.quest-dashboard .week-row {
+  gap: 3px;
+}
+@media (max-width: 700px) {
+  .quest-dashboard .dashboard-grid-mid {
+    gap: 16px;
+    padding: 0;
+  }
+  .quest-dashboard .dashboard-grid-bottom {
+    gap: 16px;
+  }
+  .quest-dashboard .dashboard-grid-mid > .panel,
+  .quest-dashboard .dashboard-grid-bottom > .panel {
+    padding: 20px;
+  }
+}
+/* The knight prepares for the next room; decoration never masks controls. */
+.quest-dashboard .hero-character {
+  isolation: isolate;
+}
+.quest-dashboard .hero-character::before {
+  content: "";
+  position: absolute;
+  width: 164px;
+  height: 178px;
+  bottom: -5px;
+  border: 1px solid rgba(101, 71, 239, 0.27);
+  border-radius: 80px 80px 18px 18px;
+  background: linear-gradient(
+    180deg,
+    rgba(101, 71, 239, 0.06),
+    rgba(22, 139, 255, 0.09)
+  );
+  transform: perspective(600px) rotateY(var(--crest-angle, 0deg));
+  transition:
+    transform 0.5s var(--quest-ease),
+    border-color 0.3s,
+    box-shadow 0.3s;
+  z-index: -1;
+  pointer-events: none;
+}
+.quest-dashboard .hero-character-glow {
+  transform: translate(var(--crest-x, 0px), var(--crest-y, 0px));
+  transition: transform 0.45s var(--quest-ease);
+}
+.quest-dashboard .hero-character-glow img {
+  animation: quest-arrive 0.8s var(--quest-ease) both;
+}
+.quest-dashboard .hero-character-glow::after {
+  content: "";
+  position: absolute;
+  bottom: 7px;
+  width: 74px;
+  height: 9px;
+  background: var(--purple);
+  border-radius: 50%;
+  opacity: 0.13;
+  filter: blur(5px);
+  z-index: -1;
+  transition:
+    transform 0.35s,
+    opacity 0.35s;
+}
+.quest-dashboard
+  .quest-stage:has(.quest-play:is(:hover, :focus-visible))
+  .hero-character-glow {
+  transform: translateY(-8px);
+}
+.quest-dashboard
+  .quest-stage:has(.quest-play:is(:hover, :focus-visible))
+  .hero-character::before {
+  border-color: var(--blue);
+  box-shadow: 0 12px 32px rgba(22, 139, 255, 0.12);
+}
+.quest-dashboard
+  .quest-stage:has(.quest-play:is(:hover, :focus-visible))
+  .hero-character-glow::after {
+  transform: translateY(8px) scale(0.75);
+  opacity: 0.08;
+}
+.quest-dashboard .crest-orbit {
+  transition:
+    transform 0.5s var(--quest-ease),
+    border-color 0.35s;
+}
+.quest-dashboard
+  .quest-stage:has(.quest-play:is(:hover, :focus-visible))
+  .orbit-a {
+  transform: rotateX(58deg) rotate(6deg);
+  border-color: var(--blue);
+}
+.quest-dashboard
+  .quest-stage:has(.quest-play:is(:hover, :focus-visible))
+  .orbit-b {
+  transform: rotateX(58deg) rotate(-6deg);
+}
+/* A short signal crosses only real lesson connections. */
+.quest-dashboard .path-connector::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+  opacity: 0;
+  pointer-events: none;
+}
+.quest-dashboard .route-traced .path-connector.complete::before {
+  animation: quest-route 0.65s var(--quest-ease) both;
+}
+.quest-dashboard .path-node {
+  transition:
+    background 0.25s,
+    border-color 0.25s,
+    box-shadow 0.25s;
+}
+.quest-dashboard .path-node:is(:hover, :focus-visible) {
+  box-shadow: 0 8px 22px rgba(22, 139, 255, 0.1);
+}
+.quest-dashboard .path-dot {
+  transition:
+    transform 0.3s var(--quest-ease),
+    border-radius 0.3s;
+}
+.quest-dashboard .path-node:is(:hover, :focus-visible) .path-dot {
+  transform: rotate(-5deg) scale(1.06);
+  border-radius: 17px 17px 17px 8px;
+}
+.quest-dashboard .path-node.current::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--blue);
+  pointer-events: none;
+}
+.quest-dashboard .route-traced .path-node.current::after {
+  animation: quest-beacon 0.9s ease-out 0.35s both;
+}
+.quest-dashboard .dashboard-grid-mid > .panel {
+  position: relative;
+  overflow: hidden;
+}
+.quest-dashboard .activity-summary-card::after {
+  content: "";
+  position: absolute;
+  right: 20px;
+  top: 0;
+  width: 44px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--purple), var(--blue));
+  pointer-events: none;
+}
+.quest-dashboard .achievement-mini > span {
+  position: relative;
+  overflow: hidden;
+}
+.quest-dashboard .achievement-mini > span::after {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: linear-gradient(
+    115deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 60%
+  );
+  transform: translateX(-110%);
+  pointer-events: none;
+}
+.quest-dashboard .achievement-mini:hover > span::after {
+  animation: quest-polish 0.55s var(--quest-ease);
+}
+.quest-dashboard .upcoming-item:not(.locked) {
+  transition:
+    background 0.2s,
+    padding 0.25s var(--quest-ease);
+}
+.quest-dashboard .upcoming-item:not(.locked):is(:hover, :focus-visible) {
+  transform: none;
+  padding-left: 7px;
+  padding-right: 7px;
+}
+@keyframes quest-route {
+  0% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(27px);
+  }
+}
+@keyframes quest-beacon {
+  0% {
+    box-shadow: 0 0 0 0 rgba(22, 139, 255, 0.35);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgba(22, 139, 255, 0);
+  }
+}
+@keyframes quest-polish {
+  to {
+    transform: translateX(110%);
+  }
+}
+@media (max-width: 700px) {
+  .quest-dashboard .hero-character::before {
+    width: 83px;
+    height: 101px;
+    bottom: 0;
+    border-radius: 45px 45px 12px 12px;
+  }
+  .quest-dashboard .hero-character-glow::after {
+    width: 45px;
+    bottom: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .quest-dashboard .hero-character-glow,
+  .quest-dashboard
+    .quest-stage:has(.quest-play:is(:hover, :focus-visible))
+    .hero-character-glow,
+  .quest-dashboard .path-node:is(:hover, :focus-visible) .path-dot {
+    transform: none;
+  }
+  .quest-dashboard .hero-character::before {
+    transform: none;
+  }
+  .quest-dashboard
+    .quest-stage:has(.quest-play:is(:hover, :focus-visible))
+    .orbit-a {
+    transform: rotateX(58deg) rotate(-24deg);
+  }
+  .quest-dashboard
+    .quest-stage:has(.quest-play:is(:hover, :focus-visible))
+    .orbit-b {
+    transform: rotateX(58deg) rotate(24deg);
+  }
+}

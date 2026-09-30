@@ -1,0 +1,371 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { cookies } from "next/headers";
+import { notFound } from "next/navigation";
+import { requireTeacher } from "@/lib/auth";
+import {
+  assignedLevelIds,
+  assignmentCounts,
+  avatar,
+  formatTime,
+  getTeacherContext,
+  teacherStudents,
+} from "@/lib/teacher-data";
+import { resetStudentPassword } from "@/app/actions/teacher";
+import { Back } from "@/components/teacher-ui";
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const [{ id }, q, t, jar] = await Promise.all([
+      params,
+      searchParams,
+      requireTeacher(),
+      cookies(),
+    ]),
+    ctx = await getTeacherContext(t.id),
+    summary = teacherStudents(ctx).find((s) => s.id === id);
+  if (!summary) notFound();
+  const cls = ctx.memberships
+      .filter((m) => m.student_id === id)
+      .map((m) => ctx.classes.find((c) => c.id === m.class_id))
+      .filter(Boolean),
+    scope = assignedLevelIds(ctx, id),
+    progress = ctx.levels
+      .filter((l) => scope.has(Number(l.id)))
+      .map((l) => ({
+        ...l,
+        ...ctx.progress.find((p) => p.student_id === id && p.level_id === l.id),
+      })),
+    assignments = ctx.assignments
+      .filter(
+        (a) => a.student_id === id || cls.some((c) => c!.id === a.class_id),
+      )
+      .slice(0, 10),
+    activity = ctx.activity.filter((a) => a.student_id === id).slice(0, 30),
+    ach = ctx.achievements.filter((a) => a.student_id === id),
+    sessions = ctx.sessions.filter((s) => s.student_id === id).slice(0, 50);
+  let flash: any = null;
+  try {
+    flash = JSON.parse(jar.get("kc_teacher_flash")?.value || "null");
+  } catch {}
+  const completed = new Set(
+      progress.filter((p) => p.completed).map((p) => p.id),
+    ),
+    completedLessons = ctx.lessons.filter((l) => {
+      const ids = ctx.levels
+        .filter((x) => x.lesson_id === l.id && scope.has(Number(x.id)))
+        .map((x) => x.id);
+      return ids.length && ids.every((x) => completed.has(x));
+    }).length;
+  return (
+    <>
+      <Back href="/teacher/monitoring" label="Back to monitoring" />
+      {q.error && <div className="teacher-alert error">{q.error}</div>}
+      {flash && (
+        <div className="teacher-alert success">
+          ✓ {flash.message} <strong>{flash.password}</strong>{" "}
+          <span className="teacher-note">
+            {flash.emailSent
+              ? "The new password was also emailed to " + flash.email + "."
+              : "Email delivery failed or is not configured. Copy and share this password securely."}
+          </span>
+        </div>
+      )}
+      <section className="student-hero">
+        <div className="student-profile-large">
+          <span className="teacher-avatar xl">
+            {avatar(summary.avatar_key)}
+          </span>
+          <div>
+            <span className="teacher-eyebrow">STUDENT PROFILE</span>
+            <h2>{summary.name}</h2>
+            <p>
+              {summary.student_id} · {summary.email}
+              {summary.username ? " · @" + summary.username : ""}
+            </p>
+            <div className="student-class-tags">
+              {cls.map((c) => (
+                <span key={c!.id}>
+                  {c!.name} · {c!.section}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="student-hero-metrics">
+          <div>
+            <small>Level</small>
+            <strong>{summary.level}</strong>
+          </div>
+          <div>
+            <small>XP</small>
+            <strong>{summary.xp.toLocaleString()}</strong>
+          </div>
+          <div>
+            <small>Progress</small>
+            <strong>{Math.round(summary.progress_pct)}%</strong>
+          </div>
+          <div>
+            <small>Streak</small>
+            <strong>🔥 {summary.streak}</strong>
+          </div>
+        </div>
+      </section>
+      <section className="teacher-card">
+        <Head eyebrow="ACCOUNT ACCESS" title="Sign-in credentials" />
+        <p className="teacher-note">
+          Student ID <strong>{summary.student_id}</strong>
+          {summary.username ? ", username " + summary.username + "," : ""} and
+          email <strong>{summary.email}</strong> can all be used to sign in. If
+          the original temporary password wasn&apos;t saved, reset it below —
+          the new one is shown once here and emailed to the student when mail
+          delivery is available.
+        </p>
+        <form action={resetStudentPassword}>
+          <input type="hidden" name="student_id" value={id} />
+          <button className="teacher-btn">Reset Password</button>
+        </form>
+      </section>
+      <div className="teacher-grid three">
+        <section className="teacher-card">
+          <Head eyebrow="LEARNING" title="Progress Summary" />
+          <div className="detail-stat-list">
+            <Row a="Lessons completed" b={completedLessons} />
+            <Row a="Challenges completed" b={summary.completed_levels} />
+            <Row a="Challenge attempts" b={summary.attempts} />
+            <Row a="Mistakes" b={summary.mistakes} />
+            <Row
+              a="Last activity"
+              b={
+                summary.last_activity
+                  ? new Date(summary.last_activity).toLocaleString()
+                  : "Never"
+              }
+            />
+          </div>
+        </section>
+        <section className="teacher-card">
+          <Head eyebrow="ACHIEVEMENTS" title={ach.length + " earned"} />
+          {ach.length ? (
+            <div className="achievement-list">
+              {ach.slice(0, 6).map((a: any) => (
+                <div key={a.achievement_id}>
+                  <span>{a.achievements?.icon}</span>
+                  <p>
+                    <strong>{a.achievements?.name}</strong>
+                    <small>{a.achievements?.description}</small>
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="teacher-empty">No achievements earned yet.</div>
+          )}
+        </section>
+        <section className="teacher-card">
+          <Head eyebrow="ASSIGNMENTS" title="Recent" />
+          {assignments.length ? (
+            assignments.map((a) => {
+              const counts = assignmentCounts(ctx, a),
+                l =
+                  ctx.levels.find((x) => x.id === a.level_id) ??
+                  ctx.lessons.find((x) => x.id === a.lesson_id);
+              return (
+                <div className="assignment-row" key={a.id}>
+                  <div>
+                    <strong>{a.title}</strong>
+                    <small>{l?.title ?? "KnightCode"}</small>
+                  </div>
+                  <span
+                    className={
+                      "status-badge " + (counts.done ? "completed" : "assigned")
+                    }
+                  >
+                    {counts.done ? "Completed" : "Assigned"}
+                  </span>
+                </div>
+              );
+            })
+          ) : (
+            <div className="teacher-empty">
+              No assignments for this student.
+            </div>
+          )}
+        </section>
+      </div>
+      <details className="teacher-card">
+        <summary style={{ cursor: "pointer", padding: "8px 0" }}>
+          <span className="teacher-eyebrow">ACTIVITY TIMELINE</span>{" "}
+          <strong>Recent KnightCode activity</strong>{" "}
+          <span className="teacher-note">(expand / collapse)</span>
+        </summary>
+        <div
+          className="timeline"
+          style={{ maxHeight: "24rem", overflowY: "auto", marginTop: 16 }}
+        >
+          {activity.length ? (
+            activity.map((a) => {
+              const lv = ctx.levels.find((x) => x.id === a.level_id);
+              return (
+                <div className="timeline-item" key={a.id}>
+                  <span />
+                  <time>{new Date(a.created_at).toLocaleString()}</time>
+                  <div>
+                    <strong>
+                      {String(a.action_type).replaceAll("_", " ")}
+                    </strong>
+                    <p>
+                      {lv?.title ?? "KnightCode activity"}{" "}
+                      {a.xp_earned ? "· +" + a.xp_earned + " XP" : ""}
+                    </p>
+                    {a.duration_seconds > 0 && (
+                      <small>
+                        {Math.round(a.duration_seconds / 60)} min session
+                      </small>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="teacher-empty">No activity has been recorded.</div>
+          )}
+        </div>
+      </details>
+      <section className="teacher-card">
+        <Head eyebrow="LEVEL-BY-LEVEL" title="Learning Progress" />
+        <p className="teacher-note">
+          Total lines includes submitted nonblank code across attempts; Best
+          Lines is the fewest accepted lines in a completed attempt.
+        </p>
+        <div className="teacher-table-wrap">
+          <table className="teacher-table">
+            <thead>
+              <tr>
+                <th>Level</th>
+                <th>Difficulty</th>
+                <th>Status</th>
+                <th>Attempts</th>
+                <th>Mistakes</th>
+                <th>Time Spent</th>
+                <th>Best Time</th>
+                <th>Total Lines Submitted</th>
+                <th>Best Lines</th>
+                <th>XP</th>
+                <th>Completed</th>
+              </tr>
+            </thead>
+            <tbody>
+              {progress.map((p: any) => (
+                <tr key={p.id}>
+                  <td>
+                    <strong>
+                      #{p.level_number} · {p.title}
+                    </strong>
+                  </td>
+                  <td>{p.difficulty}</td>
+                  <td>
+                    <span
+                      className={
+                        "status-badge " + (p.completed ? "on" : "muted")
+                      }
+                    >
+                      {p.completed
+                        ? "Completed"
+                        : p.attempts
+                          ? "Started"
+                          : "Not started"}
+                    </span>
+                  </td>
+                  <td>{p.attempts ?? 0}</td>
+                  <td>{p.mistakes ?? 0}</td>
+                  <td>{formatTime(p.play_time_seconds)}</td>
+                  <td>{formatTime(p.best_time_seconds)}</td>
+                  <td>{p.lines_used ?? "—"}</td>
+                  <td>{p.best_lines_used ?? "—"}</td>
+                  <td>{p.xp_earned ?? 0}</td>
+                  <td>
+                    {p.completed_at
+                      ? new Date(p.completed_at).toLocaleDateString()
+                      : "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section className="teacher-card">
+        <Head eyebrow="ATTEMPT RESULTS" title="Level Sessions" />
+        <div className="teacher-table-wrap">
+          <table className="teacher-table">
+            <thead>
+              <tr>
+                <th>Level</th>
+                <th>Session</th>
+                <th>Status</th>
+                <th>Attempts</th>
+                <th>Mistakes</th>
+                <th>Play Time</th>
+                <th>Lines</th>
+                <th>Code Mode</th>
+                <th>Started</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sessions.length ? (
+                sessions.map((s: any) => {
+                  const lv = ctx.levels.find((x) => x.id === s.level_id);
+                  return (
+                    <tr key={s.id}>
+                      <td>
+                        #{lv?.level_number} · {lv?.title}
+                      </td>
+                      <td>{s.session_number}</td>
+                      <td>{s.completed ? "Completed" : "In progress"}</td>
+                      <td>{s.attempts}</td>
+                      <td>{s.mistakes}</td>
+                      <td>{formatTime(s.play_time_seconds)}</td>
+                      <td>{s.completed_lines ?? s.lines_used}</td>
+                      <td>{s.code_mode ?? "—"}</td>
+                      <td>{new Date(s.started_at).toLocaleString()}</td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={9}>
+                    <div className="teacher-empty">
+                      No session results recorded.
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </>
+  );
+}
+function Head({ eyebrow, title }: { eyebrow: string; title: string }) {
+  return (
+    <div className="teacher-card-head">
+      <div>
+        <span className="teacher-eyebrow">{eyebrow}</span>
+        <h3>{title}</h3>
+      </div>
+    </div>
+  );
+}
+function Row({ a, b }: { a: string; b: React.ReactNode }) {
+  return (
+    <div>
+      <span>{a}</span>
+      <b>{b}</b>
+    </div>
+  );
+}

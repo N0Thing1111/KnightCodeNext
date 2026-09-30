@@ -1,0 +1,5 @@
+.env*
+supabase/reference-curriculum.json
+scripts/read-presentation-curriculum.php
+node_modules
+.next

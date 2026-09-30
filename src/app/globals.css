@@ -1,0 +1,160 @@
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+.form-error {
+  margin: 12px 0;
+}
+.configuration-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #050d1d;
+  color: #f7f9ff;
+  font-family: Inter, sans-serif;
+}
+.configuration-page article {
+  max-width: 720px;
+  padding: 28px;
+  border: 1px solid rgba(74, 145, 245, 0.32);
+  border-radius: 18px;
+  background: #0a1832;
+}
+.configuration-page code {
+  color: #25c7e8;
+}
+.profile-image-native {
+  display: none;
+}
+.lesson-content :is(h2, h3) {
+  scroll-margin-top: 100px;
+}
+.game-stage canvas {
+  touch-action: none;
+}
+.game-unavailable {
+  max-width: 760px;
+  margin: 28px auto;
+  padding: 42px !important;
+  text-align: center;
+}
+.game-unavailable-icon {
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 16px;
+  border-radius: 18px;
+  background: rgba(255, 159, 67, 0.1);
+  font-size: 28px;
+}
+.game-unavailable p {
+  max-width: 60ch;
+  margin: 10px auto 20px;
+}
+.route-loading {
+  display: grid;
+  gap: 18px;
+}
+.route-loading-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 132px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+}
+.route-loading-heading > span {
+  width: min(420px, 58%);
+  height: 34px;
+  border-radius: 10px;
+}
+.route-loading-heading > div {
+  width: 100px;
+  display: grid;
+  gap: 8px;
+}
+.route-loading-heading i,
+.route-loading-heading b {
+  display: block;
+  height: 14px;
+  border-radius: 7px;
+}
+.route-loading-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.route-loading-grid span {
+  height: 108px;
+  border-radius: 16px;
+}
+.route-loading-panel {
+  height: 300px;
+  border-radius: 20px;
+}
+.route-loading
+  :is(
+    .route-loading-heading > span,
+    .route-loading-heading i,
+    .route-loading-heading b,
+    .route-loading-grid span,
+    .route-loading-panel
+  ) {
+  background: linear-gradient(
+    100deg,
+    var(--surface-soft) 20%,
+    var(--surface-muted) 42%,
+    var(--surface-soft) 64%
+  );
+  background-size: 240% 100%;
+  animation: route-shimmer 1.2s linear infinite;
+}
+@keyframes route-shimmer {
+  to {
+    background-position: -240% 0;
+  }
+}
+@media (max-width: 700px) {
+  .route-loading-grid {
+    grid-template-columns: 1fr;
+  }
+  .route-loading-heading > div {
+    display: none;
+  }
+  .route-loading-heading > span {
+    width: 82%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-loading
+    :is(
+      .route-loading-heading > span,
+      .route-loading-heading i,
+      .route-loading-heading b,
+      .route-loading-grid span,
+      .route-loading-panel
+    ) {
+    animation: none;
+  }
+}
+/* Keep the profile footer close to the final content card. */
+.kc-content-wrap > .profile-page {
+  padding-bottom: 20px;
+}
+.profile-page .achievements-full {
+  margin-bottom: 0;
+}
