@@ -1,0 +1,107 @@
+<div class="lesson-block">
+<h3 class="lesson-block-heading">1. Your goal is to think through the instructions</h3>
+<p>A program is a set of instructions. <strong>Programming logic</strong> is the reasoning used to decide which instructions are needed, what order they belong in, and why they should produce the result you want. In this lesson, the knight follows a simple sequence: one instruction after another.</p>
+<p>Your job is not to guess commands until the knight reaches the exit. Your job is to explain the route before running it, then compare that prediction with what happens. You can describe a correct plan in plain words before writing any code.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">2. Separate the goal, the starting situation, and the plan</h3>
+<p>A <strong>goal</strong> says what should be true at the end: the knight has reached the exit. The <strong>starting situation</strong> tells you where the knight is and what is around it. A <strong>plan</strong>, also called an algorithm, gives the ordered steps that connect that start to that goal.</p>
+<ul>
+<li>Goal: reach a point two movements to the right and one movement up.</li>
+<li>Starting situation: all three movements in that route are clear.</li>
+<li>Plan: move right, move right again, then move up.</li>
+</ul>
+<p>These are different pieces of information. A goal alone does not tell the knight which route to take. A plan that works from one starting position may fail from another. Always inspect the room before choosing the instructions.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">3. Read a movement as one precise action</h3>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>move(right)
+move(right)
+move(up)</code></pre>
+<p><code>move</code> asks the knight to move. The direction inside the parentheses tells it which way: <code>up</code>, <code>down</code>, <code>left</code>, or <code>right</code>. Here, the directions are fixed directions on the screen, not instructions to turn the knight first.</p>
+<p>The three lines form a <strong>sequence</strong>. In this simple program, the first move happens before the second, and the second happens before the third. The knight does not understand the intended route unless your instructions describe it. A blocked move does not mean the game will invent a detour for you.</p>
+<p>Use the game command spelling when typing. The important idea, however, is the relationship between an instruction and its result, not memorizing parentheses.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. Trace the program one instruction at a time</h3>
+<p>To <strong>trace</strong> means to follow the program slowly and record what changes. For this paper example, count successful movement actions from the start. This is a reasoning model, not a claim that every drawn floor tile equals one game movement.</p>
+<ol>
+<li>Before running: the knight has made no movements.</li>
+<li>After line 1: it is one movement to the right of the start.</li>
+<li>After line 2: it is two movements to the right of the start.</li>
+<li>After line 3: it is two movements right and one movement up from the start.</li>
+</ol>
+<p>Notice that line 2 starts from the result of line 1. Instructions do not each start again from the original position. In the actual game, watch the distance of a movement and use the room layout to check your plan.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Order can change the route</h3>
+<p>Compare right, right, up with up, right, right. On an empty practice area, these can finish at the same position. That does <strong>not</strong> mean they are always interchangeable. They visit different positions on the way.</p>
+<p>Suppose the space directly above the start is blocked, but the route right, right, up is clear. Starting with up now attempts a blocked movement. The same directions and the same number of instructions can produce a different journey because the order changed.</p>
+<p>When comparing two plans, ask both questions: Do they finish in the same place? Can every intermediate step actually happen?</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">6. Read and predict</h3>
+<p>Assume an open practice area, with no exit reached during these four moves. Predict the final position relative to the start before reading the explanation.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>move(right)
+move(up)
+move(left)
+move(up)</code></pre>
+<blockquote><p><strong>Check your reasoning:</strong> Right and left cancel their horizontal change, but they still happened at different times. The two up moves remain, so the finish is two successful movements above the start. The full route matters if obstacles are added.</p></blockquote>
+<p>Now change only the third line to <code>move(right)</code>. Describe each position again. Do not reuse the first answer without checking what changed.</p>
+<blockquote><p><strong>Check your reasoning:</strong> The revised program finishes two movements right and two up from the start. Only one instruction changed, but the final position changed too.</p></blockquote>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">7. Find and fix a reasoning mistake</h3>
+<p>The planned route is right, right, up. A student writes the following in an open practice area. Which is the first line that disagrees with the plan?</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>move(right)
+move(up)
+move(up)</code></pre>
+<blockquote><p><strong>Check your reasoning:</strong> Line 1 matches the plan. Line 2 is the first mismatch: it goes up when the plan requires another right move. Replace that line with move(right), then trace all three lines again. Changing the last line alone would not fix the first wrong step.</p></blockquote>
+<p>This is a <strong>logic mistake</strong>: the instructions may be understood by the game, but they describe the wrong plan. A spelling mistake is different: the game may not understand the instruction at all.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">8. Plan and write your own sequence</h3>
+<p>For a clear practice route, write instructions for one up movement, two right movements, and one down movement, in that order. First say the plan aloud. Then write it. Finally, explain the expected position after each line.</p>
+<blockquote><p><strong>Check your reasoning:</strong> Use move(up), move(right), move(right), then move(down), with each command on its own line. In this open-area example the finish is two movements right of the start. There are four actions even though two vertical movements cancel in the final position.</p></blockquote>
+<p>Before trying a real level, check every part of that route against the actual walls. A correct answer to this small exercise is not automatically a solution to the room.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. A small connection to real code</h3>
+<p class="code-label">Real Python example - read only; not a KnightCode command</p>
+<pre><code>points = 0
+points = points + 1
+print(points)</code></pre>
+<p>In Python, <code>points</code> is a name holding a value. The first line stores 0. The second reads the current value, adds 1, and stores the result. The third displays that value, so it displays 1. If the display line came before the addition, it would display 0 instead.</p>
+<p><strong>The idea to carry over is sequence:</strong> a later instruction sees the result of earlier instructions. You do not need to memorize Python or type this example into the game.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. Use the idea in your levels</h3>
+<ul>
+<li><strong>First Steps:</strong> inspect how far one move takes the knight and count the actions needed for the straight route.</li>
+<li><strong>Turn the Corner:</strong> mark the point where the direction changes. Explain why the turn belongs there.</li>
+<li><strong>Tight Corridor:</strong> split the route into short sections, then join those sections in the correct order.</li>
+</ul>
+<p>Before Run, name the goal and predict the route. After Run, compare what happened with your trace. If they differ, find the first difference before changing the program.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">11. Explain it without looking at the example</h3>
+<ul>
+<li>Why does every instruction need to start from the result of the previous one?</li>
+<li>Can two sequences finish in the same place but behave differently around walls?</li>
+<li>What is the difference between describing the goal and giving the instructions?</li>
+</ul>
+<blockquote><p><strong>Check your reasoning:</strong> The position changes as the sequence runs. Different intermediate positions can meet different obstacles. A goal describes the desired result; a plan supplies the steps that make that result happen. You understand this lesson when you can explain those steps, not just copy them.</p></blockquote>
+</div>

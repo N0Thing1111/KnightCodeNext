@@ -1,0 +1,127 @@
+<div class="lesson-block">
+<h3 class="lesson-block-heading">1. Find a pattern before choosing a loop</h3>
+<p>Some routes contain the same action or group of actions several times. A <strong>loop</strong> is a way to repeat a group without writing that group out each time. This lesson uses <code>repeat</code> when the number of repetitions is known.</p>
+<p>The goal is not to make every program as short as possible. The goal is to recognize a pattern, express it clearly, and keep the intended behavior. A shorter program that takes the wrong route is not an improvement.</p>
+<p>First describe the complete route. Then ask: which part is exactly repeated, and how many copies of that part are needed?</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">2. Replace repeated instructions with a count</h3>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>move(right)
+move(right)
+move(right)</code></pre>
+<p>Assume all three movements are possible and the level does not end during them. This sequence performs the same action three times. We can express that repeated part as:</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>repeat(3):
+    move(right)</code></pre>
+<p>The number 3 is the <strong>repetition count</strong>. The indented line is the loop body: the instruction that runs on each repetition. After the third repetition, execution continues after the loop.</p>
+<p>The knight still performs three moves. The loop saves repeated writing, not physical movement. It also does not automatically check whether a wall is in the way.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">3. Expand the loop to check your reasoning</h3>
+<p>One pass through the body is called an <strong>iteration</strong>, or simply a repetition. Trace repeat(3) by numbering the passes:</p>
+<ol>
+<li>First repetition: run move(right).</li>
+<li>Second repetition: run move(right) again, from the new position.</li>
+<li>Third repetition: run move(right) again, then finish the loop.</li>
+</ol>
+<p>To check a loop, mentally replace it with the full sequence it represents. If that expanded sequence does not match the route, the loop does not match either. This is a useful way to test your logic without relying on how compact the code looks.</p>
+<p>In the game, a level finishing or a program being stopped can end execution early. The trace here describes normal completion of the example.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. A repeated group can contain more than one action</h3>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>repeat(2):
+    move(right)
+    move(up)</code></pre>
+<p>Both indented instructions belong to the body. Each repetition performs right and then up. The expanded order is right, up, right, up. It is not right, right, up, up.</p>
+<p>Two repetitions of a two-action body produce four movement actions. Keep these quantities separate: <strong>number of passes</strong> and <strong>number of actions inside each pass</strong>.</p>
+<p>A block is repeated as a unit, but instructions within it still run in order. A loop does not remove the sequence rules you already learned.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Place one-time actions outside the loop</h3>
+<p>Imagine a clear route requiring three right movements and then one up movement. The turn should happen once, after the repeated section.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>repeat(3):
+    move(right)
+move(up)</code></pre>
+<p>Because up lines up with repeat, it is outside the loop. The route is right, right, right, up. If you indent up inside the body, the route becomes right, up, right, up, right, up. That describes a different pattern.</p>
+<p>Before writing a loop, label each part of your plan as <strong>repeated</strong> or <strong>once afterwards</strong>. Indentation should reflect that decision.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">6. Read and predict the full sequence</h3>
+<p>Assume every move is possible. Write the expanded sequence and count the movements before reading the answer.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>repeat(2):
+    move(up)
+    move(right)
+move(down)</code></pre>
+<blockquote><p><strong>Check your reasoning:</strong> The sequence is up, right, up, right, down: five movement actions. The body contributes four actions across two repetitions. Down contributes one more after the loop. The final position is two movements right and one up from the start in this open-area example.</p></blockquote>
+<p>What changes if the count becomes 3?</p>
+<blockquote><p><strong>Check your reasoning:</strong> The pair runs three times, producing six body movements, then down runs once: seven movements in total. The change affects the whole repeated group, not just its first line.</p></blockquote>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">7. Find and fix a misplaced turn</h3>
+<p>The intention is right, right, right, then up once. A student writes:</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>repeat(3):
+    move(right)
+    move(up)</code></pre>
+<p>Which part of the written program makes the route disagree with the intention? Expand it rather than guessing a different count.</p>
+<blockquote><p><strong>Check your reasoning:</strong> The up move is inside the repeated body, so it happens three times. Move that line outside the block. Changing only the repetition count cannot produce three right moves and one up move from this two-action body.</p></blockquote>
+<p>This is a grouping mistake. Other loop mistakes involve the wrong count or the wrong action. Identify which kind of mismatch you have before editing.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">8. Plan and write a repeated pattern</h3>
+<p>For an open practice route, express left, down, left, down, left, down, then right once using a loop. Name the smallest repeated group before you write it.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>repeat(3):
+    move(left)
+    move(down)
+move(right)</code></pre>
+<blockquote><p><strong>Check your reasoning:</strong> The repeated group is left followed by down. It occurs three times. Right is outside the loop because it happens once afterwards. There are seven movement actions in the expanded plan.</p></blockquote>
+<p>Now imagine an obstacle blocks the second downward move. The pattern is easy to describe, but it no longer gives a clear route. A repeat count is a plan, not proof that all its actions can succeed. Check each repetition at its new position.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. Decide whether a fixed count is appropriate</h3>
+<p>Use repeat when you know both the body and the required count. A measured three-step section is a good candidate. A route where you only know "keep going until movement is blocked" needs a different kind of reasoning, which the next lesson introduces.</p>
+<p>Two programs can also be equally clear without both using loops. A short sequence of unrelated turns may be easier to explain directly. Do not force different actions into a pattern that is not really there.</p>
+<p>When you claim that two versions are equivalent, explain that they perform the same ordered actions under the same starting conditions. Comparing line counts alone is not enough.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. A small connection to real code</h3>
+<p class="code-label">Real Python example - read only; not a KnightCode command</p>
+<pre><code>for step in range(3):
+    print(&quot;Check the next item&quot;)
+print(&quot;Finished&quot;)</code></pre>
+<p>This Python loop displays the first message three times, then displays Finished once. The name <code>step</code> is used by Python to track the repetitions; you do not need to use it inside this example.</p>
+<p><strong>The shared idea is a fixed number of passes through a block.</strong> Python writes that idea differently from KnightCode. Focus on what repeats, how often, and what happens afterwards, rather than memorizing the language form.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">11. Use repetition in your levels</h3>
+<ul>
+<li><strong>Do It Again:</strong> find the right-and-up pattern, count its repetitions, and trace the position after each pair.</li>
+<li><strong>Repeat, Then Turn:</strong> separate the repeated approach from the turn, button action and remaining route.</li>
+</ul>
+<p>Before Run, expand the loop aloud or on paper. After Run, compare the movement pattern. If it differs, inspect the body and count separately. A loop that finishes is not necessarily a loop that reaches the goal.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">12. Check your reasoning</h3>
+<ul>
+<li>What is the difference between a repetition and a movement action?</li>
+<li>Why does moving a line outside a loop change how often it runs?</li>
+<li>Does shorter code always mean fewer game movements?</li>
+</ul>
+<blockquote><p><strong>Check your reasoning:</strong> One repetition runs the entire body, which may contain several actions. An outside line runs after the loop rather than on each pass. A loop can shorten the written program while keeping exactly the same movement sequence.</p></blockquote>
+</div>

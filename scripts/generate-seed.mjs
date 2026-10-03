@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { applyLessonContent } from "./lib/lesson-content.mjs";
 const root = new URL("../", import.meta.url),
   data = JSON.parse(
     fs.readFileSync(
@@ -6,6 +7,8 @@ const root = new URL("../", import.meta.url),
       "utf8",
     ),
   );
+applyLessonContent(data);
+
 data.achievements ??= [
   {
     id: 1,
@@ -124,7 +127,7 @@ function insert(table, columns, rows) {
       ",",
     )};\nselect setval(pg_get_serial_sequence('public.${table}','id'),coalesce((select max(id) from public.${table}),1),true);\n`;
 }
-const sql = `-- Current KnightCode curriculum copied from the isolated presentation reference.\n-- Safe to rerun: stable IDs are upserted.\n\n${insert("lessons", lessonColumns, data.lessons)}\n${insert("levels", levelColumns, data.levels)}\n${insert("achievements", achievementColumns, data.achievements)}`;
+const sql = `-- KnightCode curriculum: original level definitions plus the revised programming-logic lessons.\n-- Safe to rerun: stable IDs are upserted.\n\n${insert("lessons", lessonColumns, data.lessons)}\n${insert("levels", levelColumns, data.levels)}\n${insert("achievements", achievementColumns, data.achievements)}`;
 fs.writeFileSync(new URL("supabase/seed.sql", root), sql);
 console.log(
   `Generated ${data.lessons.length} lessons, ${data.levels.length} levels, and ${data.achievements.length} achievements.`,

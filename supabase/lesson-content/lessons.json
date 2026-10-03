@@ -1,0 +1,51 @@
+[
+  {
+    "id": 1,
+    "title": "Movement & Sequence",
+    "description": "Plan an ordered set of instructions, predict each step, and explain how a change in order can change the result.",
+    "learning_objective": "Trace a short sequence from a stated starting position, write a plan that reaches a goal, and identify the first instruction that does not match the plan.",
+    "file": "01-movement-and-sequence.html"
+  },
+  {
+    "id": 2,
+    "title": "Making Decisions with If",
+    "description": "Use a true-or-false check to decide whether an action should run, and trace what happens when the action is skipped.",
+    "learning_objective": "Distinguish a condition from an action, trace both outcomes of an if statement, and place instructions inside or outside the decision deliberately.",
+    "file": "02-making-decisions-with-if.html"
+  },
+  {
+    "id": 3,
+    "title": "Choosing Between Two Actions",
+    "description": "Plan both branches of a decision, distinguish can from blocked, and explain why a possible move may still be the wrong choice.",
+    "learning_objective": "Trace one selected branch of if/else, choose a safe alternative, and explain how changing the condition changes which branch runs.",
+    "file": "03-choosing-between-two-actions.html"
+  },
+  {
+    "id": 4,
+    "title": "When Actions Change the Situation",
+    "description": "Track how actions change the room, identify what must happen first, and keep required conditions true while completing the plan.",
+    "learning_objective": "Explain a room state before and after an action, order dependent steps, and distinguish a lasting button effect from a pressure plate that must stay held.",
+    "file": "04-when-actions-change-the-situation.html"
+  },
+  {
+    "id": 5,
+    "title": "Repeating Instructions",
+    "description": "Identify a repeated group of actions, choose a fixed repetition count, and separate repeated steps from steps that happen once.",
+    "learning_objective": "Expand a repeat loop into its full action sequence, count actions separately from repetitions, and correct misplaced instructions or an incorrect count.",
+    "file": "05-repeating-instructions.html"
+  },
+  {
+    "id": 6,
+    "title": "Repeating While Something Is True",
+    "description": "Use a condition to decide whether to repeat, trace every new check, and explain what will eventually make the loop stop.",
+    "learning_objective": "Trace zero, one and several while-loop repetitions; distinguish while from if and repeat; and identify a loop whose actions do not lead toward stopping.",
+    "file": "06-repeating-while-something-is-true.html"
+  },
+  {
+    "id": 7,
+    "title": "Plan, Try, and Improve",
+    "description": "Combine sequences, decisions, loops and changing room states into a reasoned solution, then test and improve it using evidence.",
+    "learning_objective": "Break a puzzle into smaller goals, trace a combined plan, diagnose the first mismatch, and justify a correction without changing the intended result.",
+    "file": "07-plan-try-and-improve.html"
+  }
+]

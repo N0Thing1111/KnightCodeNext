@@ -1,0 +1,119 @@
+<div class="lesson-block">
+<h3 class="lesson-block-heading">1. Move from a fixed plan to a checked action</h3>
+<p>A sequence tells the knight what to do in order. Sometimes one instruction should run only when something is true. For example, you may want the knight to move right only when movement to the right is possible.</p>
+<p>This is a <strong>decision</strong>. The program checks a question, then uses its answer to decide whether a particular action runs. You still design the plan. A condition gives the program information about the current situation; it does not work out the whole route.</p>
+<p>By the end of this lesson, explain both outcomes: what happens when the answer is true, and what happens when it is false.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">2. A condition asks; an action changes something</h3>
+<p><code>can(right)</code> asks whether the knight can move right from its current position. The answer is <strong>true</strong> when that movement is possible and <strong>false</strong> when it is blocked. True and false are the two possible answers to this kind of condition.</p>
+<p><code>move(right)</code> is an action. It attempts movement and may change the knight's position. Checking <code>can(right)</code> does not itself move the knight.</p>
+<ul>
+<li>Question: can movement happen?</li>
+<li>Decision: should this group of instructions run?</li>
+<li>Action: perform the movement when the decision allows it.</li>
+</ul>
+<p>Keeping these separate prevents a common mistake: thinking that asking about a direction also sends the knight in that direction.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">3. Read a single decision</h3>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if can(right):
+    move(right)</code></pre>
+<p>Read this as: <strong>If moving right is possible now, move right.</strong> The word <code>if</code> introduces the decision. The condition is <code>can(right)</code>. The colon begins the following group of instructions, and the spaces before the move show that it belongs to that group.</p>
+<p>That indented group is called a <strong>block</strong>. Use four spaces in these examples. The layout matters because it shows which instructions depend on the answer. Learn to see the relationship: the movement belongs to the decision.</p>
+<p>If the answer is false, the program skips this block. It does not automatically move left, wait for a door, or search for a different route.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. Trace both possible answers</h3>
+<ol>
+<li>Right is open: check can(right), obtain true, run the indented move, then continue after the block.</li>
+<li>Right is blocked: check can(right), obtain false, skip the indented move, then continue after the block.</li>
+</ol>
+<p>In the second case, skipping the move is the correct behavior for these instructions. A skipped block does not mean the whole program has ended. It means that this particular action was not selected.</p>
+<p>An <code>if</code> makes one check each time execution reaches it. It does not keep rechecking until movement becomes possible. Rechecking through repetition comes in a later lesson.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Decide what belongs inside the block</h3>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if can(right):
+    move(right)
+move(up)</code></pre>
+<p>The right move belongs to the decision. The up move lines up with <code>if</code>, so it is outside the block. Provided execution continues, the up move is attempted after either outcome. Assume the upward move is clear from both possible positions in this example.</p>
+<ol>
+<li>Right open: move right, then move up.</li>
+<li>Right blocked: skip moving right, then move up.</li>
+</ol>
+<p>Now imagine indenting the final line by four spaces as well. Both movements would belong to the same decision. When the condition is false, both would be skipped. A small change in grouping can make a large change in the plan.</p>
+<p>Also, one successful check of right does not prove that a later move up is safe. A condition only answers the question you asked.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">6. Read and predict two situations</h3>
+<p>Use the program below. In situation A, up is open and left is clear after moving up. In situation B, up is blocked but left is clear at the starting position. Predict the moves in each situation.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if can(up):
+    move(up)
+move(left)</code></pre>
+<blockquote><p><strong>Check your reasoning:</strong> A: the condition is true, so the knight moves up and then left. B: the condition is false, so the knight skips up and moves left from the start. The final left instruction runs in both cases, but it starts from a different position.</p></blockquote>
+<p>What would change if the left movement were inside the block?</p>
+<blockquote><p><strong>Check your reasoning:</strong> In B, neither movement would run. In A, both would still run. Trace the false case to see the difference; testing only the true case would miss it.</p></blockquote>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">7. Find the wrong question</h3>
+<p>A student wants to move up only when up is open. They write:</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if can(right):
+    move(up)</code></pre>
+<p>Does an open path on the right prove that the upward path is open? Imagine right open and up blocked. Then imagine right blocked and up open.</p>
+<blockquote><p><strong>Check your reasoning:</strong> No. The question and the intended action do not match. In the first situation the program selects an upward move without checking up. In the second it skips a possible upward move. For the stated goal, change the condition to can(up).</p></blockquote>
+<p>A useful condition must answer a question that matters to the action or plan. Simply adding an if statement does not make a program correct.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">8. Plan and write a guarded step</h3>
+<p>Write a program that attempts one left move only when left is open, then attempts one down move outside that decision. Assume down is clear from either resulting position. Before writing code, say which action depends on the condition and which does not.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if can(left):
+    move(left)
+move(down)</code></pre>
+<p>Compare your answer with this example. Test it in your head with left open and with left blocked. Explain why down is outside the block. This explanation is more important than matching the example character for character.</p>
+<p>If down is not known to be safe in a real room, inspect that part of the route or add a suitable check. Do not carry the exercise's assumptions into every level.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. A small connection to real code</h3>
+<p class="code-label">Real Python example - read only; not a KnightCode command</p>
+<pre><code>lives = 2
+if lives &gt; 0:
+    print(&quot;Keep playing&quot;)
+print(&quot;Check finished&quot;)</code></pre>
+<p>Here, <code>lives &gt; 0</code> asks whether the stored number is greater than zero. With 2 lives, both messages appear. With 0 lives, the first message is skipped and only the final message appears. The number is example data, not a KnightCode command.</p>
+<p><strong>The shared logic is conditional execution:</strong> some instructions depend on an answer, while instructions outside the block continue afterwards. You are learning that relationship, not a Python spelling test.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. Apply it to the room, not just one move</h3>
+<ul>
+<li><strong>Check Before Moving:</strong> choose a direction on your planned route and explain the question before the guarded move.</li>
+<li><strong>What If It Is Blocked?:</strong> predict a skipped move and describe how the later instructions continue around the obstacle.</li>
+<li><strong>You Choose the Condition:</strong> match each question to the part of the route it should help with.</li>
+</ul>
+<p>An open direction is information about movement, not proof that the exit lies that way. Your full sequence must still reach the goal. Before each check, identify the knight's position at that point in the program.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">11. Check your reasoning</h3>
+<ul>
+<li>Does can(up) move the knight?</li>
+<li>When an if condition is false, what happens to its block?</li>
+<li>Why should you test both true and false situations?</li>
+<li>Does checking one direction once guarantee that it stays open later?</li>
+</ul>
+<blockquote><p><strong>Check your reasoning:</strong> The check asks a question without moving. A false condition skips its block. Testing both answers reveals unwanted moves and unwanted skips. Later movement or changes in the room may change the answer, so a previous result is not a permanent promise.</p></blockquote>
+</div>

@@ -1,54 +1,876 @@
--- Current KnightCode curriculum copied from the isolated presentation reference.
+-- KnightCode curriculum: original level definitions plus the revised programming-logic lessons.
 -- Safe to rerun: stable IDs are upserted.
 
 insert into public.lessons(id,title,description,learning_objective,content,order_number,active) values
-  (1,$kc$Movement & Sequence$kc$,$kc$Learn the most fundamental idea in programming: instructions run one after another, in the exact order you write them.$kc$,$kc$Explain sequential execution, and write move() commands in the correct order to produce a specific outcome.$kc$,$kc$<div class="lesson-block">
-<h3 class="lesson-block-heading">Programming Explanation</h3>
-<p>Every program, no matter how advanced, is at its core a list of instructions that a computer carries out <strong>one at a time, from top to bottom</strong>. This is called <strong>sequential execution</strong>. The computer never skips ahead, never runs two lines at once, and never reorders anything on its own — it simply does exactly what line 1 says, then exactly what line 2 says, and so on.</p>
-<p>This matters because <strong>order changes outcome</strong>. The exact same set of instructions, arranged differently, can produce a completely different result. Learning to plan a sequence before you run it is the first skill every programmer builds.</p>
+  (1,$kc$Movement & Sequence$kc$,$kc$Plan an ordered set of instructions, predict each step, and explain how a change in order can change the result.$kc$,$kc$Trace a short sequence from a stated starting position, write a plan that reaches a goal, and identify the first instruction that does not match the plan.$kc$,$kc$<div class="lesson-block">
+<h3 class="lesson-block-heading">1. Your goal is to think through the instructions</h3>
+<p>A program is a set of instructions. <strong>Programming logic</strong> is the reasoning used to decide which instructions are needed, what order they belong in, and why they should produce the result you want. In this lesson, the knight follows a simple sequence: one instruction after another.</p>
+<p>Your job is not to guess commands until the knight reaches the exit. Your job is to explain the route before running it, then compare that prediction with what happens. You can describe a correct plan in plain words before writing any code.</p>
 </div>
-<div class="lesson-block lesson-block-code">
-<h3 class="lesson-block-heading">Code Examples</h3>
-<p class="code-label">Knight Code</p>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">2. Separate the goal, the starting situation, and the plan</h3>
+<p>A <strong>goal</strong> says what should be true at the end: the knight has reached the exit. The <strong>starting situation</strong> tells you where the knight is and what is around it. A <strong>plan</strong>, also called an algorithm, gives the ordered steps that connect that start to that goal.</p>
+<ul>
+<li>Goal: reach a point two movements to the right and one movement up.</li>
+<li>Starting situation: all three movements in that route are clear.</li>
+<li>Plan: move right, move right again, then move up.</li>
+</ul>
+<p>These are different pieces of information. A goal alone does not tell the knight which route to take. A plan that works from one starting position may fail from another. Always inspect the room before choosing the instructions.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">3. Read a movement as one precise action</h3>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
 <pre><code>move(right)
 move(right)
 move(up)</code></pre>
-<p class="code-label">Real-World Programming</p>
-<pre><code>wake_up()
-get_dressed()
-eat_breakfast()
-go_to_school()</code></pre>
-<p>Swap <code>get_dressed()</code> and <code>go_to_school()</code> in that second example and the outcome is absurd — the same is true of <code>move()</code> commands. The computer has no common sense to correct a bad order; it just executes exactly what you wrote.</p>
+<p><code>move</code> asks the knight to move. The direction inside the parentheses tells it which way: <code>up</code>, <code>down</code>, <code>left</code>, or <code>right</code>. Here, the directions are fixed directions on the screen, not instructions to turn the knight first.</p>
+<p>The three lines form a <strong>sequence</strong>. In this simple program, the first move happens before the second, and the second happens before the third. The knight does not understand the intended route unless your instructions describe it. A blocked move does not mean the game will invent a detour for you.</p>
+<p>Use the game command spelling when typing. The important idea, however, is the relationship between an instruction and its result, not memorizing parentheses.</p>
 </div>
+
 <div class="lesson-block">
-<h3 class="lesson-block-heading">Game Application</h3>
-<p>In Knight Code, your knight is a program: it executes your <code>move()</code> commands one at a time, in the order you wrote them, with no assumptions of its own. Every level below is solved by reading the grid, planning the full route in your head first, and then writing that route down as a precise sequence.</p>
-</div>$kc$,1,true),
-  (2,$kc$Making Decisions with If$kc$,$kc$Teach the knight to check a direction before moving. Learn how an if statement decides whether an instruction should run.$kc$,$kc$Explain a condition as a yes-or-no question and use if can(direction) to move only when that direction is possible.$kc$,$kc$<div class="lesson-block"><h3 class="lesson-block-heading">Your puzzle-room goal</h3><p>Your challenge is to guide the knight through a puzzle room to its exit. Use an if statement when your route needs a check. The short example below shows one part of a solution, not an entire level.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">1. Sometimes we check first</h3><p>In Lesson 1, the knight followed your instructions in order. But what if there is a wall in the way?</p><p>Think about leaving home: <strong>if it is raining, take an umbrella.</strong> You check something before deciding what to do. Programs can make this kind of decision too.</p><p>The question we check is called a <strong>condition</strong>. Its answer is either <strong>true</strong> (yes) or <strong>false</strong> (no).</p></div><div class="lesson-block"><h3 class="lesson-block-heading">2. Ask the knight a question</h3><p><code>can(right)</code> asks: <strong>“Can the knight move right from here?”</strong></p><ul><li>If movement is possible, the answer is true.</li><li>If movement is blocked, the answer is false.</li></ul><p>Asking the question does not move the knight. We still need a movement instruction.</p></div><div class="lesson-block lesson-block-code"><p class="code-label">Try reading this KnightCode program</p><pre><code>if can(right):
-    move(right)</code></pre></div><div class="lesson-block"><h3 class="lesson-block-heading">3. Read it in plain words</h3><p><strong>“If the knight can move right, move right.”</strong></p><ol><li><code>if</code> tells the program to make a decision.</li><li><code>can(right)</code> is the question it checks.</li><li>The colon <code>:</code> starts the instructions for that decision.</li><li>The spaces before <code>move(right)</code> show that it belongs to the if statement.</li></ol><p>If the answer is false, the program skips that indented move. It does not choose another direction for you.</p><p>Use four spaces before the movement line. Type only the code into the terminal.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">4. Predict before you run</h3><p>Imagine the knight has an open path on its right. What will those two lines do? Now imagine a wall blocks its right. What changes?</p><p>You can ask about other directions too: <code>can(up)</code>, <code>can(down)</code>, and <code>can(left)</code>.</p><p><strong>Your turn:</strong> write a program that moves up only if moving up is possible. The programming idea is the same even though the direction changes.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">Practice in levels 4–6</h3><ul><li><strong>Check Before Moving:</strong> use your first if statement on an open path.</li><li><strong>What If It Is Blocked?:</strong> predict why an indented move is skipped at a wall.</li><li><strong>You Choose the Condition:</strong> choose the right question for each part of a short route.</li></ul></div><div class="lesson-block"><h3 class="lesson-block-heading">Check your understanding</h3><details><summary>If the knight cannot move right, does this program move left instead?</summary><p>No. It skips move(right). We have not written an instruction to move left.</p></details><details><summary>Why is move(right) indented?</summary><p>The spaces show that it runs only when the if condition is true.</p></details><details><summary>What is the answer to “Can I move up?” called when movement is possible?</summary><p>True — another way of saying yes.</p></details></div>$kc$,2,true),
-  (3,$kc$Choosing Between Two Actions$kc$,$kc$Use if and else to tell the knight what to do when a condition is true and what to do when it is false.$kc$,$kc$Explain how if/else chooses one of two actions, and predict which action runs for an open or blocked path.$kc$,$kc$<div class="lesson-block"><h3 class="lesson-block-heading">Your puzzle-room goal</h3><p>The exit is across the room, and obstacles can put a choice in your route. Use if and else at that choice, then continue toward the exit. A direction being open does not necessarily mean it leads to the goal.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">1. Give the program another choice</h3><p>Our first if statement could choose to move or skip a move. Now let’s give it an alternative.</p><p><strong>If it is raining, take an umbrella. Otherwise, leave the umbrella at home.</strong> In a program, <code>else</code> means <strong>otherwise</strong>.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">2. Choose a direction</h3><p>Imagine a junction where the path above the knight is open. We want to go right if we can; otherwise, we will go up.</p></div><div class="lesson-block lesson-block-code"><p class="code-label">Try reading this KnightCode program</p><pre><code>if can(right):
+<h3 class="lesson-block-heading">4. Trace the program one instruction at a time</h3>
+<p>To <strong>trace</strong> means to follow the program slowly and record what changes. For this paper example, count successful movement actions from the start. This is a reasoning model, not a claim that every drawn floor tile equals one game movement.</p>
+<ol>
+<li>Before running: the knight has made no movements.</li>
+<li>After line 1: it is one movement to the right of the start.</li>
+<li>After line 2: it is two movements to the right of the start.</li>
+<li>After line 3: it is two movements right and one movement up from the start.</li>
+</ol>
+<p>Notice that line 2 starts from the result of line 1. Instructions do not each start again from the original position. In the actual game, watch the distance of a movement and use the room layout to check your plan.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Order can change the route</h3>
+<p>Compare right, right, up with up, right, right. On an empty practice area, these can finish at the same position. That does <strong>not</strong> mean they are always interchangeable. They visit different positions on the way.</p>
+<p>Suppose the space directly above the start is blocked, but the route right, right, up is clear. Starting with up now attempts a blocked movement. The same directions and the same number of instructions can produce a different journey because the order changed.</p>
+<p>When comparing two plans, ask both questions: Do they finish in the same place? Can every intermediate step actually happen?</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">6. Read and predict</h3>
+<p>Assume an open practice area, with no exit reached during these four moves. Predict the final position relative to the start before reading the explanation.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>move(right)
+move(up)
+move(left)
+move(up)</code></pre>
+<blockquote><p><strong>Check your reasoning:</strong> Right and left cancel their horizontal change, but they still happened at different times. The two up moves remain, so the finish is two successful movements above the start. The full route matters if obstacles are added.</p></blockquote>
+<p>Now change only the third line to <code>move(right)</code>. Describe each position again. Do not reuse the first answer without checking what changed.</p>
+<blockquote><p><strong>Check your reasoning:</strong> The revised program finishes two movements right and two up from the start. Only one instruction changed, but the final position changed too.</p></blockquote>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">7. Find and fix a reasoning mistake</h3>
+<p>The planned route is right, right, up. A student writes the following in an open practice area. Which is the first line that disagrees with the plan?</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>move(right)
+move(up)
+move(up)</code></pre>
+<blockquote><p><strong>Check your reasoning:</strong> Line 1 matches the plan. Line 2 is the first mismatch: it goes up when the plan requires another right move. Replace that line with move(right), then trace all three lines again. Changing the last line alone would not fix the first wrong step.</p></blockquote>
+<p>This is a <strong>logic mistake</strong>: the instructions may be understood by the game, but they describe the wrong plan. A spelling mistake is different: the game may not understand the instruction at all.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">8. Plan and write your own sequence</h3>
+<p>For a clear practice route, write instructions for one up movement, two right movements, and one down movement, in that order. First say the plan aloud. Then write it. Finally, explain the expected position after each line.</p>
+<blockquote><p><strong>Check your reasoning:</strong> Use move(up), move(right), move(right), then move(down), with each command on its own line. In this open-area example the finish is two movements right of the start. There are four actions even though two vertical movements cancel in the final position.</p></blockquote>
+<p>Before trying a real level, check every part of that route against the actual walls. A correct answer to this small exercise is not automatically a solution to the room.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. A small connection to real code</h3>
+<p class="code-label">Real Python example - read only; not a KnightCode command</p>
+<pre><code>points = 0
+points = points + 1
+print(points)</code></pre>
+<p>In Python, <code>points</code> is a name holding a value. The first line stores 0. The second reads the current value, adds 1, and stores the result. The third displays that value, so it displays 1. If the display line came before the addition, it would display 0 instead.</p>
+<p><strong>The idea to carry over is sequence:</strong> a later instruction sees the result of earlier instructions. You do not need to memorize Python or type this example into the game.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. Use the idea in your levels</h3>
+<ul>
+<li><strong>First Steps:</strong> inspect how far one move takes the knight and count the actions needed for the straight route.</li>
+<li><strong>Turn the Corner:</strong> mark the point where the direction changes. Explain why the turn belongs there.</li>
+<li><strong>Tight Corridor:</strong> split the route into short sections, then join those sections in the correct order.</li>
+</ul>
+<p>Before Run, name the goal and predict the route. After Run, compare what happened with your trace. If they differ, find the first difference before changing the program.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">11. Explain it without looking at the example</h3>
+<ul>
+<li>Why does every instruction need to start from the result of the previous one?</li>
+<li>Can two sequences finish in the same place but behave differently around walls?</li>
+<li>What is the difference between describing the goal and giving the instructions?</li>
+</ul>
+<blockquote><p><strong>Check your reasoning:</strong> The position changes as the sequence runs. Different intermediate positions can meet different obstacles. A goal describes the desired result; a plan supplies the steps that make that result happen. You understand this lesson when you can explain those steps, not just copy them.</p></blockquote>
+</div>
+$kc$,1,true),
+  (2,$kc$Making Decisions with If$kc$,$kc$Use a true-or-false check to decide whether an action should run, and trace what happens when the action is skipped.$kc$,$kc$Distinguish a condition from an action, trace both outcomes of an if statement, and place instructions inside or outside the decision deliberately.$kc$,$kc$<div class="lesson-block">
+<h3 class="lesson-block-heading">1. Move from a fixed plan to a checked action</h3>
+<p>A sequence tells the knight what to do in order. Sometimes one instruction should run only when something is true. For example, you may want the knight to move right only when movement to the right is possible.</p>
+<p>This is a <strong>decision</strong>. The program checks a question, then uses its answer to decide whether a particular action runs. You still design the plan. A condition gives the program information about the current situation; it does not work out the whole route.</p>
+<p>By the end of this lesson, explain both outcomes: what happens when the answer is true, and what happens when it is false.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">2. A condition asks; an action changes something</h3>
+<p><code>can(right)</code> asks whether the knight can move right from its current position. The answer is <strong>true</strong> when that movement is possible and <strong>false</strong> when it is blocked. True and false are the two possible answers to this kind of condition.</p>
+<p><code>move(right)</code> is an action. It attempts movement and may change the knight's position. Checking <code>can(right)</code> does not itself move the knight.</p>
+<ul>
+<li>Question: can movement happen?</li>
+<li>Decision: should this group of instructions run?</li>
+<li>Action: perform the movement when the decision allows it.</li>
+</ul>
+<p>Keeping these separate prevents a common mistake: thinking that asking about a direction also sends the knight in that direction.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">3. Read a single decision</h3>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if can(right):
+    move(right)</code></pre>
+<p>Read this as: <strong>If moving right is possible now, move right.</strong> The word <code>if</code> introduces the decision. The condition is <code>can(right)</code>. The colon begins the following group of instructions, and the spaces before the move show that it belongs to that group.</p>
+<p>That indented group is called a <strong>block</strong>. Use four spaces in these examples. The layout matters because it shows which instructions depend on the answer. Learn to see the relationship: the movement belongs to the decision.</p>
+<p>If the answer is false, the program skips this block. It does not automatically move left, wait for a door, or search for a different route.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. Trace both possible answers</h3>
+<ol>
+<li>Right is open: check can(right), obtain true, run the indented move, then continue after the block.</li>
+<li>Right is blocked: check can(right), obtain false, skip the indented move, then continue after the block.</li>
+</ol>
+<p>In the second case, skipping the move is the correct behavior for these instructions. A skipped block does not mean the whole program has ended. It means that this particular action was not selected.</p>
+<p>An <code>if</code> makes one check each time execution reaches it. It does not keep rechecking until movement becomes possible. Rechecking through repetition comes in a later lesson.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Decide what belongs inside the block</h3>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if can(right):
+    move(right)
+move(up)</code></pre>
+<p>The right move belongs to the decision. The up move lines up with <code>if</code>, so it is outside the block. Provided execution continues, the up move is attempted after either outcome. Assume the upward move is clear from both possible positions in this example.</p>
+<ol>
+<li>Right open: move right, then move up.</li>
+<li>Right blocked: skip moving right, then move up.</li>
+</ol>
+<p>Now imagine indenting the final line by four spaces as well. Both movements would belong to the same decision. When the condition is false, both would be skipped. A small change in grouping can make a large change in the plan.</p>
+<p>Also, one successful check of right does not prove that a later move up is safe. A condition only answers the question you asked.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">6. Read and predict two situations</h3>
+<p>Use the program below. In situation A, up is open and left is clear after moving up. In situation B, up is blocked but left is clear at the starting position. Predict the moves in each situation.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if can(up):
+    move(up)
+move(left)</code></pre>
+<blockquote><p><strong>Check your reasoning:</strong> A: the condition is true, so the knight moves up and then left. B: the condition is false, so the knight skips up and moves left from the start. The final left instruction runs in both cases, but it starts from a different position.</p></blockquote>
+<p>What would change if the left movement were inside the block?</p>
+<blockquote><p><strong>Check your reasoning:</strong> In B, neither movement would run. In A, both would still run. Trace the false case to see the difference; testing only the true case would miss it.</p></blockquote>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">7. Find the wrong question</h3>
+<p>A student wants to move up only when up is open. They write:</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if can(right):
+    move(up)</code></pre>
+<p>Does an open path on the right prove that the upward path is open? Imagine right open and up blocked. Then imagine right blocked and up open.</p>
+<blockquote><p><strong>Check your reasoning:</strong> No. The question and the intended action do not match. In the first situation the program selects an upward move without checking up. In the second it skips a possible upward move. For the stated goal, change the condition to can(up).</p></blockquote>
+<p>A useful condition must answer a question that matters to the action or plan. Simply adding an if statement does not make a program correct.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">8. Plan and write a guarded step</h3>
+<p>Write a program that attempts one left move only when left is open, then attempts one down move outside that decision. Assume down is clear from either resulting position. Before writing code, say which action depends on the condition and which does not.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if can(left):
+    move(left)
+move(down)</code></pre>
+<p>Compare your answer with this example. Test it in your head with left open and with left blocked. Explain why down is outside the block. This explanation is more important than matching the example character for character.</p>
+<p>If down is not known to be safe in a real room, inspect that part of the route or add a suitable check. Do not carry the exercise's assumptions into every level.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. A small connection to real code</h3>
+<p class="code-label">Real Python example - read only; not a KnightCode command</p>
+<pre><code>lives = 2
+if lives &gt; 0:
+    print(&quot;Keep playing&quot;)
+print(&quot;Check finished&quot;)</code></pre>
+<p>Here, <code>lives &gt; 0</code> asks whether the stored number is greater than zero. With 2 lives, both messages appear. With 0 lives, the first message is skipped and only the final message appears. The number is example data, not a KnightCode command.</p>
+<p><strong>The shared logic is conditional execution:</strong> some instructions depend on an answer, while instructions outside the block continue afterwards. You are learning that relationship, not a Python spelling test.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. Apply it to the room, not just one move</h3>
+<ul>
+<li><strong>Check Before Moving:</strong> choose a direction on your planned route and explain the question before the guarded move.</li>
+<li><strong>What If It Is Blocked?:</strong> predict a skipped move and describe how the later instructions continue around the obstacle.</li>
+<li><strong>You Choose the Condition:</strong> match each question to the part of the route it should help with.</li>
+</ul>
+<p>An open direction is information about movement, not proof that the exit lies that way. Your full sequence must still reach the goal. Before each check, identify the knight's position at that point in the program.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">11. Check your reasoning</h3>
+<ul>
+<li>Does can(up) move the knight?</li>
+<li>When an if condition is false, what happens to its block?</li>
+<li>Why should you test both true and false situations?</li>
+<li>Does checking one direction once guarantee that it stays open later?</li>
+</ul>
+<blockquote><p><strong>Check your reasoning:</strong> The check asks a question without moving. A false condition skips its block. Testing both answers reveals unwanted moves and unwanted skips. Later movement or changes in the room may change the answer, so a previous result is not a permanent promise.</p></blockquote>
+</div>
+$kc$,2,true),
+  (3,$kc$Choosing Between Two Actions$kc$,$kc$Plan both branches of a decision, distinguish can from blocked, and explain why a possible move may still be the wrong choice.$kc$,$kc$Trace one selected branch of if/else, choose a safe alternative, and explain how changing the condition changes which branch runs.$kc$,$kc$<div class="lesson-block">
+<h3 class="lesson-block-heading">1. Give the program two planned choices</h3>
+<p>An <code>if</code> statement can run a block or skip it. Sometimes you need a planned action for both answers. <strong>If/else</strong> selects the if block when the condition is true and the else block when it is false.</p>
+<p><code>else</code> means otherwise. It does not mean try every direction until one works. You write the alternative yourself. Your goal is to explain why each choice is appropriate for the situation that selects it.</p>
+<p>This lesson adds choice to a sequence. After the chosen block finishes, execution continues with the instructions after the whole decision.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">2. State the assumptions before choosing</h3>
+<p>Imagine a practice junction. Moving right is our preferred route when it is open. If right is blocked, we have already checked the map and know that up is an available alternative. These assumptions are part of the example.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if can(right):
     move(right)
 else:
-    move(up)</code></pre></div><div class="lesson-block"><h3 class="lesson-block-heading">3. Which instruction runs?</h3><ul><li><strong>Right is open:</strong> the condition is true, so the knight moves right. It skips the else part.</li><li><strong>Right is blocked:</strong> the condition is false, so the knight runs the else part and moves up.</li></ul><p>Only one of these two choices runs. Notice that <code>else:</code> lines up with <code>if</code>, and each move is indented underneath its own choice.</p><p><strong>Important:</strong> else does not check whether up is open. We chose up because we already know it is open in this example. An alternative instruction still needs to make sense for the level.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">4. Ask the opposite question</h3><p><code>blocked(right)</code> asks <strong>“Is moving right blocked?”</strong> It gives the opposite answer to <code>can(right)</code> at the same position.</p><p>On a layout where up is open, this means “If right is blocked, move up.”</p></div><div class="lesson-block lesson-block-code"><p class="code-label">Try reading this KnightCode program</p><pre><code>if blocked(right):
-    move(up)</code></pre></div><div class="lesson-block"><h3 class="lesson-block-heading">5. Use evidence, not just appearances</h3><p>Some wall-looking objects in a level may allow passage. Let <code>can</code> answer whether movement is possible rather than guessing from the picture.</p><p><strong>Your turn:</strong> suppose up might be blocked but left is open. Write a program that chooses up when possible and left otherwise.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">Practice in levels 7–10</h3><ul><li><strong>Right or Up?:</strong> make your first two-way choice.</li><li><strong>When the Answer Is No:</strong> use the else part when the first route is blocked.</li><li><strong>Is It Blocked?:</strong> read a condition written with blocked.</li><li><strong>Looks Can Be Misleading:</strong> check whether a wall-looking passage is actually passable.</li></ul></div><div class="lesson-block"><h3 class="lesson-block-heading">Check your understanding</h3><details><summary>Do both moves in the if/else example run?</summary><p>No. The condition chooses one part, so only that part’s move runs.</p></details><details><summary>Does else automatically find a safe path?</summary><p>No. It runs the instructions you put under it. You must choose a suitable alternative.</p></details></div>$kc$,3,true),
-  (4,$kc$When Actions Change the Situation$kc$,$kc$Learn why a program sometimes has to do one thing before another. Use buttons, doors, and crates to see those changes happen.$kc$,$kc$Explain why opening a door must happen before crossing it, and plan how to keep a pressure plate pressed while the knight moves away.$kc$,$kc$<div class="lesson-block"><h3 class="lesson-block-heading">Your puzzle-room goal</h3><p>The exit may be behind a wall that opens. Explore the room, work out which button or plate opens the route, and put those actions into the right order.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">1. Do the needed step first</h3><p>Before you can read a book in a dark room, you might need to turn on the light. Turning it on changes the situation: now you can see.</p><p>Programs also need steps in the right order. <strong>Doing one action can make a later action possible.</strong> In KnightCode, a button can open a door that was blocking the route.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">2. Open the way, then check it</h3><p>Imagine a button one move to the right. After the knight steps on it, the door above that button opens. This program presses the button, then checks the way up.</p></div><div class="lesson-block lesson-block-code"><p class="code-label">Try reading this KnightCode program</p><pre><code>move(right)
+    move(up)</code></pre>
+<p>Right open gives true, so the right move runs and the else block is skipped. Right blocked gives false, so the up move runs instead. <strong>One branch is selected</strong>, not both.</p>
+<p><code>else:</code> lines up with <code>if</code>. Each movement is indented underneath its own branch. The layout tells you which result selects which instructions.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">3. Trace the two paths through the same program</h3>
+<ol>
+<li>Situation A: right is open. Check can(right), choose the if branch, move right, skip else, then continue.</li>
+<li>Situation B: right is blocked and up is open. Check can(right), choose the else branch, move up, then continue.</li>
+</ol>
+<p>The program is the same in both situations. Its behavior changes because the answer to the condition changes. This is how a program can respond to different starting situations without someone manually choosing a different line each time.</p>
+<p>If both directions are open, this program still chooses right. It does not choose randomly or compare which route is shorter. The preference is written into the condition and branches.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. Else is an alternative, not a safety check</h3>
+<p>Suppose both right and up are blocked. The condition is false, so the example selects <code>move(up)</code>. But choosing that line does not make the movement possible. The else branch does not secretly test up.</p>
+<p>For a real room, use a known-safe alternative or check the alternative too. One way to check it is a decision inside the else block:</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if can(right):
+    move(right)
+else:
+    if can(up):
+        move(up)</code></pre>
+<p>This is a <strong>nested decision</strong>: a decision inside another decision. If both directions are blocked, neither movement runs. Read the spaces carefully: the up move belongs to the inner check, and the entire inner check belongs to else.</p>
+<p>You do not need nesting for every puzzle. Use it only when the plan needs another question.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Ask the opposite question with blocked</h3>
+<p><code>blocked(right)</code> asks whether moving right is blocked now. In the same unchanged situation, it gives the opposite answer to <code>can(right)</code>. It checks movement rules, not just whether a tile looks like a wall.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if blocked(right):
+    move(up)
+else:
+    move(right)</code></pre>
+<p>Under our earlier assumption that up is a safe detour, this makes the same choice as the first example. When right is blocked, it chooses up. When right is open, it chooses right.</p>
+<p>Notice that we changed the question <strong>and swapped the branch actions</strong>. Changing can to blocked without changing the branches would reverse the intended choice. Always translate the whole decision into plain words.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">6. Read and predict the continuation</h3>
+<p>Assume the last left move is possible after either branch and no exit ends execution early. Predict the full sequence when up is open, then when up is blocked but right is open.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if can(up):
+    move(up)
+else:
+    move(right)
+move(left)</code></pre>
+<blockquote><p><strong>Check your reasoning:</strong> Up open: up, then left. Up blocked: right, then left. The final left move is outside both branches, so it is attempted after the selected branch. In an open practice area, the second route returns to its starting horizontal position.</p></blockquote>
+<p>Why does the knight not run the right move after the up move in the first situation?</p>
+<blockquote><p><strong>Check your reasoning:</strong> They belong to different branches of one if/else decision. Once the true branch is selected, the else branch is skipped.</p></blockquote>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">7. Find and fix reversed logic</h3>
+<p>The intention is: if right is blocked, take a known-open upward detour; otherwise go right. A student writes:</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if blocked(right):
+    move(right)
+else:
+    move(up)</code></pre>
+<p>Trace the blocked case before changing anything. Which instruction does it select? Does that match the intention?</p>
+<blockquote><p><strong>Check your reasoning:</strong> When right is blocked, the condition is true and the program selects the right move. That contradicts the plan. Swap the branch actions: up belongs in the true branch and right belongs in else. Then check the open case too.</p></blockquote>
+<p>Do not judge a condition by whether it contains a familiar word. Judge it by which action its true answer selects.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">8. Plan your own preference</h3>
+<p>At a practice junction, prefer left if it is possible. Otherwise, use a known-clear downward path. Write the decision, then explain what happens when both paths are open and when only down is open.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if can(left):
+    move(left)
+else:
+    move(down)</code></pre>
+<blockquote><p><strong>Check your reasoning:</strong> Both open: left is selected because it is the written preference. Only down open: the condition is false, so down is selected. If neither is open, the assumption about a safe alternative fails; this version does not solve that situation.</p></blockquote>
+<p>A useful explanation includes the limits of the plan. Saying when a solution does not work is part of understanding it.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. A small connection to real code</h3>
+<p class="code-label">Real Python example - read only; not a KnightCode command</p>
+<pre><code>score = 6
+if score &gt;= 5:
+    print(&quot;Goal reached&quot;)
+else:
+    print(&quot;Keep practising&quot;)</code></pre>
+<p>The condition asks whether score is at least 5. With 6, only the first message appears. With 3, only the second appears. With exactly 5, the first appears because the check includes equality.</p>
+<p><strong>The shared idea is choosing one branch from two.</strong> The number check is different from a path check, but the decision structure is the same. You do not need Python syntax to explain the two possible outcomes.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. Practise decisions in your levels</h3>
+<ul>
+<li><strong>Right or Up?:</strong> state which direction your decision prefers and why that helps the route.</li>
+<li><strong>When the Answer Is No:</strong> explain the alternative before running the false case.</li>
+<li><strong>Is It Blocked?:</strong> translate blocked into a yes-or-no question and check which branch true selects.</li>
+<li><strong>Looks Can Be Misleading:</strong> distinguish a tile's appearance from whether movement is actually allowed.</li>
+</ul>
+<p>A condition tests a local fact. It does not tell you whether a direction eventually reaches the exit. After choosing a branch, continue tracing the rest of the room.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">11. Check your reasoning</h3>
+<ul>
+<li>Why does else not guarantee a safe movement?</li>
+<li>How can both paths be open while only one branch runs?</li>
+<li>What must change when you replace can with blocked but want the same choice?</li>
+</ul>
+<blockquote><p><strong>Check your reasoning:</strong> Else selects the action you supplied without another automatic check. The condition determines the chosen branch even when both paths are possible. Reversing the question requires reversing the branch actions if you want to preserve the same behavior.</p></blockquote>
+</div>
+$kc$,3,true),
+  (4,$kc$When Actions Change the Situation$kc$,$kc$Track how actions change the room, identify what must happen first, and keep required conditions true while completing the plan.$kc$,$kc$Explain a room state before and after an action, order dependent steps, and distinguish a lasting button effect from a pressure plate that must stay held.$kc$,$kc$<div class="lesson-block">
+<h3 class="lesson-block-heading">1. A correct route can depend on changing the room</h3>
+<p>So far, you have planned movements and checked paths. Some rooms need more: a passage is closed until a button is pressed, or a door stays open only while a plate is held. You must reason about how your actions change what can happen next.</p>
+<p>The programming idea is <strong>state</strong>: the facts that describe the situation at a particular moment. In KnightCode, these facts include the knight's position, the crate's position, whether a plate is held, and whether a door is open. State is a useful name for these facts, not a new command to type.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">2. Describe the before and after</h3>
+<p>Imagine an ordinary button that opens a door. Before the knight reaches it, the button has not been activated and the door is closed. After the knight activates it, the door is open. The action changed the state of the room.</p>
+<ol>
+<li>Before: door closed; the planned crossing is blocked.</li>
+<li>Action: reach and activate the button.</li>
+<li>After: door open; the crossing can now be considered.</li>
+</ol>
+<p>A <strong>condition</strong> reads something about the current state. An <strong>action</strong> may change that state. This means the same question can have a different answer before and after an action. Do not assume an earlier check is still true later.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">3. Work out what must happen first</h3>
+<p>A <strong>dependency</strong> means one step needs another step to happen first. If crossing a passage requires an open door, and opening the door requires pressing a button, pressing the button must come before crossing.</p>
+<p>Plan backwards from the goal: I need to reach the exit. What prevents that? A closed door. What opens it? The button. How do I reach the button? This gives you a useful order instead of a list of unrelated movements.</p>
+<p>Then trace forwards to test it. Working backwards helps discover the steps; working forwards checks that each step is possible from the situation left by the previous one.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. Trace an action followed by a check</h3>
+<p>For this small example only, suppose one right move activates an ordinary button. Once pressed, it opens the passage directly above the knight's new position. Both movements have been checked against this imagined layout.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>move(right)
 if can(up):
-    move(up)</code></pre></div><div class="lesson-block"><h3 class="lesson-block-heading">3. Two kinds of switches</h3><ul><li><strong>An ordinary button:</strong> once activated, its door stays open when you leave.</li><li><strong>A pressure plate:</strong> its door stays open only while something allowed to press it remains on the plate.</li></ul><p>A pressure plate does not use a timer. If you walk away and nothing else holds it down, the door closes.</p><p>Before crossing, ask: <strong>“Will the door still be open when I reach it?”</strong></p></div><div class="lesson-block"><h3 class="lesson-block-heading">4. Let a crate hold the plate</h3><p>The knight pushes a crate by moving toward it. There is no special push command. The space beyond the crate must be clear.</p><p>Some plates accept crates. Leave a crate on one of these plates, and it can hold the door open while the knight walks away. Other switches respond only to the knight, so read the level’s instructions.</p><p>Plan in plain words first: <strong>push the crate onto the plate → leave it there → take the open route.</strong> Then write the movement and condition commands for that plan.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">Practice in levels 11–13</h3><ul><li><strong>Open the Way:</strong> press an ordinary button before taking its route.</li><li><strong>Keep It Open:</strong> leave a crate on a pressure plate while you continue.</li><li><strong>Multi-Door Vault, your existing level 13:</strong> work out which switch opens each door. Decide what must stay pressed, then solve the room in that order.</li></ul><p><strong>Your turn:</strong> explain why “stand on the plate, then walk away” may not let you through its door.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">Check your understanding</h3><details><summary>Why should the button step come before the door-crossing step?</summary><p>The button makes crossing possible by opening the door first.</p></details><details><summary>What can keep a crate-sensitive plate pressed after the knight leaves?</summary><p>A crate left on the plate.</p></details><details><summary>Why is this a programming lesson?</summary><p>You are planning how earlier instructions change what later instructions can do.</p></details></div>$kc$,4,true),
-  (5,$kc$Repeating Instructions$kc$,$kc$Use repeat to write an action once and tell the program how many times to do it.$kc$,$kc$Use repeat(n) for a known number of repetitions and explain which indented instructions repeat.$kc$,$kc$<div class="lesson-block"><h3 class="lesson-block-heading">Your puzzle-room goal</h3><p>Look for a repeated part of the route through the room. A repeat loop handles that part; the rest of your program must still get the knight to the exit.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">1. Notice what repeats</h3><p>Suppose the knight needs to move right three times. You already know how to write that:</p></div><div class="lesson-block lesson-block-code"><p class="code-label">Try reading this KnightCode program</p><pre><code>move(right)
+    move(up)</code></pre>
+<ol>
+<li>Move right onto the button. This changes the room.</li>
+<li>At the new position, check the upward passage.</li>
+<li>If that movement is now possible, move up.</li>
+</ol>
+<p>Checking up before the right move would ask about the old position and old room state. Even the same direction name can refer to a different neighboring space after movement. Explain where and when a check happens, not just which word it contains.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Distinguish a lasting change from a held condition</h3>
+<ul>
+<li><strong>Ordinary button:</strong> once activated, its linked door stays open when the activating object leaves.</li>
+<li><strong>Pressure plate:</strong> its linked door stays open only while an allowed object remains on the plate. When nothing holds it, the door closes.</li>
+</ul>
+<p>A pressure plate is not simply an ordinary button with a short timer. What matters is whether it is still held. Standing on a plate can make the door open now without guaranteeing that the door will be open when you reach it.</p>
+<p>Ask two different questions: Is the route open at this moment? Will the action I take next keep it open? The second question is what makes the plan reliable.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">6. Use a crate to keep a required fact true</h3>
+<p>The knight pushes a crate by moving toward it. There is no separate push command in these lessons. The crate needs space to move into; a crate blocked against a wall cannot simply be pushed through it.</p>
+<p>For a plate that accepts crates, leaving the crate on the plate can keep the door open while the knight leaves. Some switches have different activation rules, so inspect the level rather than assuming every object can activate every switch.</p>
+<ol>
+<li>Reach the correct side of the crate.</li>
+<li>Push it onto the intended crate-sensitive plate.</li>
+<li>Leave it there while the knight takes the opened route.</li>
+</ol>
+<p>Throughout the crossing, the required fact is: <strong>the plate remains held</strong>. You may hear this described as a condition that must stay true. The reasoning matters more than the term. Moving the crate again can undo the useful state.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">7. Read and predict a state change</h3>
+<p>In this thought exercise, one pressure plate controls one door. The plate accepts the knight and crates. At first it is empty. Predict the door after each step: the knight steps onto it; the knight leaves with no crate there; a crate is placed on it; the knight walks away while the crate stays.</p>
+<blockquote><p><strong>Check your reasoning:</strong> The door opens when the knight holds the plate, closes when the empty plate is released, opens when the crate holds it, and stays open when the knight leaves but the crate remains. The important fact is occupancy of the plate, not how many times the knight visited it.</p></blockquote>
+<p>Change the assumption: the plate does not respond to crates. Would the last two outcomes still follow?</p>
+<blockquote><p><strong>Check your reasoning:</strong> No. The proposed support object must be one the switch accepts. A plan is only as good as the facts it assumes.</p></blockquote>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">8. Find and fix a dependency mistake</h3>
+<p>A student plans: stand on a pressure plate, walk away from it, then cross its linked door. Nothing else will hold the plate. Explain the first step that breaks the condition needed for crossing.</p>
+<blockquote><p><strong>Check your reasoning:</strong> Walking away releases the plate and closes the door. The later crossing fails because the earlier action removed the condition it needed. If a suitable crate and route are available, revise the plan so the crate holds the plate before the knight leaves.</p></blockquote>
+<p>Do not fix this by blindly adding extra movement near the door. The problem is the state of the mechanism, not necessarily the final direction. Trace the cause of the closed door.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. Plan and explain a multi-step solution</h3>
+<p>For a room with a crate-sensitive plate and an exit behind its door, write a plain-language plan before choosing movements. Include the side from which to push the crate and the path the knight will take after placing it.</p>
+<p>Beside each step, write two short notes: <strong>needs</strong> and <strong>changes</strong>. For example: pushing needs a clear destination; pushing changes the crate position. Crossing needs an open door; crossing changes the knight position.</p>
+<blockquote><p><strong>Check your reasoning:</strong> A sound plan checks that the crate can reach the plate, the knight can leave it there, and the exit route stays open. Exact movement commands depend on the room. There is no single direction sequence that solves every arrangement.</p></blockquote>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. A small connection to real code</h3>
+<p class="code-label">Real Python example - read only; not a KnightCode command</p>
+<pre><code>plate_held = True
+print(plate_held)
+plate_held = False
+print(plate_held)</code></pre>
+<p>This Python example stores a fact using the name <code>plate_held</code>. It first displays True, then changes the stored fact and displays False. This does not operate a real KnightCode door; it is a tiny model of changing information.</p>
+<p><strong>The shared logic is tracking state over time.</strong> A fact can change, and a later check must use the current situation. You do not need to create variables in the KnightCode terminal to practise that reasoning.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">11. Practise with your mechanisms</h3>
+<ul>
+<li><strong>Open the Way:</strong> identify the button action that must happen before the crossing.</li>
+<li><strong>Keep It Open:</strong> explain what holds the plate after the knight moves away.</li>
+<li><strong>Multi-Door Vault:</strong> list which mechanism affects which passage, then order the dependencies.</li>
+</ul>
+<p>Before running, explain not only where the knight goes but what changes in the room. After running, look for the first state change that differed from your prediction.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">12. Check your reasoning</h3>
+<ul>
+<li>Why can a condition have a different answer after a movement?</li>
+<li>Why is a currently open door not always safe to plan around?</li>
+<li>What must remain true while crossing a pressure-plate-controlled route?</li>
+</ul>
+<blockquote><p><strong>Check your reasoning:</strong> Movement can change position and activate or release mechanisms. An action may close a route that was open a moment ago. The needed plate must remain held by an allowed object until the plan no longer depends on that door.</p></blockquote>
+</div>
+$kc$,4,true),
+  (5,$kc$Repeating Instructions$kc$,$kc$Identify a repeated group of actions, choose a fixed repetition count, and separate repeated steps from steps that happen once.$kc$,$kc$Expand a repeat loop into its full action sequence, count actions separately from repetitions, and correct misplaced instructions or an incorrect count.$kc$,$kc$<div class="lesson-block">
+<h3 class="lesson-block-heading">1. Find a pattern before choosing a loop</h3>
+<p>Some routes contain the same action or group of actions several times. A <strong>loop</strong> is a way to repeat a group without writing that group out each time. This lesson uses <code>repeat</code> when the number of repetitions is known.</p>
+<p>The goal is not to make every program as short as possible. The goal is to recognize a pattern, express it clearly, and keep the intended behavior. A shorter program that takes the wrong route is not an improvement.</p>
+<p>First describe the complete route. Then ask: which part is exactly repeated, and how many copies of that part are needed?</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">2. Replace repeated instructions with a count</h3>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>move(right)
 move(right)
-move(right)</code></pre></div><div class="lesson-block"><h3 class="lesson-block-heading">2. Write the repetition as a loop</h3><p>A <strong>loop</strong> repeats instructions. We can write the same three moves like this:</p></div><div class="lesson-block lesson-block-code"><p class="code-label">Try reading this KnightCode program</p><pre><code>repeat(3):
-    move(right)</code></pre></div><div class="lesson-block"><h3 class="lesson-block-heading">3. Read the loop</h3><p><strong>“Repeat moving right three times.”</strong> The number tells the program how many times to repeat. The indented line tells it what to do each time.</p><p>The knight still makes three moves. We have written less repeated code; we have not changed the route.</p><p>Use repeat when you know the number of repetitions. Check that the moves fit the path: repeat does not check for walls for you.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">4. Repeat a small pattern</h3><p>What if the path goes right, up, right, up? We can repeat a pair of instructions:</p></div><div class="lesson-block lesson-block-code"><p class="code-label">Try reading this KnightCode program</p><pre><code>repeat(2):
+move(right)</code></pre>
+<p>Assume all three movements are possible and the level does not end during them. This sequence performs the same action three times. We can express that repeated part as:</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>repeat(3):
+    move(right)</code></pre>
+<p>The number 3 is the <strong>repetition count</strong>. The indented line is the loop body: the instruction that runs on each repetition. After the third repetition, execution continues after the loop.</p>
+<p>The knight still performs three moves. The loop saves repeated writing, not physical movement. It also does not automatically check whether a wall is in the way.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">3. Expand the loop to check your reasoning</h3>
+<p>One pass through the body is called an <strong>iteration</strong>, or simply a repetition. Trace repeat(3) by numbering the passes:</p>
+<ol>
+<li>First repetition: run move(right).</li>
+<li>Second repetition: run move(right) again, from the new position.</li>
+<li>Third repetition: run move(right) again, then finish the loop.</li>
+</ol>
+<p>To check a loop, mentally replace it with the full sequence it represents. If that expanded sequence does not match the route, the loop does not match either. This is a useful way to test your logic without relying on how compact the code looks.</p>
+<p>In the game, a level finishing or a program being stopped can end execution early. The trace here describes normal completion of the example.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. A repeated group can contain more than one action</h3>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>repeat(2):
     move(right)
-    move(up)</code></pre></div><div class="lesson-block"><h3 class="lesson-block-heading">5. What happens after the loop?</h3><p>Both indented moves repeat together. Here the knight attempts four moves: right, up, right, up.</p><p>An instruction lined up with <code>repeat</code> is outside the loop. It runs after the repetitions finish.</p><p><strong>Your turn:</strong> write a program that moves right three times, then moves up once. Keep the final move outside the repeat block.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">Practice in levels 14–15</h3><ul><li><strong>Do It Again:</strong> repeat a simple right-and-up pattern.</li><li><strong>Repeat, Then Turn:</strong> finish a repeated section before making a turn that happens once.</li></ul></div><div class="lesson-block"><h3 class="lesson-block-heading">Check your understanding</h3><details><summary>How many times does the indented move run in repeat(3)?</summary><p>Three times, unless the level finishes or execution is stopped first.</p></details><details><summary>Does repeating two moves twice mean two moves altogether?</summary><p>No. It means four moves: the pair is performed twice.</p></details></div>$kc$,5,true),
-  (6,$kc$Repeating While Something Is True$kc$,$kc$Use while to keep repeating an action while a condition is true, instead of choosing a fixed count.$kc$,$kc$Explain how while checks before each repetition and use while can(direction) to stop moving when that direction becomes blocked.$kc$,$kc$<div class="lesson-block"><h3 class="lesson-block-heading">Your puzzle-room goal</h3><p>A corridor can be one part of a larger puzzle room. Use a while loop to follow it, then continue with the turns or mechanisms needed to reach the exit.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">1. What if you do not know the count?</h3><p>Repeat is useful when you know how many times to act. But sometimes the instruction is <strong>“keep going while it is possible.”</strong></p><p>For example: while there are dishes left, wash the next dish. After each dish, check again. When none remain, stop.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">2. A condition and a loop together</h3><p>On a straight corridor that ends at a wall, the knight can use:</p></div><div class="lesson-block lesson-block-code"><p class="code-label">Try reading this KnightCode program</p><pre><code>while can(right):
-    move(right)</code></pre></div><div class="lesson-block"><h3 class="lesson-block-heading">3. Follow the steps</h3><ol><li>Check: can the knight move right?</li><li>If yes, move right.</li><li>Go back and check again.</li><li>If no, leave the loop.</li></ol><p>If right is blocked at the start, the knight does not run the movement line at all. The condition is checked <strong>before</strong> moving.</p><p>Compare this with <code>if can(right):</code>: if checks once; while keeps checking and repeating.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">4. Continue after the loop</h3><p>Imagine an upward opening at the end of the corridor. After finishing the rightward loop, this program checks the way up:</p></div><div class="lesson-block lesson-block-code"><p class="code-label">Try reading this KnightCode program</p><pre><code>while can(right):
+    move(up)</code></pre>
+<p>Both indented instructions belong to the body. Each repetition performs right and then up. The expanded order is right, up, right, up. It is not right, right, up, up.</p>
+<p>Two repetitions of a two-action body produce four movement actions. Keep these quantities separate: <strong>number of passes</strong> and <strong>number of actions inside each pass</strong>.</p>
+<p>A block is repeated as a unit, but instructions within it still run in order. A loop does not remove the sequence rules you already learned.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Place one-time actions outside the loop</h3>
+<p>Imagine a clear route requiring three right movements and then one up movement. The turn should happen once, after the repeated section.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>repeat(3):
+    move(right)
+move(up)</code></pre>
+<p>Because up lines up with repeat, it is outside the loop. The route is right, right, right, up. If you indent up inside the body, the route becomes right, up, right, up, right, up. That describes a different pattern.</p>
+<p>Before writing a loop, label each part of your plan as <strong>repeated</strong> or <strong>once afterwards</strong>. Indentation should reflect that decision.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">6. Read and predict the full sequence</h3>
+<p>Assume every move is possible. Write the expanded sequence and count the movements before reading the answer.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>repeat(2):
+    move(up)
+    move(right)
+move(down)</code></pre>
+<blockquote><p><strong>Check your reasoning:</strong> The sequence is up, right, up, right, down: five movement actions. The body contributes four actions across two repetitions. Down contributes one more after the loop. The final position is two movements right and one up from the start in this open-area example.</p></blockquote>
+<p>What changes if the count becomes 3?</p>
+<blockquote><p><strong>Check your reasoning:</strong> The pair runs three times, producing six body movements, then down runs once: seven movements in total. The change affects the whole repeated group, not just its first line.</p></blockquote>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">7. Find and fix a misplaced turn</h3>
+<p>The intention is right, right, right, then up once. A student writes:</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>repeat(3):
+    move(right)
+    move(up)</code></pre>
+<p>Which part of the written program makes the route disagree with the intention? Expand it rather than guessing a different count.</p>
+<blockquote><p><strong>Check your reasoning:</strong> The up move is inside the repeated body, so it happens three times. Move that line outside the block. Changing only the repetition count cannot produce three right moves and one up move from this two-action body.</p></blockquote>
+<p>This is a grouping mistake. Other loop mistakes involve the wrong count or the wrong action. Identify which kind of mismatch you have before editing.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">8. Plan and write a repeated pattern</h3>
+<p>For an open practice route, express left, down, left, down, left, down, then right once using a loop. Name the smallest repeated group before you write it.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>repeat(3):
+    move(left)
+    move(down)
+move(right)</code></pre>
+<blockquote><p><strong>Check your reasoning:</strong> The repeated group is left followed by down. It occurs three times. Right is outside the loop because it happens once afterwards. There are seven movement actions in the expanded plan.</p></blockquote>
+<p>Now imagine an obstacle blocks the second downward move. The pattern is easy to describe, but it no longer gives a clear route. A repeat count is a plan, not proof that all its actions can succeed. Check each repetition at its new position.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. Decide whether a fixed count is appropriate</h3>
+<p>Use repeat when you know both the body and the required count. A measured three-step section is a good candidate. A route where you only know "keep going until movement is blocked" needs a different kind of reasoning, which the next lesson introduces.</p>
+<p>Two programs can also be equally clear without both using loops. A short sequence of unrelated turns may be easier to explain directly. Do not force different actions into a pattern that is not really there.</p>
+<p>When you claim that two versions are equivalent, explain that they perform the same ordered actions under the same starting conditions. Comparing line counts alone is not enough.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. A small connection to real code</h3>
+<p class="code-label">Real Python example - read only; not a KnightCode command</p>
+<pre><code>for step in range(3):
+    print(&quot;Check the next item&quot;)
+print(&quot;Finished&quot;)</code></pre>
+<p>This Python loop displays the first message three times, then displays Finished once. The name <code>step</code> is used by Python to track the repetitions; you do not need to use it inside this example.</p>
+<p><strong>The shared idea is a fixed number of passes through a block.</strong> Python writes that idea differently from KnightCode. Focus on what repeats, how often, and what happens afterwards, rather than memorizing the language form.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">11. Use repetition in your levels</h3>
+<ul>
+<li><strong>Do It Again:</strong> find the right-and-up pattern, count its repetitions, and trace the position after each pair.</li>
+<li><strong>Repeat, Then Turn:</strong> separate the repeated approach from the turn, button action and remaining route.</li>
+</ul>
+<p>Before Run, expand the loop aloud or on paper. After Run, compare the movement pattern. If it differs, inspect the body and count separately. A loop that finishes is not necessarily a loop that reaches the goal.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">12. Check your reasoning</h3>
+<ul>
+<li>What is the difference between a repetition and a movement action?</li>
+<li>Why does moving a line outside a loop change how often it runs?</li>
+<li>Does shorter code always mean fewer game movements?</li>
+</ul>
+<blockquote><p><strong>Check your reasoning:</strong> One repetition runs the entire body, which may contain several actions. An outside line runs after the loop rather than on each pass. A loop can shorten the written program while keeping exactly the same movement sequence.</p></blockquote>
+</div>
+$kc$,5,true),
+  (6,$kc$Repeating While Something Is True$kc$,$kc$Use a condition to decide whether to repeat, trace every new check, and explain what will eventually make the loop stop.$kc$,$kc$Trace zero, one and several while-loop repetitions; distinguish while from if and repeat; and identify a loop whose actions do not lead toward stopping.$kc$,$kc$<div class="lesson-block">
+<h3 class="lesson-block-heading">1. Let the situation decide whether to continue</h3>
+<p><code>repeat</code> uses a count you choose in advance. A <strong>while loop</strong> asks a condition before each pass through its body. If the answer is true, it runs the body and checks again. If the answer is false, it leaves the loop.</p>
+<p>This fits a plan such as "keep moving right while moving right is possible." You may not need to count the corridor first, but you still need to understand where the loop stops and what happens afterwards.</p>
+<p>Your learning goal is to explain the repeated decision. A while loop is not a command that automatically solves an unknown room.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">2. Read the check-action-check cycle</h3>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>while can(right):
+    move(right)</code></pre>
+<ol>
+<li>Check can(right) from the current position.</li>
+<li>If true, run move(right).</li>
+<li>Return to the condition and check it from the resulting position.</li>
+<li>If false, skip the body and continue after the loop.</li>
+</ol>
+<p>The check happens before the movement, including before the first one. The program does not move once just to find out whether it can move. The action changes the position, so the next check can produce a different answer.</p>
+<p>The indented instructions are the body, just as with repeat. Every pass through the body follows its own sequence in order.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">3. Trace a short corridor</h3>
+<p>Imagine a clear straight corridor with exactly three successful right movements available before a wall blocks the next movement. Assume no exit or other event ends execution during this example.</p>
+<ol>
+<li>Check 1 is true. Move right for the first time.</li>
+<li>Check 2 is true from the new position. Move right for the second time.</li>
+<li>Check 3 is true. Move right for the third time.</li>
+<li>Check 4 is false at the blocked end. Do not move right again; leave the loop.</li>
+</ol>
+<p>There were <strong>three movements and four checks</strong>. The final false check is how the loop discovers that another pass should not happen. Count checks separately from actions when tracing a while loop.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. Include the case where the body never runs</h3>
+<p>Now put the knight where right is already blocked. The first check is false. The loop body runs zero times, and execution continues after the loop.</p>
+<p>This is not an error. It is the expected result of checking before acting. A useful test set includes zero repetitions, one repetition, and several repetitions. Each tells you something different about the plan.</p>
+<p>If the body contains an action that your later plan always requires, ask whether it is safe for that action to be skipped completely. Sometimes that action belongs before or after the loop instead.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Compare if, repeat and while</h3>
+<ul>
+<li><strong>if can(right):</strong> checks once when reached and may perform its body once.</li>
+<li><strong>repeat(3):</strong> plans three passes through its body without using a path condition to choose the count.</li>
+<li><strong>while can(right):</strong> checks before every pass and keeps repeating only while its condition remains true.</li>
+</ul>
+<p>On a corridor with exactly three available moves, repeat(3) and the simple rightward while loop can produce the same movements. If the corridor length changes, the fixed count stays three while the condition-controlled loop may perform a different number.</p>
+<p>That does not make while always better. Choose according to the goal: "exactly three" and "as far as possible" are different requirements.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">6. Continue after the loop deliberately</h3>
+<p>Suppose the corridor ends at a wall and an upward opening is available at that endpoint. The following program separates following the corridor from checking the turn.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>while can(right):
     move(right)
 if can(up):
-    move(up)</code></pre></div><div class="lesson-block"><h3 class="lesson-block-heading">5. Make sure the loop can finish</h3><p>A loop should do something that brings it closer to stopping. In this corridor, each move brings the knight closer to the wall. Eventually, moving right is no longer possible.</p><p>If the loop keeps checking a blocked direction but its action never changes the situation, it may keep repeating. Ask: <strong>“What will eventually make my condition false?”</strong></p><p><strong>Your turn:</strong> change the first example so the knight keeps moving up while it can.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">Practice in levels 16–18</h3><ul><li><strong>Keep Going:</strong> use one loop along a straight corridor.</li><li><strong>Check Again:</strong> predict what changes when the knight starts near the end or is already blocked.</li><li><strong>Stop, Then Turn:</strong> finish a loop and continue with a new instruction.</li></ul></div><div class="lesson-block"><h3 class="lesson-block-heading">Check your understanding</h3><details><summary>What is the difference between repeat(3) and while can(right)?</summary><p>Repeat chooses a fixed count. While keeps checking a condition to decide whether another repetition should happen.</p></details><details><summary>When right becomes blocked, does the while example attempt one more right move?</summary><p>No. The next check is false, so that movement line is skipped and the loop ends.</p></details></div>$kc$,6,true),
-  (7,$kc$Plan, Try, and Improve$kc$,$kc$Put sequences, decisions, and loops together. Find mistakes by comparing what you expected with what the knight actually did.$kc$,$kc$Plan a solution in small parts, use familiar commands together, and explain one correction or improvement after testing.$kc$,$kc$<div class="lesson-block"><h3 class="lesson-block-heading">Your puzzle-room goal</h3><p>Your goal is to solve the whole room: reach the exit across the map or open the wall that protects it. Use the commands you know to plan the route and operate its mechanisms.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">1. Put your ideas together</h3><p>You now know three useful ways to guide the knight:</p><ul><li><strong>Sequence:</strong> do instructions in order.</li><li><strong>Decision:</strong> use if and else to choose an action.</li><li><strong>Repetition:</strong> use repeat or while to do something again.</li></ul><p>You do not need a new command for every puzzle. Choose which of these ideas helps with each part.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">2. Make a small plan</h3><p>Before typing, describe the route in a few simple parts. For a crate puzzle, your plan might be:</p><ol><li>Reach the crate.</li><li>Push it onto a plate that accepts crates.</li><li>Leave it there and take the open route.</li></ol><p>Check each part before combining them. Remember that moving the crate away again may close the door.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">3. Read a combined program</h3><p>Imagine a clear route with two right moves followed by an upward opening. We can repeat the first part and check the next direction:</p></div><div class="lesson-block lesson-block-code"><p class="code-label">Try reading this KnightCode program</p><pre><code>repeat(2):
+    move(up)</code></pre>
+<p>The if statement lines up with while, so it is outside the loop. It is reached after the rightward loop ends. The upward check is made at the final position, not after every right move.</p>
+<p>If an upward side passage appears halfway along the corridor while right is still open, this simple while loop passes it. It checks only right. The stopping rule must match the part of the route you actually want.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">7. Read and predict different starting situations</h3>
+<p>Use the previous program. In A, two right moves lead to a wall and up is open there. In B, right is blocked immediately and up is open at the start. In C, right and up are both blocked at the start. Predict the actions.</p>
+<blockquote><p><strong>Check your reasoning:</strong> A: right, right, then up. B: the loop runs zero times, then the if selects up. C: the loop runs zero times and the if block is skipped, so neither movement runs. The same program responds differently because the checked facts differ.</p></blockquote>
+<p>In A, how many times is the rightward condition checked?</p>
+<blockquote><p><strong>Check your reasoning:</strong> Three times: two true answers allow the two moves, and a final false answer ends the loop. The upward condition is a separate check.</p></blockquote>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">8. Find a loop that cannot make progress</h3>
+<p>Imagine two adjacent open positions. The starting position has a clear path to its right. Both moves below succeed, and nothing else in the room changes:</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>while can(right):
+    move(right)
+    move(left)</code></pre>
+<p>Trace one full pass. Where does it finish? What answer will the next condition get?</p>
+<blockquote><p><strong>Check your reasoning:</strong> The body returns the knight to the starting position. Right is still open, so another pass repeats the same situation. The plan does not move toward making the condition false. The game may stop it with a safety limit, but that limit is not a correct solution.</p></blockquote>
+<p>If the intention was to reach the right-hand wall, remove the move that undoes the progress. Then explain why each successful right movement brings the knight closer to the blocked endpoint. Do not rely on a program being stopped for you.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. Plan and justify a stopping rule</h3>
+<p>Write a program that follows an upward corridor while movement is possible, then attempts one right move only if right is open. Assume following the whole corridor is the intended first part of the route.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>while can(up):
+    move(up)
+if can(right):
+    move(right)</code></pre>
+<p>Explain three things before running: what is checked repeatedly, what changes inside the loop, and what makes it stop. Then trace the case where up is blocked at the start.</p>
+<blockquote><p><strong>Check your reasoning:</strong> The loop checks upward movement; its body changes the position upward; the blocked end eventually makes the condition false. If blocked initially, it performs no upward moves and immediately reaches the separate rightward check.</p></blockquote>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. A small connection to real code</h3>
+<p class="code-label">Real Python example - read only; not a KnightCode command</p>
+<pre><code>items_left = 3
+while items_left &gt; 0:
+    print(items_left)
+    items_left = items_left - 1
+print(&quot;Finished&quot;)</code></pre>
+<p>This Python program displays 3, 2, 1, then Finished. Each repetition reduces the stored count. Once the count reaches 0, the next condition is false. If the subtraction were removed, the value would stay 3 and the condition would stay true.</p>
+<p><strong>The shared reasoning is termination:</strong> explain how the body moves the situation toward stopping. The subtraction is Python example code, not a command to enter in KnightCode.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">11. Practise on your routes</h3>
+<ul>
+<li><strong>Keep Going:</strong> identify the corridor's stopping point and the remaining route after it.</li>
+<li><strong>Check Again:</strong> explain how each movement changes where the next check happens.</li>
+<li><strong>Stop, Then Turn:</strong> keep the loop, button visit and final turn in the order the room needs.</li>
+</ul>
+<p>Use the room rather than a guessed count to justify a while condition. Test the planned endpoint: stopping safely at the wrong location still leaves the goal unsolved.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">12. Check your reasoning</h3>
+<ul>
+<li>Can a while body run zero times?</li>
+<li>Why can three successful moves need four checks?</li>
+<li>What is wrong with a loop that always returns to the same unchanged situation?</li>
+</ul>
+<blockquote><p><strong>Check your reasoning:</strong> Yes: its first condition can be false. The extra check discovers that a fourth move should not happen. An unchanged situation can keep the condition true forever, so the plan needs an action that genuinely leads toward its intended stopping condition.</p></blockquote>
+</div>
+$kc$,6,true),
+  (7,$kc$Plan, Try, and Improve$kc$,$kc$Combine sequences, decisions, loops and changing room states into a reasoned solution, then test and improve it using evidence.$kc$,$kc$Break a puzzle into smaller goals, trace a combined plan, diagnose the first mismatch, and justify a correction without changing the intended result.$kc$,$kc$<div class="lesson-block">
+<h3 class="lesson-block-heading">1. Solve the problem before choosing commands</h3>
+<p>You now have several tools: sequences for order, conditions for decisions, loops for repetition, and state reasoning for changes in the room. This lesson is about choosing and combining them to solve a complete problem.</p>
+<p>The target is not a program containing every command. The target is a plan you can explain: what must happen, why the steps are possible, how the program chooses or repeats them, and how you know the goal is reached.</p>
+<p>A clear short sequence can be better than an unnecessary loop. A condition is useful when the plan needs a check, not simply because the command is available.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">2. Understand the room as a set of facts</h3>
+<p>Before typing, identify the start, exit, blocked passages, mechanisms and movable objects. Separate what you know from what you still need to test. For example, a wall-looking panel may not behave like a solid wall.</p>
+<ul>
+<li><strong>Goal:</strong> what must be true when the solution finishes?</li>
+<li><strong>Available actions:</strong> what can the knight do with the commands taught so far?</li>
+<li><strong>Constraints:</strong> which passages are blocked, and which objects must remain in place?</li>
+<li><strong>Unknowns:</strong> which movement or mechanism behavior needs checking?</li>
+</ul>
+<p>An assumption is something the plan takes as true. State it explicitly. "The crate can be pushed onto the plate from this side" is an assumption you can inspect and test.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">3. Break the goal into smaller goals</h3>
+<p>Dividing a problem into manageable parts is called <strong>decomposition</strong>. For an exit controlled by a crate-sensitive plate, the smaller goals might be:</p>
+<ol>
+<li>Reach the side of the crate needed for the push.</li>
+<li>Place the crate on the correct plate.</li>
+<li>Leave the crate there and reach the opened passage.</li>
+<li>Cross the passage and reach the exit.</li>
+</ol>
+<p>These parts are connected. The second needs a reachable pushing position. The third needs the plate held. The last needs the door open. Write these dependencies before translating the plan into directions.</p>
+<p>After each part, describe the expected state: knight position, crate position and door status. Those checkpoints help you locate a mistake later.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. Choose the structure that fits each part</h3>
+<ul>
+<li><strong>Sequence:</strong> several different actions must happen in a specific order.</li>
+<li><strong>If or if/else:</strong> the next action depends on a true-or-false answer.</li>
+<li><strong>Repeat:</strong> a known action group occurs a known number of times.</li>
+<li><strong>While:</strong> keep performing a group while a condition remains true.</li>
+</ul>
+<p>A complete room can use several of these, but it does not have to use all of them. Explain the reason for each structure you choose. "I used repeat because this same pair occurs twice" is a reason. "I used repeat because the lesson mentions it" is not enough.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Trace a combined program</h3>
+<p>For this practice example, assume two right moves are clear. After them, up is open; right remains open after moving up. No goal ends the program early. Predict the full route:</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>repeat(2):
     move(right)
 if can(up):
-    move(up)</code></pre></div><div class="lesson-block"><h3 class="lesson-block-heading">4. When the result is different</h3><p>If the knight does not do what you expected, ask:</p><ul><li>Did I choose the correct direction?</li><li>Did I put the instructions in the right order?</li><li>Are the right lines indented under my if or loop?</li><li>Did I repeat too many or too few times?</li><li>Did a door close because its plate was no longer pressed?</li></ul><p>Fix one problem, then try again. Finding and fixing a mistake is called <strong>debugging</strong>.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">5. Improve a working solution</h3><p>First make the solution work. Then look for repeated instructions you can replace with a loop.</p><p>Code fuel counts the nonblank lines you submit, including an if or loop header. A loop can use fewer written lines while still making the same number of moves. Shorter code is not automatically a faster route.</p><p>After changing the program, run it again to check that it still works. Use the pause-menu restart when you need the whole puzzle returned to its starting setup.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">Practice in levels 19–20</h3><ul><li><strong>Find and Fix:</strong> correct one mistake in a short crate-and-door plan.</li><li><strong>Your KnightCode Challenge:</strong> plan a route, use the commands you have learned, and explain one choice you made.</li></ul><p><strong>Tell your teacher:</strong> what did you expect, what happened, and what did you change? Your explanation matters alongside the results of this session.</p></div><div class="lesson-block"><h3 class="lesson-block-heading">Check your understanding</h3><details><summary>Should you shorten the program before you know it works?</summary><p>Start with a correct solution. Then simplify it and check it again.</p></details><details><summary>Does a mistake mean you have failed to learn programming?</summary><p>No. Predicting, trying, noticing a difference and correcting it are part of learning to program.</p></details></div>$kc$,7,true)
+    move(up)
+else:
+    move(down)
+move(right)</code></pre>
+<ol>
+<li>The loop performs right twice, changing the starting position for the decision.</li>
+<li>The upward check is true in the stated situation, so up runs and down is skipped.</li>
+<li>The final right move is outside the decision, so it runs afterwards.</li>
+</ol>
+<blockquote><p><strong>Check your reasoning:</strong> The action sequence is right, right, up, right. If up were blocked after the loop and down were clear, the sequence would instead be right, right, down, right. The final right move would also need to be possible from that alternate position.</p></blockquote>
+<p>This is a small example of combining structures, not a full solution for your final game room. Map each part of your actual plan to the actual layout.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">6. Test a prediction, not just a final score</h3>
+<p>Before Run, write an expected result at each checkpoint. During the run, observe what actually happens. Afterwards, compare the two. A failed attempt is useful when it gives you evidence about which assumption or instruction was wrong.</p>
+<p>A simple test note can be: expected the crate to stay on the plate; observed it move off during the last push; therefore the door closed before the crossing. This explanation points to a specific correction.</p>
+<p>Also check starting conditions. A retry from a changed room may not be comparable to an earlier attempt. If you want to compare two program versions, make sure they start from the same intended setup.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">7. Find the first mismatch</h3>
+<p><strong>Debugging</strong> means locating and correcting the cause of unwanted behavior. Start with the earliest point where your prediction and the actual run differ, not merely the place where the knight finally gets stuck.</p>
+<ul>
+<li>Was the instruction understood? Check command spelling and grouping if execution cannot begin.</li>
+<li>Did the selected action match the plan? Check directions and branch choices.</li>
+<li>Did a repeated group run too often or include a one-time action?</li>
+<li>Did an earlier action remove a condition needed later, such as a held plate?</li>
+</ul>
+<p>Change one relevant part, predict its effect, and test again. Changing several unrelated things at once makes it harder to explain which change helped.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">8. Find and fix a combined logic mistake</h3>
+<p>The intended route is two right moves, then one upward move only if up is possible. A student writes:</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>repeat(2):
+    move(right)
+    if can(up):
+        move(up)</code></pre>
+<p>Assume up is open after each right move. Expand the program. Does it match the intention?</p>
+<blockquote><p><strong>Check your reasoning:</strong> It produces right, up, right, up. The decision belongs to the repeated body, so it is reached twice. Move the whole if block outside repeat, keeping its move indented under if. The corrected structure is shown below.</p></blockquote>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>repeat(2):
+    move(right)
+if can(up):
+    move(up)</code></pre>
+<p>The correction changes when the decision happens. Explain that relationship rather than saying only that some spaces were removed.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. Improve only after preserving correctness</h3>
+<p>Suppose a working sequence contains right, up, right, up. Replacing it with repeat(2) around right and up can make the repeated pattern clearer. Verify it by expanding the new version and comparing the ordered actions.</p>
+<p>Do not assume that fewer written lines always mean fewer attempts, less movement, or a better route. These are different measures. A useful improvement either makes the plan easier to understand or improves a chosen result while still reaching the goal correctly.</p>
+<p>For a mechanism puzzle, also compare state changes. A route that reaches the same position but releases a necessary plate is not equivalent to one that keeps it held.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. A small connection to real code</h3>
+<p class="code-label">Real Python example - read only; not a KnightCode command</p>
+<pre><code>total = 0
+for value in [2, 4, 1]:
+    if value &gt; 1:
+        total = total + value
+print(total)</code></pre>
+<p>This Python example visits three numbers in order. It adds a number only if it is greater than 1. Starting at 0, the total becomes 2, then 6, then stays 6 when 1 is skipped. The final display is 6.</p>
+<p>The names hold information, the loop repeats, the condition chooses, and the addition changes the state. <strong>The same tracing method works outside the game.</strong> You are not expected to learn Python lists here; follow the stated three values and explain each decision.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">11. Build and explain your own room solution</h3>
+<ol>
+<li>State the goal and important starting facts.</li>
+<li>Write smaller goals and the order they depend on.</li>
+<li>Choose movements, decisions or loops for each part.</li>
+<li>Predict position and mechanism state at checkpoints.</li>
+<li>Run, compare, and identify the first mismatch.</li>
+<li>Correct the cause and explain why the revision helps.</li>
+</ol>
+<p>In <strong>Find and Fix</strong>, check whether the plate is held before the plan depends on its door. In <strong>Your KnightCode Challenge</strong>, combine the repeated approach, crate placement and exit route according to the room you see. Avoid copying a practice snippet as if it were the whole answer.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">12. Show that you understand the logic</h3>
+<p>After solving a room, explain your program to someone who cannot see your code. Include why each decision is needed, what each loop repeats, what stops it, and which facts must remain true.</p>
+<ul>
+<li>If a path became blocked, which part of your plan would need reconsidering?</li>
+<li>Which test showed you the first mistake?</li>
+<li>What did you change, and why did that change address the cause?</li>
+<li>Can you describe the same plan in plain words without the game command spelling?</li>
+</ul>
+<blockquote><p><strong>Check your reasoning:</strong> A strong explanation connects actions to results and evidence to corrections. Reaching the exit demonstrates one successful run. Explaining the plan, its assumptions and its limits shows the programming logic behind that run.</p></blockquote>
+</div>
+$kc$,7,true)
 on conflict(id) do update set title=excluded.title,description=excluded.description,learning_objective=excluded.learning_objective,content=excluded.content,order_number=excluded.order_number,active=excluded.active;
 select setval(pg_get_serial_sequence('public.lessons','id'),coalesce((select max(id) from public.lessons),1),true);
 

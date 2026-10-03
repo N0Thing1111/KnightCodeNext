@@ -1,0 +1,113 @@
+<div class="lesson-block">
+<h3 class="lesson-block-heading">1. A correct route can depend on changing the room</h3>
+<p>So far, you have planned movements and checked paths. Some rooms need more: a passage is closed until a button is pressed, or a door stays open only while a plate is held. You must reason about how your actions change what can happen next.</p>
+<p>The programming idea is <strong>state</strong>: the facts that describe the situation at a particular moment. In KnightCode, these facts include the knight's position, the crate's position, whether a plate is held, and whether a door is open. State is a useful name for these facts, not a new command to type.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">2. Describe the before and after</h3>
+<p>Imagine an ordinary button that opens a door. Before the knight reaches it, the button has not been activated and the door is closed. After the knight activates it, the door is open. The action changed the state of the room.</p>
+<ol>
+<li>Before: door closed; the planned crossing is blocked.</li>
+<li>Action: reach and activate the button.</li>
+<li>After: door open; the crossing can now be considered.</li>
+</ol>
+<p>A <strong>condition</strong> reads something about the current state. An <strong>action</strong> may change that state. This means the same question can have a different answer before and after an action. Do not assume an earlier check is still true later.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">3. Work out what must happen first</h3>
+<p>A <strong>dependency</strong> means one step needs another step to happen first. If crossing a passage requires an open door, and opening the door requires pressing a button, pressing the button must come before crossing.</p>
+<p>Plan backwards from the goal: I need to reach the exit. What prevents that? A closed door. What opens it? The button. How do I reach the button? This gives you a useful order instead of a list of unrelated movements.</p>
+<p>Then trace forwards to test it. Working backwards helps discover the steps; working forwards checks that each step is possible from the situation left by the previous one.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. Trace an action followed by a check</h3>
+<p>For this small example only, suppose one right move activates an ordinary button. Once pressed, it opens the passage directly above the knight's new position. Both movements have been checked against this imagined layout.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>move(right)
+if can(up):
+    move(up)</code></pre>
+<ol>
+<li>Move right onto the button. This changes the room.</li>
+<li>At the new position, check the upward passage.</li>
+<li>If that movement is now possible, move up.</li>
+</ol>
+<p>Checking up before the right move would ask about the old position and old room state. Even the same direction name can refer to a different neighboring space after movement. Explain where and when a check happens, not just which word it contains.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Distinguish a lasting change from a held condition</h3>
+<ul>
+<li><strong>Ordinary button:</strong> once activated, its linked door stays open when the activating object leaves.</li>
+<li><strong>Pressure plate:</strong> its linked door stays open only while an allowed object remains on the plate. When nothing holds it, the door closes.</li>
+</ul>
+<p>A pressure plate is not simply an ordinary button with a short timer. What matters is whether it is still held. Standing on a plate can make the door open now without guaranteeing that the door will be open when you reach it.</p>
+<p>Ask two different questions: Is the route open at this moment? Will the action I take next keep it open? The second question is what makes the plan reliable.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">6. Use a crate to keep a required fact true</h3>
+<p>The knight pushes a crate by moving toward it. There is no separate push command in these lessons. The crate needs space to move into; a crate blocked against a wall cannot simply be pushed through it.</p>
+<p>For a plate that accepts crates, leaving the crate on the plate can keep the door open while the knight leaves. Some switches have different activation rules, so inspect the level rather than assuming every object can activate every switch.</p>
+<ol>
+<li>Reach the correct side of the crate.</li>
+<li>Push it onto the intended crate-sensitive plate.</li>
+<li>Leave it there while the knight takes the opened route.</li>
+</ol>
+<p>Throughout the crossing, the required fact is: <strong>the plate remains held</strong>. You may hear this described as a condition that must stay true. The reasoning matters more than the term. Moving the crate again can undo the useful state.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">7. Read and predict a state change</h3>
+<p>In this thought exercise, one pressure plate controls one door. The plate accepts the knight and crates. At first it is empty. Predict the door after each step: the knight steps onto it; the knight leaves with no crate there; a crate is placed on it; the knight walks away while the crate stays.</p>
+<blockquote><p><strong>Check your reasoning:</strong> The door opens when the knight holds the plate, closes when the empty plate is released, opens when the crate holds it, and stays open when the knight leaves but the crate remains. The important fact is occupancy of the plate, not how many times the knight visited it.</p></blockquote>
+<p>Change the assumption: the plate does not respond to crates. Would the last two outcomes still follow?</p>
+<blockquote><p><strong>Check your reasoning:</strong> No. The proposed support object must be one the switch accepts. A plan is only as good as the facts it assumes.</p></blockquote>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">8. Find and fix a dependency mistake</h3>
+<p>A student plans: stand on a pressure plate, walk away from it, then cross its linked door. Nothing else will hold the plate. Explain the first step that breaks the condition needed for crossing.</p>
+<blockquote><p><strong>Check your reasoning:</strong> Walking away releases the plate and closes the door. The later crossing fails because the earlier action removed the condition it needed. If a suitable crate and route are available, revise the plan so the crate holds the plate before the knight leaves.</p></blockquote>
+<p>Do not fix this by blindly adding extra movement near the door. The problem is the state of the mechanism, not necessarily the final direction. Trace the cause of the closed door.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. Plan and explain a multi-step solution</h3>
+<p>For a room with a crate-sensitive plate and an exit behind its door, write a plain-language plan before choosing movements. Include the side from which to push the crate and the path the knight will take after placing it.</p>
+<p>Beside each step, write two short notes: <strong>needs</strong> and <strong>changes</strong>. For example: pushing needs a clear destination; pushing changes the crate position. Crossing needs an open door; crossing changes the knight position.</p>
+<blockquote><p><strong>Check your reasoning:</strong> A sound plan checks that the crate can reach the plate, the knight can leave it there, and the exit route stays open. Exact movement commands depend on the room. There is no single direction sequence that solves every arrangement.</p></blockquote>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. A small connection to real code</h3>
+<p class="code-label">Real Python example - read only; not a KnightCode command</p>
+<pre><code>plate_held = True
+print(plate_held)
+plate_held = False
+print(plate_held)</code></pre>
+<p>This Python example stores a fact using the name <code>plate_held</code>. It first displays True, then changes the stored fact and displays False. This does not operate a real KnightCode door; it is a tiny model of changing information.</p>
+<p><strong>The shared logic is tracking state over time.</strong> A fact can change, and a later check must use the current situation. You do not need to create variables in the KnightCode terminal to practise that reasoning.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">11. Practise with your mechanisms</h3>
+<ul>
+<li><strong>Open the Way:</strong> identify the button action that must happen before the crossing.</li>
+<li><strong>Keep It Open:</strong> explain what holds the plate after the knight moves away.</li>
+<li><strong>Multi-Door Vault:</strong> list which mechanism affects which passage, then order the dependencies.</li>
+</ul>
+<p>Before running, explain not only where the knight goes but what changes in the room. After running, look for the first state change that differed from your prediction.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">12. Check your reasoning</h3>
+<ul>
+<li>Why can a condition have a different answer after a movement?</li>
+<li>Why is a currently open door not always safe to plan around?</li>
+<li>What must remain true while crossing a pressure-plate-controlled route?</li>
+</ul>
+<blockquote><p><strong>Check your reasoning:</strong> Movement can change position and activate or release mechanisms. An action may close a route that was open a moment ago. The needed plate must remain held by an allowed object until the plan no longer depends on that door.</p></blockquote>
+</div>

@@ -1,0 +1,126 @@
+<div class="lesson-block">
+<h3 class="lesson-block-heading">1. Give the program two planned choices</h3>
+<p>An <code>if</code> statement can run a block or skip it. Sometimes you need a planned action for both answers. <strong>If/else</strong> selects the if block when the condition is true and the else block when it is false.</p>
+<p><code>else</code> means otherwise. It does not mean try every direction until one works. You write the alternative yourself. Your goal is to explain why each choice is appropriate for the situation that selects it.</p>
+<p>This lesson adds choice to a sequence. After the chosen block finishes, execution continues with the instructions after the whole decision.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">2. State the assumptions before choosing</h3>
+<p>Imagine a practice junction. Moving right is our preferred route when it is open. If right is blocked, we have already checked the map and know that up is an available alternative. These assumptions are part of the example.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if can(right):
+    move(right)
+else:
+    move(up)</code></pre>
+<p>Right open gives true, so the right move runs and the else block is skipped. Right blocked gives false, so the up move runs instead. <strong>One branch is selected</strong>, not both.</p>
+<p><code>else:</code> lines up with <code>if</code>. Each movement is indented underneath its own branch. The layout tells you which result selects which instructions.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">3. Trace the two paths through the same program</h3>
+<ol>
+<li>Situation A: right is open. Check can(right), choose the if branch, move right, skip else, then continue.</li>
+<li>Situation B: right is blocked and up is open. Check can(right), choose the else branch, move up, then continue.</li>
+</ol>
+<p>The program is the same in both situations. Its behavior changes because the answer to the condition changes. This is how a program can respond to different starting situations without someone manually choosing a different line each time.</p>
+<p>If both directions are open, this program still chooses right. It does not choose randomly or compare which route is shorter. The preference is written into the condition and branches.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. Else is an alternative, not a safety check</h3>
+<p>Suppose both right and up are blocked. The condition is false, so the example selects <code>move(up)</code>. But choosing that line does not make the movement possible. The else branch does not secretly test up.</p>
+<p>For a real room, use a known-safe alternative or check the alternative too. One way to check it is a decision inside the else block:</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if can(right):
+    move(right)
+else:
+    if can(up):
+        move(up)</code></pre>
+<p>This is a <strong>nested decision</strong>: a decision inside another decision. If both directions are blocked, neither movement runs. Read the spaces carefully: the up move belongs to the inner check, and the entire inner check belongs to else.</p>
+<p>You do not need nesting for every puzzle. Use it only when the plan needs another question.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Ask the opposite question with blocked</h3>
+<p><code>blocked(right)</code> asks whether moving right is blocked now. In the same unchanged situation, it gives the opposite answer to <code>can(right)</code>. It checks movement rules, not just whether a tile looks like a wall.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if blocked(right):
+    move(up)
+else:
+    move(right)</code></pre>
+<p>Under our earlier assumption that up is a safe detour, this makes the same choice as the first example. When right is blocked, it chooses up. When right is open, it chooses right.</p>
+<p>Notice that we changed the question <strong>and swapped the branch actions</strong>. Changing can to blocked without changing the branches would reverse the intended choice. Always translate the whole decision into plain words.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">6. Read and predict the continuation</h3>
+<p>Assume the last left move is possible after either branch and no exit ends execution early. Predict the full sequence when up is open, then when up is blocked but right is open.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if can(up):
+    move(up)
+else:
+    move(right)
+move(left)</code></pre>
+<blockquote><p><strong>Check your reasoning:</strong> Up open: up, then left. Up blocked: right, then left. The final left move is outside both branches, so it is attempted after the selected branch. In an open practice area, the second route returns to its starting horizontal position.</p></blockquote>
+<p>Why does the knight not run the right move after the up move in the first situation?</p>
+<blockquote><p><strong>Check your reasoning:</strong> They belong to different branches of one if/else decision. Once the true branch is selected, the else branch is skipped.</p></blockquote>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">7. Find and fix reversed logic</h3>
+<p>The intention is: if right is blocked, take a known-open upward detour; otherwise go right. A student writes:</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if blocked(right):
+    move(right)
+else:
+    move(up)</code></pre>
+<p>Trace the blocked case before changing anything. Which instruction does it select? Does that match the intention?</p>
+<blockquote><p><strong>Check your reasoning:</strong> When right is blocked, the condition is true and the program selects the right move. That contradicts the plan. Swap the branch actions: up belongs in the true branch and right belongs in else. Then check the open case too.</p></blockquote>
+<p>Do not judge a condition by whether it contains a familiar word. Judge it by which action its true answer selects.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">8. Plan your own preference</h3>
+<p>At a practice junction, prefer left if it is possible. Otherwise, use a known-clear downward path. Write the decision, then explain what happens when both paths are open and when only down is open.</p>
+<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<pre><code>if can(left):
+    move(left)
+else:
+    move(down)</code></pre>
+<blockquote><p><strong>Check your reasoning:</strong> Both open: left is selected because it is the written preference. Only down open: the condition is false, so down is selected. If neither is open, the assumption about a safe alternative fails; this version does not solve that situation.</p></blockquote>
+<p>A useful explanation includes the limits of the plan. Saying when a solution does not work is part of understanding it.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. A small connection to real code</h3>
+<p class="code-label">Real Python example - read only; not a KnightCode command</p>
+<pre><code>score = 6
+if score &gt;= 5:
+    print(&quot;Goal reached&quot;)
+else:
+    print(&quot;Keep practising&quot;)</code></pre>
+<p>The condition asks whether score is at least 5. With 6, only the first message appears. With 3, only the second appears. With exactly 5, the first appears because the check includes equality.</p>
+<p><strong>The shared idea is choosing one branch from two.</strong> The number check is different from a path check, but the decision structure is the same. You do not need Python syntax to explain the two possible outcomes.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. Practise decisions in your levels</h3>
+<ul>
+<li><strong>Right or Up?:</strong> state which direction your decision prefers and why that helps the route.</li>
+<li><strong>When the Answer Is No:</strong> explain the alternative before running the false case.</li>
+<li><strong>Is It Blocked?:</strong> translate blocked into a yes-or-no question and check which branch true selects.</li>
+<li><strong>Looks Can Be Misleading:</strong> distinguish a tile's appearance from whether movement is actually allowed.</li>
+</ul>
+<p>A condition tests a local fact. It does not tell you whether a direction eventually reaches the exit. After choosing a branch, continue tracing the rest of the room.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">11. Check your reasoning</h3>
+<ul>
+<li>Why does else not guarantee a safe movement?</li>
+<li>How can both paths be open while only one branch runs?</li>
+<li>What must change when you replace can with blocked but want the same choice?</li>
+</ul>
+<blockquote><p><strong>Check your reasoning:</strong> Else selects the action you supplied without another automatic check. The condition determines the chosen branch even when both paths are possible. Reversing the question requires reversing the branch actions if you want to preserve the same behavior.</p></blockquote>
+</div>
