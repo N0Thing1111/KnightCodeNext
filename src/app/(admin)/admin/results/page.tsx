@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getAdminContext } from "@/lib/admin-data";
 import { AdminHero } from "@/components/admin-ui";
 export default async function Page({
@@ -70,6 +71,7 @@ export default async function Page({
                 <th>Time</th>
                 <th>Lines</th>
                 <th>Mode</th>
+                <th>Run history</th>
               </tr>
             </thead>
             <tbody>
@@ -101,12 +103,20 @@ export default async function Page({
                       <td>{s.play_time_seconds}s</td>
                       <td>{s.completed_lines ?? s.lines_used}</td>
                       <td>{s.code_mode || "—"}</td>
+                      <td>
+                        <Link
+                          className="teacher-btn"
+                          href={`/admin/results/${s.id}`}
+                        >
+                          Review Runs
+                        </Link>
+                      </td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={9}>
+                  <td colSpan={10}>
                     <div className="teacher-empty">No matching sessions.</div>
                   </td>
                 </tr>

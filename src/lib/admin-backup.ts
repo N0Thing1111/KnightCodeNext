@@ -22,12 +22,13 @@ export const BACKUP_TABLES = [
   "student_notifications",
   "student_telemetry_runs",
   "student_level_sessions",
+  "student_code_executions",
   "announcements",
   "teacher_notifications",
 ] as const;
 export type SchoolBackup = {
   format: "KnightCode Supabase school save";
-  version: 1;
+  version: 1 | 2;
   created_at: string;
   tables: Record<string, unknown[]>;
 };
@@ -35,16 +36,33 @@ export async function captureBackup(): Promise<SchoolBackup> {
   const db = createAdminClient(),
     tables: Record<string, unknown[]> = {};
   for (const table of BACKUP_TABLES) {
-    const { data, error } = await db.from(table).select("*");
-    if (error) throw error;
+    const allRows: any[] = [];
+    const keys =
+      table === "class_students"
+        ? ["class_id", "student_id"]
+        : table === "student_level_progress"
+          ? ["student_id", "level_id"]
+          : table === "student_achievements"
+            ? ["student_id", "achievement_id"]
+            : table === "student_telemetry_runs"
+              ? ["student_id", "level_id", "run_id"]
+              : ["id"];
+    for (let offset = 0; ; offset += 1000) {
+      let query = db.from(table).select("*");
+      for (const key of keys) query = query.order(key);
+      const { data, error } = await query.range(offset, offset + 999);
+      if (error) throw error;
+      allRows.push(...(data ?? []));
+      if (!data || data.length < 1000) break;
+    }
     tables[table] =
       table === "profiles"
-        ? (data ?? []).filter((p: any) => p.role !== "admin")
-        : (data ?? []);
+        ? allRows.filter((p) => p.role !== "admin")
+        : allRows;
   }
   return {
     format: "KnightCode Supabase school save",
-    version: 1,
+    version: 2,
     created_at: new Date().toISOString(),
     tables,
   };
@@ -94,10 +112,13 @@ export function decryptBackup(file: Buffer, password: string): SchoolBackup {
     );
     if (
       data.format !== "KnightCode Supabase school save" ||
-      data.version !== 1 ||
+      ![1, 2].includes(data.version) ||
       !data.tables
     )
       throw Error();
+    // Saves made before Run history remain restorable.
+    if (data.version === 1 && data.tables.student_code_executions === undefined)
+      data.tables.student_code_executions = [];
     for (const t of BACKUP_TABLES)
       if (!Array.isArray(data.tables[t])) throw Error();
     return data;

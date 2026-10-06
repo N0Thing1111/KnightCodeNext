@@ -3607,3 +3607,80 @@ body.teacher-body {
   font-size: 8px;
   font-weight: 500;
 }
+
+/* Session code review: history loads only when the teacher opens a session. */
+.run-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+.run-summary small,
+.run-summary strong {
+  display: block;
+}
+.run-summary strong {
+  margin-top: 8px;
+  font-size: 1.15rem;
+}
+.run-history-item {
+  border: 1px solid var(--t-border, #26395b);
+  border-radius: 12px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+.run-history-item > summary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 18px;
+}
+.run-history-item > summary::before {
+  content: "▸";
+}
+.run-history-item[open] > summary::before {
+  content: "▾";
+}
+.run-history-body {
+  padding: 0 18px 18px;
+}
+.run-history-body p {
+  margin: 12px 0;
+}
+.run-source {
+  overflow: auto;
+  max-height: 480px;
+  padding: 18px;
+  background: var(--t-bg2, #071226);
+  color: var(--t-text, #e4edff);
+  border-radius: 10px;
+  font:
+    14px/1.7 Consolas,
+    monospace;
+  white-space: pre;
+  tab-size: 4;
+}
+.run-comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+.run-pagination,
+.run-session-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+.run-session-links [aria-current="page"] {
+  outline: 2px solid #398dff;
+}
+@media (max-width: 700px) {
+  .run-comparison {
+    grid-template-columns: 1fr;
+  }
+}

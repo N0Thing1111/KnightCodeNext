@@ -23,7 +23,6 @@ export function UnityPlayer({
       ReturnType<NonNullable<Window["createUnityInstance"]>>
     > | null = null;
     let loader: HTMLScriptElement | null = null;
-    const controller = new AbortController();
     const scriptsBefore = new Set(document.scripts);
     let shutdownPromise: Promise<void> | null = null;
 
@@ -45,12 +44,11 @@ export function UnityPlayer({
         completed: boolean,
         payload: Record<string, unknown>,
       ) => {
-        if (disposed) throw new DOMException("Game page closed", "AbortError");
         const response = await fetch("/api/progress", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...payload, level_id: level.id, completed }),
-          signal: controller.signal,
+          keepalive: true,
         });
         const data = await response.json();
         if (!response.ok || !data.ok)
@@ -68,10 +66,25 @@ export function UnityPlayer({
         (message) => {
           if (!disposed) setStatus(message);
         },
+        async (payload) => {
+          const body = JSON.stringify({ ...payload, level_id: level.id });
+          const response = await fetch("/api/executions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body,
+            // Browsers limit keepalive requests to about 64 KB.
+            keepalive: new TextEncoder().encode(body).byteLength < 60000,
+          });
+          const data = await response.json();
+          if (!response.ok || !data.ok)
+            throw new Error(data.message || "Unable to save Run history.");
+          return data;
+        },
       );
 
       loader = document.createElement("script");
-      loader.src = "/game_build/Build/game_build.loader.js";
+      loader.src =
+        "/game_build/Build/game_build.loader.js?v=20261005-run-history";
       loader.async = true;
       loader.dataset.knightcodeRuntime = "loader";
       loader.onload = async () => {
@@ -82,9 +95,12 @@ export function UnityPlayer({
           const created = await window.createUnityInstance(
             canvas,
             {
-              dataUrl: "/game_build/Build/game_build.data",
-              frameworkUrl: "/game_build/Build/game_build.framework.js",
-              codeUrl: "/game_build/Build/game_build.wasm",
+              dataUrl:
+                "/game_build/Build/game_build.data?v=20261005-run-history",
+              frameworkUrl:
+                "/game_build/Build/game_build.framework.js?v=20261005-run-history",
+              codeUrl:
+                "/game_build/Build/game_build.wasm?v=20261005-run-history",
               streamingAssetsUrl: "/game_build/StreamingAssets",
               companyName: "DefaultCompany",
               productName: "KnightCode",
@@ -124,7 +140,6 @@ export function UnityPlayer({
     const shutdown = () => {
       if (shutdownPromise) return shutdownPromise;
       disposed = true;
-      controller.abort();
       window.removeEventListener("beforeunload", beforeUnload);
       document.removeEventListener("click", leaveGamePage, true);
       if (window.unityInstance === instance) window.unityInstance = undefined;
@@ -178,10 +193,25 @@ export function UnityPlayer({
       event.preventDefault();
       event.stopPropagation();
       setStatus("Closing game safely…");
-      void Promise.race([
-        shutdown(),
-        new Promise<void>((resolve) => window.setTimeout(resolve, 3000)),
-      ]).finally(() => window.location.assign(destination.href));
+      void (async () => {
+        const saved = await Promise.race([
+          window.KnightCodeGame?.flush() ?? Promise.resolve(true),
+          new Promise<boolean>((resolve) =>
+            window.setTimeout(() => resolve(false), 10000),
+          ),
+        ]);
+        if (!saved) {
+          setStatus(
+            "Progress is still waiting to save. Keep this page open, use Retry saving, then try leaving again.",
+          );
+          return;
+        }
+        await Promise.race([
+          shutdown(),
+          new Promise<void>((resolve) => window.setTimeout(resolve, 3000)),
+        ]);
+        window.location.assign(destination.href);
+      })();
     };
 
     document.addEventListener("click", leaveGamePage, true);

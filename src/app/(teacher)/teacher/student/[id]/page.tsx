@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import Link from "next/link";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { requireTeacher } from "@/lib/auth";
@@ -45,8 +47,25 @@ export default async function Page({
       )
       .slice(0, 10),
     activity = ctx.activity.filter((a) => a.student_id === id).slice(0, 30),
-    ach = ctx.achievements.filter((a) => a.student_id === id),
-    sessions = ctx.sessions.filter((s) => s.student_id === id).slice(0, 50);
+    ach = ctx.achievements.filter((a) => a.student_id === id);
+  const sessionPage = Math.max(
+    1,
+    Math.min(100000, Math.floor(Number(q.sessions)) || 1),
+  );
+  const {
+    data: savedSessions,
+    count: sessionCount,
+    error: sessionError,
+  } = await createAdminClient()
+    .from("student_level_sessions")
+    .select("*", { count: "exact" })
+    .eq("student_id", id)
+    .in("level_id", [...scope])
+    .order("started_at", { ascending: false })
+    .order("id", { ascending: false })
+    .range((sessionPage - 1) * 50, sessionPage * 50 - 1);
+  if (sessionError) throw new Error("Unable to load student sessions.");
+  const sessions = savedSessions ?? [];
   let flash: any = null;
   try {
     flash = JSON.parse(jar.get("kc_teacher_flash")?.value || "null");
@@ -298,7 +317,7 @@ export default async function Page({
           </table>
         </div>
       </section>
-      <section className="teacher-card">
+      <section className="teacher-card" id="level-sessions">
         <Head eyebrow="ATTEMPT RESULTS" title="Level Sessions" />
         <div className="teacher-table-wrap">
           <table className="teacher-table">
@@ -313,6 +332,7 @@ export default async function Page({
                 <th>Lines</th>
                 <th>Code Mode</th>
                 <th>Started</th>
+                <th>Run history</th>
               </tr>
             </thead>
             <tbody>
@@ -332,12 +352,20 @@ export default async function Page({
                       <td>{s.completed_lines ?? s.lines_used}</td>
                       <td>{s.code_mode ?? "—"}</td>
                       <td>{new Date(s.started_at).toLocaleString()}</td>
+                      <td>
+                        <Link
+                          className="teacher-btn"
+                          href={`/teacher/student/${id}/sessions/${s.id}`}
+                        >
+                          Review Runs
+                        </Link>
+                      </td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={9}>
+                  <td colSpan={10}>
                     <div className="teacher-empty">
                       No session results recorded.
                     </div>
@@ -347,6 +375,29 @@ export default async function Page({
             </tbody>
           </table>
         </div>
+        {(sessionCount ?? 0) > 50 && (
+          <nav className="run-pagination" aria-label="Session history pages">
+            {sessionPage > 1 && (
+              <Link
+                className="teacher-btn"
+                href={`?sessions=${sessionPage - 1}#level-sessions`}
+              >
+                Previous 50
+              </Link>
+            )}
+            <span>
+              Page {sessionPage} of {Math.ceil((sessionCount ?? 0) / 50)}
+            </span>
+            {sessionPage * 50 < (sessionCount ?? 0) && (
+              <Link
+                className="teacher-btn"
+                href={`?sessions=${sessionPage + 1}#level-sessions`}
+              >
+                Next 50
+              </Link>
+            )}
+          </nav>
+        )}
       </section>
     </>
   );

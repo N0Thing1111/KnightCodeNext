@@ -1,6 +1,6 @@
 (function (root) {
   "use strict";
-  function createPerformanceBridge(save, sceneName, status) {
+  function createPerformanceBridge(save, sceneName, status, saveExecution) {
     const pending = [];
     let working = false;
     const run =
@@ -66,13 +66,18 @@
           for (let attempt = 0; attempt < 3; attempt++) {
             try {
               status("Saving progress…");
-              const result = await save(item.body.completed, item.body);
+              const result =
+                item.kind === "execution"
+                  ? await saveExecution(item.body)
+                  : await save(item.body.completed, item.body);
               pending.shift();
               item.resolve(result);
               status(
-                item.body.telemetry_version === 2
-                  ? "Progress saved"
-                  : "Progress saved — older build; detailed metrics are incomplete",
+                item.kind === "execution"
+                  ? "Run history saved"
+                  : item.body.telemetry_version === 2
+                    ? "Progress saved"
+                    : "Progress saved — older build; detailed metrics are incomplete",
               );
               saved = true;
               break;
@@ -102,14 +107,30 @@
         return Promise.reject(error);
       }
       return new Promise((resolve) => {
-        pending.push({ body, resolve });
+        pending.push({ kind: "progress", body, resolve });
+        drain();
+      });
+    }
+    function recordExecution(body) {
+      if (String(body.scene_name) !== String(sceneName))
+        return Promise.reject(
+          new Error("Run history scene does not match this level."),
+        );
+      return new Promise((resolve) => {
+        pending.push({ kind: "execution", body, resolve });
         drain();
       });
     }
     return {
+      recordExecution,
       completeLevel: (payload) => enqueue(true, payload),
       recordAttempt: (payload) => enqueue(false, payload),
       retryPending: drain,
+      flush: async () => {
+        if (!working) void drain();
+        while (working) await sleep(25);
+        return pending.length === 0;
+      },
       hasPending: () => pending.length > 0,
     };
   }

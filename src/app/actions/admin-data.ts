@@ -33,6 +33,7 @@ export async function clearAdminData(f: FormData) {
       throw Error("The confirmation text does not match.");
     const db = createAdminClient();
     const learning: [string, string, "uuid" | "number"][] = [
+      ["student_code_executions", "id", "number"],
       ["student_level_sessions", "id", "number"],
       ["student_telemetry_runs", "student_id", "uuid"],
       ["student_level_progress", "student_id", "uuid"],
@@ -207,8 +208,7 @@ export async function restoreAdminBackup(f: FormData) {
     const remap = (table: string, old: any) => {
       const r = { ...old };
       delete r.id;
-      delete r.created_at;
-      delete r.updated_at;
+
       if ("student_id" in r) r.student_id = userMap.get(r.student_id);
       if ("teacher_id" in r) r.teacher_id = userMap.get(r.teacher_id);
       if ("class_id" in r) r.class_id = idMaps.classes.get(r.class_id);
@@ -227,6 +227,7 @@ export async function restoreAdminBackup(f: FormData) {
       "student_notifications",
       "student_telemetry_runs",
       "student_level_sessions",
+      "student_code_executions",
       "announcements",
       "teacher_notifications",
     ]) {
@@ -239,8 +240,10 @@ export async function restoreAdminBackup(f: FormData) {
             (!("class_id" in r) || r.class_id),
         );
       if (rows.length) {
-        const result = await db.from(table).insert(rows);
-        if (result.error) throw result.error;
+        for (let offset = 0; offset < rows.length; offset += 200) {
+          const result = await db.from(table).insert(rows.slice(offset, offset + 200));
+          if (result.error) throw result.error;
+        }
       }
     }
     await audit(admin.id, "restore_backup", {
