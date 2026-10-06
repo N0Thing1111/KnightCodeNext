@@ -62,9 +62,11 @@ export function AdminShell({
           ))}
         </nav>
         <div className="teacher-side-bottom">
-          <Link href="/admin-logout" className="teacher-btn">
-            Sign out
-          </Link>
+          <form action="/admin-logout" method="post">
+            <button type="submit" className="teacher-btn">
+              Sign out
+            </button>
+          </form>
         </div>
       </aside>
       <header className="teacher-topbar">

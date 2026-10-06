@@ -212,9 +212,11 @@ export default async function Page({
             <h3>Sign out of your workspace</h3>
             <p>Your saved changes will be here when you return.</p>
           </div>
-          <a className="teacher-btn danger" href="/admin-logout">
-            Sign out
-          </a>
+          <form action="/admin-logout" method="post">
+            <button type="submit" className="teacher-btn danger">
+              Sign out
+            </button>
+          </form>
         </section>
       </div>
     </>
