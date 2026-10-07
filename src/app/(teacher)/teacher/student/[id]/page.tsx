@@ -261,7 +261,7 @@ export default async function Page({
           Lines is the fewest accepted lines in a completed attempt.
         </p>
         <div className="teacher-table-wrap">
-          <table className="teacher-table">
+          <table className="teacher-table session-readable-table">
             <thead>
               <tr>
                 <th>Level</th>
@@ -319,8 +319,13 @@ export default async function Page({
       </section>
       <section className="teacher-card" id="level-sessions">
         <Head eyebrow="ATTEMPT RESULTS" title="Level Sessions" />
+        <p>
+          <Link className="teacher-btn" href={`/teacher/results?student=${id}`}>
+            Search this student’s sessions →
+          </Link>
+        </p>
         <div className="teacher-table-wrap">
-          <table className="teacher-table">
+          <table className="teacher-table session-readable-table">
             <thead>
               <tr>
                 <th>Level</th>

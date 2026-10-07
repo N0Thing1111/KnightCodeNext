@@ -31,6 +31,11 @@ export default async function Page({
         title="Student Monitoring"
         description="Monitor learning activity generated inside KnightCode — lessons, challenges, progress, XP, streaks, and achievements."
       />
+      <p>
+        <Link className="teacher-btn" href="/teacher/results">
+          Search session results →
+        </Link>
+      </p>
       <div className="monitor-legend">
         {[
           "Active",

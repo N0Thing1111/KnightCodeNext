@@ -142,3 +142,29 @@ Live backup restoration and data deletion were not exercised against school
 records. Reset/interruption and retry edge cases have automated coverage;
 include the manual game checks above in your own acceptance testing. The changes
 have not been committed, pushed, or deployed by this update.
+
+## Finding sessions (October 7, 2026)
+
+Both admin and teacher accounts now have a **Session Results** page in the sidebar.
+
+1. Search by student name, student ID, or email. Partial matches work.
+2. Choose a section to narrow the records and the Student dropdown to its members.
+3. Optionally choose a student, level, status, or exact Session ID.
+4. Click **Search / Filter**, then **Review Runs** beside the matching session.
+5. Use **Clear** to remove the filters. Results show 50 sessions per page;
+   searching includes older records, not just the newest 500 sessions.
+
+Section labels and filters use current class membership. Teachers can see their
+own class members' sessions on levels assigned by that teacher. Admins can search
+across students. Submitted lines shows the session's total submitted lines,
+matching the Run review summary. Dates and times use Philippine time.
+
+The tables scroll sideways on smaller screens so headings, numbers, and units
+stay readable. These changes need no database migration or Unity rebuild.
+
+Verification: the production build, changed-file lint checks, and
+`node scripts/tests/session-results.mjs` passed. Local browser checks covered
+combined student/section/session filters and opening Session 27's three Runs from
+both admin and teacher accounts. The automated checks use synthetic data and
+cover older records, pagination, invalid filters, dropdown membership, and teacher
+access restrictions. These changes have not been committed, pushed, or deployed.

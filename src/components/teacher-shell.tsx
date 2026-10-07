@@ -30,6 +30,7 @@ export function TeacherShell({
     ["/teacher/classes", "▦", "My Classes"],
     ["/teacher/students", "♙", "Students"],
     ["/teacher/monitoring", "◉", "Student Monitoring"],
+    ["/teacher/results", "◷", "Session Results"],
     ["/teacher/lessons", "▤", "Lessons"],
     ["/teacher/assignments", "✓", "Assignments"],
     ["/teacher/reports", "▥", "Reports"],
@@ -207,6 +208,7 @@ function title(path: string) {
     return "Student Monitoring";
   if (path.includes("/lessons") || path.includes("/lesson/")) return "Lessons";
   if (path.includes("/assignments")) return "Assignments";
+  if (path.includes("/results")) return "Session Results";
   if (path.includes("/reports")) return "Reports";
   if (path.includes("/announcements")) return "Announcements";
   if (path.includes("/profile")) return "Teacher Profile";
