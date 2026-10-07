@@ -4,15 +4,19 @@ import { randomBytes } from "node:crypto";
 import { BACKUP_TABLES, type SchoolBackup } from "@/lib/admin-backup";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+import { sendStudentPasswordEmail, sendTeacherPasswordEmail } from "@/lib/mail";
+
 export type RestoreResult = {
   error?: string;
   notice?: string;
   counts?: Record<string, number>;
+  emailSummary?: { sent: number; failed: number };
   credentials?: {
     name: string;
     email: string;
     role: string;
     password: string;
+    emailSent: boolean;
   }[];
 };
 
@@ -138,7 +142,13 @@ export async function restoreSchoolBackup(
         "Could not prepare a missing account. School records were not replaced. Any accounts already prepared can be managed under Teachers/Students.",
       );
     mapping[p.id] = created.data.user.id;
-    credentials.push({ name: p.name, email: p.email, role: p.role, password });
+    credentials.push({
+      name: p.name,
+      email: p.email,
+      role: p.role,
+      password,
+      emailSent: false,
+    });
   }
   const restored = await db.rpc("restore_school_backup", {
     p_backup: backup,
@@ -154,10 +164,49 @@ export async function restoreSchoolBackup(
         " Database validation errors roll back the school-record changes. If the connection was interrupted, check the audit history before retrying. Newly prepared accounts may need a password reset from account management.",
     );
   }
+  // Wait for the database transaction to succeed before sending credentials.
+  // Only accounts created by this restore are eligible; existing passwords stay private.
+  // Limit concurrent SMTP connections when a save contains many missing accounts.
+  for (let start = 0; start < credentials.length; start += 5) {
+    await Promise.all(
+      credentials.slice(start, start + 5).map(async (credential, index) => {
+        const profile = missing[start + index];
+        const common = {
+          email: credential.email,
+          name: credential.name,
+          temporaryPassword: credential.password,
+          schoolLabel: profile.school_code,
+          reason: "restore" as const,
+        };
+        try {
+          credential.emailSent =
+            profile.role === "teacher"
+              ? await sendTeacherPasswordEmail({
+                  ...common,
+                  teacherId:
+                    profile.teacher_id || "Not set; use your email to sign in",
+                })
+              : await sendStudentPasswordEmail({
+                  ...common,
+                  studentId:
+                    profile.student_id || "Not set; use your email to sign in",
+                  username: profile.username,
+                });
+        } catch {
+          // Email problems must never turn a committed restore into a reported failure.
+          credential.emailSent = false;
+        }
+      }),
+    );
+  }
+  const sent = credentials.filter((credential) => credential.emailSent).length;
   return {
     notice:
       "Save restored and record counts verified. Existing accounts kept their current passwords.",
     counts: restored.data as Record<string, number>,
     credentials,
+    emailSummary: credentials.length
+      ? { sent, failed: credentials.length - sent }
+      : undefined,
   };
 }

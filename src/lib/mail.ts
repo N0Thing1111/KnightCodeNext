@@ -8,7 +8,7 @@ type StudentPasswordMail = {
   username?: string | null;
   temporaryPassword: string;
   schoolLabel?: string | null;
-  reason: "welcome" | "reset";
+  reason: "welcome" | "reset" | "restore";
 };
 
 function mailConfig() {
@@ -47,17 +47,25 @@ export async function sendStudentPasswordEmail(
   if (!config) return false;
   const school = input.schoolLabel?.trim() || "KnightCode";
   const subject =
-    input.reason === "welcome"
-      ? "Your KnightCode account is ready"
-      : "Your KnightCode password was reset";
+    input.reason === "restore"
+      ? "Your KnightCode account has been restored"
+      : input.reason === "welcome"
+        ? "Your KnightCode account is ready"
+        : "Your KnightCode password was reset";
   const lines = [
     "Hi " + input.name + ",",
     "",
-    input.reason === "welcome"
-      ? "Your KnightCode account has been created by your teacher at " +
+    input.reason === "restore"
+      ? "Your school administrator has recreated your KnightCode account while restoring a school save at " +
         school +
-        "."
-      : "Your KnightCode password was reset by your teacher at " + school + ".",
+        ". Use the new temporary password below."
+      : input.reason === "welcome"
+        ? "Your KnightCode account has been created by your teacher at " +
+          school +
+          "."
+        : "Your KnightCode password was reset by your teacher at " +
+          school +
+          ".",
     "",
     "Student ID: " + input.studentId,
   ];
@@ -79,6 +87,7 @@ export async function sendTeacherPasswordEmail(input: {
   email: string;
   name: string;
   teacherId: string;
+  reason?: "welcome" | "restore";
   temporaryPassword: string;
   schoolLabel?: string | null;
 }): Promise<boolean> {
@@ -86,9 +95,13 @@ export async function sendTeacherPasswordEmail(input: {
   const lines = [
     "Hi " + input.name + ",",
     "",
-    "Your KnightCode teacher account has been created by your school administrator at " +
-      school +
-      ".",
+    input.reason === "restore"
+      ? "Your school administrator has recreated your KnightCode teacher account while restoring a school save at " +
+        school +
+        ". Use the new temporary password below."
+      : "Your KnightCode teacher account has been created by your school administrator at " +
+        school +
+        ".",
     "",
     "Teacher ID: " + input.teacherId,
     "Email: " + input.email,
@@ -102,7 +115,9 @@ export async function sendTeacherPasswordEmail(input: {
   ];
   return deliverPasswordEmail(
     input,
-    "Your KnightCode teacher account is ready",
+    input.reason === "restore"
+      ? "Your KnightCode teacher account has been restored"
+      : "Your KnightCode teacher account is ready",
     lines.join("\n"),
   );
 }

@@ -90,6 +90,20 @@ await mail.sendStudentPasswordEmail({
   reason: "reset",
 });
 assert.match(messages.at(-1).subject, /password was reset/);
+await mail.sendTeacherPasswordEmail({ ...teacher, reason: "restore" });
+assert.match(messages.at(-1).subject, /teacher account has been restored/);
+assert.match(messages.at(-1).text, /school administrator has recreated/);
+assert.match(messages.at(-1).text, /Teacher ID: TCH-TEST/);
+assert.match(messages.at(-1).text, /localhost:3000\/teacher-login/);
+await mail.sendStudentPasswordEmail({
+  ...teacher,
+  studentId: "STUDENT-TEST",
+  reason: "restore",
+});
+assert.match(messages.at(-1).subject, /account has been restored/);
+assert.match(messages.at(-1).text, /school administrator has recreated/);
+assert.match(messages.at(-1).text, /Student ID: STUDENT-TEST/);
+assert.match(messages.at(-1).text, /localhost:3000\/login/);
 smtpFails = true;
 assert.equal(await mail.sendTeacherPasswordEmail(teacher), false);
 smtpFails = false;

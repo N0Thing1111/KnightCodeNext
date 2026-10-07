@@ -13,8 +13,9 @@ export function RestoreBackupForm() {
       <p className="teacher-note">
         Replaces curriculum and learning records with the save file. All records
         are checked in one transaction. Existing accounts keep their current
-        passwords; only missing accounts receive new temporary passwords.
-        Accounts not included in the save are kept. Uploaded image files are not
+        passwords; only missing accounts receive new temporary passwords,
+        emailed to their saved addresses after restoration succeeds. Accounts
+        not included in the save are kept. Uploaded image files are not
         included. Ask users to leave the game before restoring.
       </p>
       <form action={action} className="teacher-form">
@@ -52,7 +53,7 @@ export function RestoreBackupForm() {
         </label>
         <button className="teacher-btn danger" disabled={pending}>
           {pending
-            ? "Restoring and checking records..."
+            ? "Restoring records and emailing recreated accounts..."
             : "Replace current data with this save"}
         </button>
       </form>
@@ -91,9 +92,19 @@ export function RestoreBackupForm() {
         <section>
           <h3>New account passwords - copy these before leaving</h3>
           <p>
-            These are only for accounts missing before restoration. No passwords
-            were emailed automatically. Existing passwords were not changed.
+            These are only for accounts recreated by this restore. Existing
+            passwords were not changed. Check each email status below. If
+            sending failed, copy and share the temporary password before leaving
+            this page. Do not repeat the restore just to resend an email.
           </p>
+          {state.emailSummary && (
+            <p role="status">
+              {state.emailSummary.sent} email(s) sent;{" "}
+              {state.emailSummary.failed} not sent.
+              {state.emailSummary.failed > 0 &&
+                " The data restore succeeded. Check your email settings and share the passwords for unsent emails manually."}
+            </p>
+          )}
           <div className="teacher-table-wrap">
             <table className="teacher-table">
               <thead>
@@ -102,6 +113,7 @@ export function RestoreBackupForm() {
                   <th>Role</th>
                   <th>Email</th>
                   <th>Temporary password</th>
+                  <th>Email status</th>
                 </tr>
               </thead>
               <tbody>
@@ -112,6 +124,11 @@ export function RestoreBackupForm() {
                     <td>{c.email}</td>
                     <td>
                       <code>{c.password}</code>
+                    </td>
+                    <td>
+                      {c.emailSent
+                        ? "Sent"
+                        : "Not sent - share password manually"}
                     </td>
                   </tr>
                 ))}
