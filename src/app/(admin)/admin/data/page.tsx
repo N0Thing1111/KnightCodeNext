@@ -46,8 +46,8 @@ export default async function Page({
         <h3>Make a save point before you test</h3>
         <p className="admin-note">
           Download a password-protected save of school records. Supabase
-          passwords cannot be exported; restored teacher and student accounts
-          receive new temporary passwords.
+          passwords cannot be exported. Existing accounts keep their current
+          passwords when restored; only missing accounts get temporary passwords.
         </p>
         <Link className="teacher-btn primary" href="/admin/backup">
           Save or restore school data →

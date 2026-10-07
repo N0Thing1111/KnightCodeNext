@@ -45,3 +45,15 @@ The backup test uses the real backup code with an in-memory database substitute.
 It checks pagination beyond 1,000 records, encryption/decryption, old backup
 compatibility, password rejection, and exclusion of admin accounts. It does not
 clear or restore the live school's data or send account emails.
+
+## Atomic school restore regression checks
+
+See `docs/RESTORE-RECOVERY.md` for the recovery workflow and limits.
+
+```powershell
+node supabase/tests/atomic-restore.mjs "$env:TEMP/knightcode-achievement-check"
+node scripts/tests/admin-restore.mjs
+```
+
+These tests never connect to the live database or send email. They verify full
+restoration and rollback, not only saving/encrypting a backup.

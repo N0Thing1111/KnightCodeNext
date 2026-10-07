@@ -218,7 +218,12 @@ function Editor({
         </div>
         <Link href={"/admin/manage/" + entity}>Cancel</Link>
       </div>
-      <form action={saveAdminEntity} className="admin-form">
+      {/* Reset uncontrolled fields whenever the selected record changes. */}
+      <form
+        key={`${entity}:${record.id ?? "new"}`}
+        action={saveAdminEntity}
+        className="admin-form"
+      >
         <input type="hidden" name="entity" value={entity} />
         <input type="hidden" name="id" value={record.id || ""} />
         {config.fields.map((field: string) => (
