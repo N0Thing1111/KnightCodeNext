@@ -47,7 +47,8 @@ export default async function Page({
         <p className="admin-note">
           Download a password-protected save of school records. Supabase
           passwords cannot be exported. Existing accounts keep their current
-          passwords when restored; only missing accounts get temporary passwords.
+          passwords when restored; only missing accounts get temporary
+          passwords.
         </p>
         <Link className="teacher-btn primary" href="/admin/backup">
           Save or restore school data →
@@ -71,8 +72,8 @@ export default async function Page({
         </div>
         <p className="admin-note">
           {scope === "learning"
-            ? "Clears performance, session results, activity, earned achievements, and notifications. Accounts, classes, assignments, lessons, and levels remain."
-            : "Also removes teacher/student accounts, classes, enrolments, assignments, and announcements. Administrator access, settings, lessons, and levels remain."}
+            ? "Clears performance, session results, activity, earned achievements, and notifications. Accounts, sections, assignments, lessons, and levels remain."
+            : "Also removes teacher/student accounts, sections, enrolments, assignments, and announcements. Administrator access, settings, lessons, and levels remain."}
         </p>
         <div className="teacher-table-wrap">
           <table className="teacher-table">

@@ -34,6 +34,14 @@ export function validateRestoreBackup(backup: SchoolBackup) {
     }
     ids.set(table, found);
   }
+  const enrolled = new Set<string>();
+  for (const row of tables.class_students) {
+    if (enrolled.has(String(row.student_id)))
+      throw Error(
+        "This save assigns a student to multiple sections. Resolve those memberships before restoring; nothing was changed.",
+      );
+    enrolled.add(String(row.student_id));
+  }
   const emails = new Set<string>();
   for (const p of tables.profiles) {
     if (

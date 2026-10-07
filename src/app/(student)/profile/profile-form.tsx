@@ -166,13 +166,14 @@ export function ProfileForm({
                 <input value={student.student_id ?? ""} disabled />
               </label>
               <label>
-                Class / Section
+                Section
                 <input
-                  name="class_section"
-                  defaultValue={student.class_section ?? ""}
-                  maxLength={100}
-                  autoComplete="organization"
+                  value={student.class_section || "Not assigned to a section"}
+                  disabled
                 />
+                <small>
+                  Your teacher or administrator manages your section.
+                </small>
               </label>
             </div>
 

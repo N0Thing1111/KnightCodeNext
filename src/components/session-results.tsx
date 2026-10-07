@@ -1,3 +1,4 @@
+import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
 import type { getSessionResults } from "@/lib/session-results";
 import { sessionResultsHref } from "@/lib/session-result-filters";
@@ -98,7 +99,7 @@ export function SessionResults({
                       {sections.length
                         ? sections.map((c) => (
                             <span className="session-section" key={c.id}>
-                              {c.name} · {c.section}
+                              {sectionLabel(c)}
                             </span>
                           ))
                         : "No section"}

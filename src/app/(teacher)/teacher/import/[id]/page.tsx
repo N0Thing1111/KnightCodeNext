@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { sectionLabel } from "@/lib/section-label";
 import { notFound } from "next/navigation";
 import { requireTeacher } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -19,7 +20,7 @@ export default async function Page({
     admin = createAdminClient(),
     { data: batch } = await admin
       .from("teacher_import_batches")
-      .select("*,classes(name,section)")
+      .select("*,sections(name,section)")
       .eq("id", id)
       .eq("teacher_id", t.id)
       .maybeSingle();
@@ -38,7 +39,7 @@ export default async function Page({
             </p>
           </div>
           <a className="teacher-btn primary" href="/teacher/classes">
-            Back to Classes
+            Back to Sections
           </a>
         </section>
         <section className="teacher-card">
@@ -104,8 +105,11 @@ export default async function Page({
           <span className="teacher-eyebrow">IMPORT PREVIEW</span>
           <h2>Review before creating accounts</h2>
           <p>
-            {rows.length} records detected for {(batch.classes as any)?.name} ·{" "}
-            {(batch.classes as any)?.section}.
+            {rows.length} records detected for{" "}
+            {batch.classes
+              ? sectionLabel(batch.classes as any)
+              : "the selected section"}
+            .
           </p>
         </div>
       </section>

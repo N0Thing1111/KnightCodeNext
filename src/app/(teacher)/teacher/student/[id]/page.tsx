@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { cookies } from "next/headers";
@@ -107,9 +108,7 @@ export default async function Page({
             </p>
             <div className="student-class-tags">
               {cls.map((c) => (
-                <span key={c!.id}>
-                  {c!.name} · {c!.section}
-                </span>
+                <span key={c!.id}>{sectionLabel(c!)}</span>
               ))}
             </div>
           </div>

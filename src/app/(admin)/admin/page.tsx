@@ -1,3 +1,4 @@
+import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { getAdminContext, setting } from "@/lib/admin-data";
@@ -68,7 +69,7 @@ export default async function Page() {
           [
             classes.length,
             "▦",
-            "Classes",
+            "Sections",
             "Spaces for shared learning",
             "classes",
           ],
@@ -121,7 +122,7 @@ export default async function Page() {
             eyebrow="YOUR COMMUNITY"
             title="Inside the classroom"
             href="/admin/manage/classes"
-            label="All classes →"
+            label="All sections →"
           />
           {classes.slice(0, 4).map((c) => {
             const t = teachers.find((x) => x.id === c.teacher_id),
@@ -136,9 +137,9 @@ export default async function Page() {
               >
                 <span className="admin-section-icon">▦</span>
                 <span>
-                  <strong>{c.name}</strong>
+                  <strong>{sectionLabel(c)}</strong>
                   <small>
-                    {c.section} · {t?.name}
+                    {c.subject} · {t?.name}
                   </small>
                 </span>
                 <span className="admin-role-badge">{count} students</span>

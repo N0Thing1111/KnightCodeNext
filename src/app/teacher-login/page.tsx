@@ -39,14 +39,14 @@ export default async function Page({
             <span>Track progress.</span>
           </h1>
           <p>
-            Manage classes, assignments, student activity, and KnightCode
+            Manage sections, assignments, student activity, and KnightCode
             learning data from one secure portal.
           </p>
           <div className="auth-feature-grid">
             <div>
               <span>▦</span>
-              <b>Class management</b>
-              <small>Create and organize classes</small>
+              <b>Section management</b>
+              <small>Create and organize sections</small>
             </div>
             <div>
               <span>◉</span>

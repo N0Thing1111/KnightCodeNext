@@ -7,7 +7,8 @@ import sanitizeHtml from "sanitize-html";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { sendStudentPasswordEmail } from "@/lib/mail";
+import { sendStudentPasswordEmail, sendTeacherPasswordEmail } from "@/lib/mail";
+import { requireSectionMembership, setStudentSection } from "@/lib/sections";
 const db = () => createAdminClient(),
   str = (f: FormData, k: string) => String(f.get(k) || "").trim(),
   num = (f: FormData, k: string) => Number(f.get(k) || 0);
@@ -47,7 +48,7 @@ async function finish(path: string, job: (admin: any) => Promise<string>) {
     key = "error";
     msg = e instanceof Error ? e.message : "The operation could not finish.";
   }
-  revalidatePath("/admin", "layout");
+  revalidatePath("/", "layout");
   redirect(url(path, key, msg));
 }
 function tempPassword() {
@@ -80,6 +81,38 @@ export async function saveAdminEntity(f: FormData) {
           role === "student" ? str(f, "username").toLowerCase() || null : null;
       if (!name || !email.includes("@") || !schoolCode || !code)
         throw Error("Complete the required account fields.");
+      if (role === "student") {
+        await requireSectionMembership();
+        const sectionId = num(f, "class_id");
+        if (sectionId) {
+          const { data: section } = await a
+            .from("classes")
+            .select("id,teacher_id,status")
+            .eq("id", sectionId)
+            .maybeSingle();
+          const { data: assignedTeacher } = await a
+            .from("profiles")
+            .select("id")
+            .eq(
+              "id",
+              section?.teacher_id || "00000000-0000-0000-0000-000000000000",
+            )
+            .eq("role", "teacher")
+            .eq("active", true)
+            .maybeSingle();
+          if (!section || !assignedTeacher)
+            throw Error("Choose a section with an active teacher.");
+          if (section.status !== "active") {
+            const { data: current } = await a
+              .from("class_students")
+              .select("class_id")
+              .eq("student_id", id || "00000000-0000-0000-0000-000000000000")
+              .eq("class_id", sectionId)
+              .maybeSingle();
+            if (!current) throw Error("Choose an active section.");
+          }
+        }
+      }
       let userId = id,
         password: string | null = null;
       if (!userId) {
@@ -94,7 +127,6 @@ export async function saveAdminEntity(f: FormData) {
             student_id: role === "student" ? code : null,
             teacher_id: role === "teacher" ? code : null,
             username,
-            class_section: str(f, "class_section") || null,
           },
         });
         if (created.error || !created.data.user)
@@ -122,7 +154,6 @@ export async function saveAdminEntity(f: FormData) {
         Object.assign(patch, {
           student_id: code,
           username,
-          class_section: str(f, "class_section") || null,
         });
       const { error } = await a
         .from("profiles")
@@ -130,6 +161,19 @@ export async function saveAdminEntity(f: FormData) {
         .eq("id", userId)
         .eq("role", role);
       if (error) throw Error(error.message);
+      if (role === "student") {
+        try {
+          await setStudentSection(
+            userId,
+            num(f, "class_id") || null,
+            admin.id,
+            true,
+          );
+        } catch (error) {
+          if (!id) await a.auth.admin.deleteUser(userId);
+          throw error;
+        }
+      }
       await audit(admin.id, id ? "update" : "create", entity, userId);
       if (password) {
         let emailSent = false;
@@ -142,6 +186,14 @@ export async function saveAdminEntity(f: FormData) {
             temporaryPassword: password,
             schoolLabel: schoolCode,
             reason: "welcome",
+          });
+        else
+          emailSent = await sendTeacherPasswordEmail({
+            email,
+            name,
+            teacherId: code,
+            temporaryPassword: password,
+            schoolLabel: schoolCode,
           });
         const jar = await cookies();
         jar.set(
@@ -166,21 +218,21 @@ export async function saveAdminEntity(f: FormData) {
     if (entity === "classes") {
       const row = {
         name: str(f, "name"),
-        section: str(f, "section"),
+        section: str(f, "name"),
         subject: str(f, "subject") || "Programming",
         school_year: str(f, "school_year") || null,
         description: str(f, "description") || null,
         teacher_id: str(f, "teacher_id"),
       };
       if (!row.name || !row.section || !row.teacher_id)
-        throw Error("Name, section, and teacher are required.");
+        throw Error("Section name and teacher are required.");
       const q = id
         ? a.from("classes").update(row).eq("id", Number(id))
         : a.from("classes").insert(row);
       const { data, error } = await q.select("id").single();
       if (error) throw Error(error.message);
       await audit(admin.id, id ? "update" : "create", entity, id || data.id);
-      return id ? "Changes saved." : "Class created.";
+      return id ? "Changes saved." : "Section created.";
     }
     if (entity === "lessons") {
       const row = {
@@ -375,10 +427,7 @@ export async function saveRoster(f: FormData) {
     action = str(f, "roster_action");
   await finish("/admin/classes/" + classId, async (admin) => {
     if (action === "add") {
-      const { error } = await db()
-        .from("class_students")
-        .upsert({ class_id: classId, student_id: studentId });
-      if (error) throw Error(error.message);
+      await setStudentSection(studentId, classId, admin.id, true);
     } else {
       const { error } = await db()
         .from("class_students")
@@ -439,12 +488,10 @@ export async function saveAdminSettings(f: FormData) {
           password: str(f, "admin_password"),
         });
       if (check.error) throw Error("Administrator password is incorrect.");
-      await a
-        .from("admin_settings")
-        .upsert({
-          setting_key: "teacher_registration",
-          setting_value: f.get("teacher_registration") === "1" ? "1" : "0",
-        });
+      await a.from("admin_settings").upsert({
+        setting_key: "teacher_registration",
+        setting_value: f.get("teacher_registration") === "1" ? "1" : "0",
+      });
     } else if (action === "password") {
       const current = str(f, "current_password"),
         next = str(f, "new_password"),

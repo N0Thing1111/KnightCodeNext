@@ -23,7 +23,9 @@ export default async function Page({
         t.profile_image
       : null,
     avatars = ["knight", "blue", "mage", "fox", "dragon", "robot"];
-  const { data: shared } = await (await import("@/lib/supabase/admin"))
+  const { data: shared } = await (
+    await import("@/lib/supabase/admin")
+  )
     .createAdminClient()
     .from("profiles")
     .select("id")
@@ -59,7 +61,7 @@ export default async function Page({
           <div className="teacher-mini-stats">
             <div>
               <strong>{stats.classes}</strong>
-              <span>Classes</span>
+              <span>Sections</span>
             </div>
             <div>
               <strong>{stats.students}</strong>

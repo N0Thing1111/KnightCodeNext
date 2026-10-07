@@ -40,7 +40,7 @@ export default async function LessonsPage() {
           <h2>Lessons assigned by your teacher.</h2>
           <p>
             Your available lessons and challenges appear here when a teacher
-            assigns them to you or your class.
+            assigns them to you or your section.
           </p>
         </div>
       </section>

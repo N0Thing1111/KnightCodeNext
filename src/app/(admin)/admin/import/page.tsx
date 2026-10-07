@@ -13,6 +13,7 @@ export default async function Page({
     email: string;
     teacher_id: string;
     password: string;
+    email_sent?: boolean;
   }> = [];
   try {
     credentials = JSON.parse(jar.get("kc_admin_import")?.value || "[]");
@@ -30,7 +31,8 @@ export default async function Page({
           <h3>Accounts created - copy credentials now</h3>
           <p className="admin-note">
             These passwords will not be shown after this one-time result
-            expires.
+            expires. Check the email status below; if sending failed, copy the
+            password and share it with the teacher.
           </p>
           <div className="teacher-table-wrap">
             <table className="teacher-table">
@@ -40,6 +42,7 @@ export default async function Page({
                   <th>Email</th>
                   <th>Teacher ID</th>
                   <th>Password</th>
+                  <th>Email status</th>
                 </tr>
               </thead>
               <tbody>
@@ -50,6 +53,11 @@ export default async function Page({
                     <td>{row.teacher_id}</td>
                     <td>
                       <code>{row.password}</code>
+                    </td>
+                    <td>
+                      {row.email_sent
+                        ? "Sent"
+                        : "Not sent - share password manually"}
                     </td>
                   </tr>
                 ))}

@@ -1,3 +1,4 @@
+import { sectionLabel } from "@/lib/section-label";
 import { requireTeacher } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getTeacherContext } from "@/lib/teacher-data";
@@ -21,7 +22,7 @@ export default async function Page({
       <Hero
         eyebrow="COMMUNICATION"
         title="Announcements"
-        description="Send updates to one class or all students you manage through the existing student notification system."
+        description="Send updates to one section or all students you manage through the existing student notification system."
       />
       <Alerts searchParams={q} />
       <div className="teacher-grid two">
@@ -50,7 +51,7 @@ export default async function Page({
                   .filter((c) => c.status === "active")
                   .map((c) => (
                     <option value={c.id} key={c.id}>
-                      {c.name} · {c.section}
+                      {sectionLabel(c)}
                     </option>
                   ))}
               </select>
@@ -96,9 +97,7 @@ export default async function Page({
                       >
                         {a.status}
                       </span>
-                      <small>
-                        {c ? c.name + " · " + c.section : "All students"}
-                      </small>
+                      <small>{c ? sectionLabel(c) : "All students"}</small>
                     </div>
                     <h4>{a.title}</h4>
                     <p>{a.body}</p>

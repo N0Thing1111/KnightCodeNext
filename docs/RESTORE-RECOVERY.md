@@ -93,3 +93,7 @@ was rolled back and school records were not changed. The SQL editor did not
 permit explicitly loading the safeupdate library for a negative-control test;
 its WHERE requirement is checked in the regression test, and the actual
 safeguard was not disabled. The original backup still needs user import.
+
+## One-section membership update
+
+The section update keeps the existing save-file table names. A valid old save with one section membership per student can still be restored; legacy class and section names become one display name. The student profile section label is derived from the restored roster. A backup assigning a student to multiple sections is rejected before account preparation, with no school records replaced. See [SECTIONS-UPDATE.md](SECTIONS-UPDATE.md) for transfer behavior and the test checklist.

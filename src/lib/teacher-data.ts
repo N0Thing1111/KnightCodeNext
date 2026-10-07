@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { sectionLabel } from "@/lib/section-label";
 import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Profile } from "@/types/database";
@@ -172,7 +173,7 @@ export function teacherStudents(
       : 0;
     return {
       ...student,
-      classes: classRows.map((c) => c!.name + " · " + c!.section).join(", "),
+      classes: classRows.map((c) => sectionLabel(c!)).join(", "),
       level: Math.floor(Number(student.total_xp || 0) / 500) + 1,
       xp: Number(student.total_xp || 0),
       progress_pct: pct,

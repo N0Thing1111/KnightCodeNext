@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
 import { requireTeacher } from "@/lib/auth";
 import { avatar, getTeacherContext, teacherStudents } from "@/lib/teacher-data";
@@ -42,7 +43,7 @@ export default async function Page({
       <Hero
         eyebrow="ROSTER MANAGEMENT"
         title="Students"
-        description="Search and manage students who belong to your classes. No private data outside KnightCode is monitored."
+        description="Search and manage students who belong to your sections. No private data outside KnightCode is monitored."
       />
       <section className="teacher-card">
         <Filter q={q} classes={ctx.classes} />
@@ -51,7 +52,7 @@ export default async function Page({
             <thead>
               <tr>
                 <th>Student</th>
-                <th>Class</th>
+                <th>Section</th>
                 <th>Level</th>
                 <th>XP</th>
                 <th>Progress</th>
@@ -182,14 +183,14 @@ function Filter({
         </select>
       </label>
       <label>
-        Class
+        Section
         <select name="class_id" defaultValue={q.class_id || ""}>
-          <option value="">All classes</option>
+          <option value="">All sections</option>
           {classes
             .filter((c) => c.status === "active")
             .map((c) => (
               <option key={c.id} value={c.id}>
-                {c.name} · {c.section}
+                {sectionLabel(c)}
               </option>
             ))}
         </select>

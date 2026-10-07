@@ -7,6 +7,7 @@ import { requireTeacher } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { sendStudentPasswordEmail } from "@/lib/mail";
+import { requireSectionMembership, setStudentSection } from "@/lib/sections";
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 const num = (f: FormData, k: string) => Number(f.get(k) || 0);
 const admin = () => createAdminClient();
@@ -52,7 +53,7 @@ async function finish(path: string, job: () => Promise<string>) {
     key = "error";
     msg = e instanceof Error ? e.message : "Something went wrong.";
   }
-  revalidatePath("/teacher", "layout");
+  revalidatePath("/", "layout");
   redirect(target(path, key, msg));
 }
 export async function saveClass(f: FormData) {
@@ -60,8 +61,8 @@ export async function saveClass(f: FormData) {
   const id = num(f, "id");
   await finish("/teacher/classes", async () => {
     const name = str(f, "name"),
-      section = str(f, "section");
-    if (!name || !section) throw Error("Class name and section are required.");
+      section = name;
+    if (!name || !section) throw Error("Section name is required.");
     const row = {
       teacher_id: t.id,
       name,
@@ -75,7 +76,7 @@ export async function saveClass(f: FormData) {
       : admin().from("classes").insert(row);
     const { error } = await q;
     if (error) throw Error(error.message);
-    return id ? "Class updated." : "Class created.";
+    return id ? "Section updated." : "Section created.";
   });
 }
 export async function setClassStatus(f: FormData) {
@@ -89,7 +90,7 @@ export async function setClassStatus(f: FormData) {
       .eq("id", id)
       .eq("teacher_id", t.id);
     if (error) throw Error(error.message);
-    return status === "archived" ? "Class archived." : "Class restored.";
+    return status === "archived" ? "Section archived." : "Section restored.";
   });
 }
 export async function removeStudent(f: FormData) {
@@ -97,14 +98,14 @@ export async function removeStudent(f: FormData) {
   const classId = num(f, "class_id"),
     studentId = str(f, "student_id");
   await finish("/teacher/class/" + classId, async () => {
-    if (!(await ownsClass(t.id, classId))) throw Error("Unauthorized class.");
+    if (!(await ownsClass(t.id, classId))) throw Error("Unauthorized section.");
     const { error } = await admin()
       .from("class_students")
       .delete()
       .eq("class_id", classId)
       .eq("student_id", studentId);
     if (error) throw Error(error.message);
-    return "Student removed from this class.";
+    return "Student removed from this section.";
   });
 }
 export async function addExistingStudent(f: FormData) {
@@ -116,12 +117,9 @@ export async function addExistingStudent(f: FormData) {
       !(await ownsClass(t.id, classId)) ||
       !(await ownsStudent(t.id, studentId))
     )
-      throw Error("Student is not in one of your classes.");
-    const { error } = await admin()
-      .from("class_students")
-      .upsert({ class_id: classId, student_id: studentId });
-    if (error) throw Error(error.message);
-    return "Student added to this class.";
+      throw Error("Student is not in one of your sections.");
+    await setStudentSection(studentId, classId, t.id, true);
+    return "Student added to this section.";
   });
 }
 function temporaryPassword() {
@@ -140,14 +138,14 @@ export async function manualAddStudent(f: FormData) {
   const classId = num(f, "class_id");
   await finish("/teacher/class/" + classId, async () => {
     if (!(await ownsClass(teacher.id, classId)))
-      throw Error("Unauthorized class.");
+      throw Error("Unauthorized section.");
     const studentId = str(f, "student_id"),
       name = str(f, "name"),
       email = str(f, "email").toLowerCase(),
-      username = str(f, "username").toLowerCase() || null,
-      section = str(f, "section") || null;
+      username = str(f, "username").toLowerCase() || null;
     if (!studentId || !name || !z.string().email().safeParse(email).success)
       throw Error("Student ID, name, and a valid email are required.");
+    await requireSectionMembership();
     const a = admin();
     let { data: profile } = await a
       .from("profiles")
@@ -176,7 +174,6 @@ export async function manualAddStudent(f: FormData) {
           student_id: studentId,
           username,
           name,
-          class_section: section,
         },
       });
       if (created.error || !created.data.user)
@@ -190,7 +187,6 @@ export async function manualAddStudent(f: FormData) {
           username,
           name,
           email,
-          class_section: section,
           school_code: teacher.school_code,
         })
         .eq("id", created.data.user.id)
@@ -207,10 +203,12 @@ export async function manualAddStudent(f: FormData) {
         .maybeSingle();
       if (used) throw Error("Username is already used by another student.");
     }
-    const { error } = await a
-      .from("class_students")
-      .upsert({ class_id: classId, student_id: profile.id });
-    if (error) throw Error(error.message);
+    try {
+      await setStudentSection(profile.id, classId, teacher.id);
+    } catch (error) {
+      if (password) await a.auth.admin.deleteUser(profile.id);
+      throw error;
+    }
     if (password) {
       const emailSent = await sendStudentPasswordEmail({
         email,
@@ -225,7 +223,7 @@ export async function manualAddStudent(f: FormData) {
       jar.set(
         "kc_teacher_flash",
         JSON.stringify({
-          message: "Student account created and added to this class.",
+          message: "Student account created and added to this section.",
           password,
           studentId,
           name,
@@ -242,7 +240,7 @@ export async function manualAddStudent(f: FormData) {
       );
       return "Student created.";
     }
-    return "Existing student account found and linked to this class.";
+    return "Existing student account found and linked to this section.";
   });
 }
 export async function createAssignment(f: FormData) {
@@ -254,9 +252,9 @@ export async function createAssignment(f: FormData) {
       levelId = num(f, "level_id"),
       title = str(f, "title");
     if (!classId && !studentId)
-      throw Error("Choose a class or an individual student.");
+      throw Error("Choose a section or an individual student.");
     if (classId && !(await ownsClass(t.id, classId)))
-      throw Error("Invalid class.");
+      throw Error("Invalid section.");
     if (studentId && !(await ownsStudent(t.id, studentId)))
       throw Error("Invalid student.");
     if (classId && studentId) {
@@ -267,7 +265,7 @@ export async function createAssignment(f: FormData) {
         .eq("student_id", studentId)
         .maybeSingle();
       if (!member)
-        throw Error("The selected student is not enrolled in that class.");
+        throw Error("The selected student is not enrolled in that section.");
     }
     if (!lessonId && !levelId) throw Error("Choose a lesson or level.");
     if (!title || title.length > 180)
@@ -357,7 +355,7 @@ export async function saveAnnouncement(f: FormData) {
       body = str(f, "body"),
       status = str(f, "status") === "published" ? "published" : "draft";
     if (classId && !(await ownsClass(t.id, classId)))
-      throw Error("Invalid class.");
+      throw Error("Invalid section.");
     if (!title || !body) throw Error("Title and message are required.");
     const { data: row, error } = await admin()
       .from("announcements")

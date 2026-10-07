@@ -12,7 +12,7 @@ export default async function Page({
       <Hero
         eyebrow="STUDENT RUN HISTORY"
         title="Session Results"
-        description="Find sessions for students in your classes and review their submitted code on assigned levels."
+        description="Find sessions for students in your sections and review their submitted code on assigned levels."
       />
       <SessionResults result={result} role="teacher" />
     </>

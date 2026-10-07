@@ -31,7 +31,7 @@ export default async function Page({
           <div className="auth-feature-grid">
             <div>
               <b>People</b>
-              <small>Teachers, classes, and students</small>
+              <small>Teachers, sections, and students</small>
             </div>
             <div>
               <b>Curriculum</b>

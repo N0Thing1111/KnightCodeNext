@@ -17,7 +17,7 @@ export default async function Page({
         <section className="teacher-card">
           <h3>Download a school save file</h3>
           <p className="teacher-note">
-            Includes curriculum, accounts, classes, assignments, notifications,
+            Includes curriculum, accounts, sections, assignments, notifications,
             achievements, and recorded performance. Authentication password
             hashes and uploaded image files are not included. Keep the original
             image storage separately.

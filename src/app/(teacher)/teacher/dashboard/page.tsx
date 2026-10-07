@@ -1,3 +1,4 @@
+import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
 import { requireTeacher } from "@/lib/auth";
 import {
@@ -53,7 +54,7 @@ export default async function Page() {
           <h2>Good day, {t.name.split(" ")[0]}.</h2>
           <p>
             Monitor real KnightCode learning activity, support students, and
-            keep your classes moving forward.
+            keep your sections moving forward.
           </p>
         </div>
         <Link
@@ -61,7 +62,7 @@ export default async function Page() {
           className="teacher-btn primary"
           href="/teacher/classes?action=new"
         >
-          + Create Class
+          + Create Section
         </Link>
       </section>
       <div className="teacher-metric-grid">
@@ -73,7 +74,7 @@ export default async function Page() {
         />
         <Metric
           icon="▦"
-          label="Active Classes"
+          label="Active Sections"
           value={stats.classes}
           note={stats.avg_progress + "% avg progress"}
         />
@@ -81,7 +82,7 @@ export default async function Page() {
           icon="⚡"
           label="Average XP"
           value={stats.avg_xp}
-          note="Across your classes"
+          note="Across your sections"
         />
         <Metric
           icon="!"
@@ -94,8 +95,8 @@ export default async function Page() {
       <div className="teacher-grid two">
         <section className="teacher-card">
           <Head
-            eyebrow="CLASS PERFORMANCE"
-            title="Your Classes"
+            eyebrow="SECTION PERFORMANCE"
+            title="Your Sections"
             href="/teacher/classes"
             label="View all"
           />
@@ -109,10 +110,8 @@ export default async function Page() {
                   key={c.id}
                 >
                   <div>
-                    <strong>{c.name}</strong>
-                    <small>
-                      {c.section} · {c.subject}
-                    </small>
+                    <strong>{sectionLabel(c)}</strong>
+                    <small>{c.subject}</small>
                   </div>
                   <div className="class-progress-meter">
                     <span style={{ width: c.avg + "%" }} />
@@ -123,7 +122,7 @@ export default async function Page() {
               ))
             ) : (
               <div className="teacher-empty">
-                No classes yet. Create your first class to start managing
+                No sections yet. Create your first section to start managing
                 students.
               </div>
             )}

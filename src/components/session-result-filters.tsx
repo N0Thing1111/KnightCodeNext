@@ -1,4 +1,5 @@
 "use client";
+import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
 import { useState } from "react";
 import {
@@ -48,7 +49,7 @@ export function SessionResultFilters({
           <option value="">All sections</option>
           {catalog.classes.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.name} · {c.section}
+              {sectionLabel(c)}
               {c.status !== "active" ? " (archived)" : ""}
             </option>
           ))}

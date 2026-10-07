@@ -1,3 +1,4 @@
+import { sectionLabel } from "@/lib/section-label";
 import {
   assignmentCounts,
   getTeacherContext,
@@ -48,9 +49,7 @@ export async function reportLines(teacherId: string, type: ReportType) {
             )
           : 0;
       lines.push(
-        c.name +
-          " | " +
-          c.section +
+        sectionLabel(c) +
           " | " +
           ids.length +
           " students | " +
@@ -162,7 +161,7 @@ export async function reportLines(teacherId: string, type: ReportType) {
       lines.push(
         a.title +
           " | " +
-          (c ? c.name + " · " + c.section : "Individual") +
+          (c ? sectionLabel(c) : "Individual") +
           " | " +
           counts.done +
           " / " +

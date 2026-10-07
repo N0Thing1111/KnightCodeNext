@@ -57,7 +57,7 @@ export default async function Page({
             ))}
             <div>
               <strong>{ctx.classes.length}</strong>
-              <span>Classes</span>
+              <span>Sections</span>
             </div>
           </div>
           <form action={saveAdminSettings} className="teacher-form">

@@ -6,6 +6,7 @@ import { requireTeacher } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ImportRow } from "@/lib/import-utils";
 import { sendStudentPasswordEmail } from "@/lib/mail";
+import { requireSectionMembership, setStudentSection } from "@/lib/sections";
 function password() {
   return "KC-" + crypto.randomUUID().replaceAll("-", "").slice(0, 8) + "!";
 }
@@ -24,6 +25,21 @@ export async function confirmImport(form: FormData) {
     redirect(
       "/teacher/classes?error=" +
         encodeURIComponent("Import preview expired. Upload the file again."),
+    );
+  await requireSectionMembership();
+  const { data: targetSection } = await admin
+    .from("classes")
+    .select("id")
+    .eq("id", batch.class_id)
+    .eq("teacher_id", teacher.id)
+    .eq("status", "active")
+    .maybeSingle();
+  if (!targetSection)
+    redirect(
+      "/teacher/classes?error=" +
+        encodeURIComponent(
+          "The selected section is no longer active or assigned to you.",
+        ),
     );
   const created: any[] = [],
     existing: any[] = [],
@@ -62,10 +78,16 @@ export async function confirmImport(form: FormData) {
       .limit(1)
       .maybeSingle();
     if (profile) {
-      await admin
-        .from("class_students")
-        .upsert({ class_id: batch.class_id, student_id: profile.id });
-      existing.push(row);
+      try {
+        await setStudentSection(profile.id, batch.class_id, teacher.id);
+        existing.push(row);
+      } catch (error) {
+        errors.push({
+          ...row,
+          issue:
+            error instanceof Error ? error.message : "Could not enroll student",
+        });
+      }
       continue;
     }
     if (row.username) {
@@ -92,7 +114,6 @@ export async function confirmImport(form: FormData) {
           student_id: row.student_id,
           username: row.username || null,
           name: row.name,
-          class_section: row.section || null,
         },
       });
     if (result.error || !result.data.user) {
@@ -108,7 +129,6 @@ export async function confirmImport(form: FormData) {
         student_id: row.student_id,
         username: row.username || null,
         name: row.name,
-        class_section: row.section || null,
         school_code: teacher.school_code,
       })
       .eq("id", result.data.user.id);
@@ -117,9 +137,17 @@ export async function confirmImport(form: FormData) {
       errors.push({ ...row, issue: update.message });
       continue;
     }
-    await admin
-      .from("class_students")
-      .upsert({ class_id: batch.class_id, student_id: result.data.user.id });
+    try {
+      await setStudentSection(result.data.user.id, batch.class_id, teacher.id);
+    } catch (error) {
+      await admin.auth.admin.deleteUser(result.data.user.id);
+      errors.push({
+        ...row,
+        issue:
+          error instanceof Error ? error.message : "Could not enroll student",
+      });
+      continue;
+    }
     created.push({ ...row, temp_password: temp, email_sent: false });
   }
   const delivered = await Promise.all(
@@ -141,20 +169,18 @@ export async function confirmImport(form: FormData) {
     .update({ result: { created: delivered, existing, errors } })
     .eq("id", id)
     .eq("teacher_id", teacher.id);
-  await admin
-    .from("teacher_notifications")
-    .upsert(
-      {
-        teacher_id: teacher.id,
-        notification_key: "import_" + id,
-        type: "import",
-        title: "Student import completed",
-        message: created.length + " new student accounts were created.",
-        link: "/teacher/classes",
-      },
-      { onConflict: "teacher_id,notification_key" },
-    );
-  revalidatePath("/teacher", "layout");
+  await admin.from("teacher_notifications").upsert(
+    {
+      teacher_id: teacher.id,
+      notification_key: "import_" + id,
+      type: "import",
+      title: "Student import completed",
+      message: created.length + " new student accounts were created.",
+      link: "/teacher/classes",
+    },
+    { onConflict: "teacher_id,notification_key" },
+  );
+  revalidatePath("/", "layout");
   redirect("/teacher/import/" + id + "?done=1");
 }
 export async function cancelImport(form: FormData) {

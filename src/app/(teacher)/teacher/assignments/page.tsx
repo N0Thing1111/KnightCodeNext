@@ -1,3 +1,4 @@
+import { sectionLabel } from "@/lib/section-label";
 import { requireTeacher } from "@/lib/auth";
 import {
   assignmentCounts,
@@ -101,10 +102,14 @@ export default async function Page({
                       <td>
                         <div className="assignment-target-cell">
                           <strong>
-                            {c ? c.name : (s?.name ?? "Individual student")}
+                            {c
+                              ? sectionLabel(c)
+                              : (s?.name ?? "Former section member")}
                           </strong>
                           <small>
-                            {c ? c.section : (s?.student_id ?? "Student")}
+                            {c
+                              ? c.subject
+                              : (s?.student_id ?? "Historical assignment")}
                           </small>
                         </div>
                       </td>

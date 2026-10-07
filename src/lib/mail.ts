@@ -28,12 +28,12 @@ function mailConfig() {
   };
 }
 
-function loginUrl() {
+function loginUrl(path = "/login") {
   const configured = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
-  if (configured) return configured + "/login";
+  if (configured) return configured + path;
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL)
-    return "https://" + process.env.VERCEL_PROJECT_PRODUCTION_URL + "/login";
-  return "http://localhost:3000/login";
+    return "https://" + process.env.VERCEL_PROJECT_PRODUCTION_URL + path;
+  return "http://localhost:3000" + path;
 }
 
 export function isPasswordEmailConfigured() {
@@ -46,9 +46,6 @@ export async function sendStudentPasswordEmail(
   const config = mailConfig();
   if (!config) return false;
   const school = input.schoolLabel?.trim() || "KnightCode";
-  const fromAddress =
-    process.env.KC_MAIL_FROM_ADDRESS?.trim() || config.auth.user;
-  const fromName = process.env.KC_MAIL_FROM_NAME?.trim() || "KnightCode";
   const subject =
     input.reason === "welcome"
       ? "Your KnightCode account is ready"
@@ -75,13 +72,58 @@ export async function sendStudentPasswordEmail(
     "",
     "- " + school,
   );
+  return deliverPasswordEmail(input, subject, lines.join("\n"));
+}
+
+export async function sendTeacherPasswordEmail(input: {
+  email: string;
+  name: string;
+  teacherId: string;
+  temporaryPassword: string;
+  schoolLabel?: string | null;
+}): Promise<boolean> {
+  const school = input.schoolLabel?.trim() || "KnightCode";
+  const lines = [
+    "Hi " + input.name + ",",
+    "",
+    "Your KnightCode teacher account has been created by your school administrator at " +
+      school +
+      ".",
+    "",
+    "Teacher ID: " + input.teacherId,
+    "Email: " + input.email,
+    "Temporary password: " + input.temporaryPassword,
+    "",
+    "Sign in at: " + loginUrl("/teacher-login"),
+    "Use your Teacher ID or email with the temporary password above.",
+    "After signing in, open Teacher Profile and use Change password to set your own password.",
+    "",
+    "- " + school,
+  ];
+  return deliverPasswordEmail(
+    input,
+    "Your KnightCode teacher account is ready",
+    lines.join("\n"),
+  );
+}
+
+async function deliverPasswordEmail(
+  recipient: { email: string; name: string },
+  subject: string,
+  text: string,
+): Promise<boolean> {
+  const config = mailConfig();
+  if (!config) return false;
+  const fromAddress =
+    process.env.KC_MAIL_FROM_ADDRESS?.trim() || config.auth.user;
+  const fromName = process.env.KC_MAIL_FROM_NAME?.trim() || "KnightCode";
   try {
     const transporter = nodemailer.createTransport(config);
     await transporter.sendMail({
       from: { name: fromName, address: fromAddress },
-      to: { name: input.name, address: input.email },
+      to: { name: recipient.name, address: recipient.email },
       subject,
-      text: lines.join("\n"),
+      text,
     });
     return true;
   } catch (error) {

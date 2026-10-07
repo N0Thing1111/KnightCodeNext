@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   if (!cls)
     return NextResponse.redirect(
       new URL(
-        "/teacher/classes?error=" + encodeURIComponent("Class not found."),
+        "/teacher/classes?error=" + encodeURIComponent("Section not found."),
         request.url,
       ),
       303,

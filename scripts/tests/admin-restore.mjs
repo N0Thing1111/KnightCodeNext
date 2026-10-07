@@ -16,7 +16,7 @@ const exports={};
 vm.runInNewContext(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{
  exports,require(name){if(name==="server-only")return {};if(name==="@/lib/admin-backup")return {BACKUP_TABLES:tableNames};if(name==="@/lib/supabase/admin")return {createAdminClient:()=>fakeDb};return require(name);}
 });
-const {restoreSchoolBackup}=exports;
+const {restoreSchoolBackup,validateRestoreBackup}=exports;
 const backup={format:"KnightCode Supabase school save",version:2,tables:Object.fromEntries(tableNames.map(t=>[t,[]]))};
 backup.tables.profiles=[{id:"old-teacher",email:"teacher@test.invalid",role:"teacher"},{id:"old-student",email:"student@test.invalid",role:"student"}];
 backup.tables.lessons=[{id:1}];backup.tables.levels=[{id:1,lesson_id:1}];
@@ -39,3 +39,7 @@ rpcFailure=true;
 await assert.rejects(()=>restoreSchoolBackup(backup,"admin"),/not confirmed/);
 console.log("PASS: paginated account matching after UUID changes, no existing password resets/deletions, nullable links, missing-account credentials, preflight migration check, invalid backup rejection, and failure reporting.");
 
+
+const conflicting = structuredClone(backup);
+conflicting.tables.class_students = [{class_id:1,student_id:"old-student"},{class_id:1,student_id:"old-student"}];
+assert.throws(()=>validateRestoreBackup(conflicting),/multiple sections/);

@@ -9,6 +9,7 @@ import {
   resetManagedPassword,
   deleteAdminEntity,
 } from "@/app/actions/admin";
+import { sectionLabel } from "@/lib/section-label";
 import { AdminHero, Alerts } from "@/components/admin-ui";
 const configs: any = {
   teachers: {
@@ -27,21 +28,14 @@ const configs: any = {
       "email",
       "username",
       "school_code",
-      "class_section",
+      "class_id",
     ],
   },
   classes: {
-    label: "Classes",
+    label: "Sections",
     description:
       "Organize your school’s learning environment and assign an active teacher.",
-    fields: [
-      "name",
-      "section",
-      "subject",
-      "school_year",
-      "description",
-      "teacher_id",
-    ],
+    fields: ["name", "subject", "school_year", "description", "teacher_id"],
   },
   lessons: {
     label: "Lessons",
@@ -126,7 +120,8 @@ export default async function Page({
             className="teacher-btn primary"
             href={"/admin/manage/" + entity + "?edit=new"}
           >
-            Create {entity === "classes" ? "Class" : config.label.slice(0, -1)}
+            Create{" "}
+            {entity === "classes" ? "Section" : config.label.slice(0, -1)}
           </Link>
         </div>
       </AdminHero>
@@ -213,7 +208,7 @@ function Editor({
           <span className="teacher-eyebrow">RECORD DETAILS</span>
           <h3>
             {record.id ? "Edit" : "Create"}{" "}
-            {entity === "classes" ? "Class" : config.label.slice(0, -1)}
+            {entity === "classes" ? "Section" : config.label.slice(0, -1)}
           </h3>
         </div>
         <Link href={"/admin/manage/" + entity}>Cancel</Link>
@@ -231,7 +226,15 @@ function Editor({
             key={field}
             field={field}
             entity={entity}
-            value={record[field]}
+            value={
+              field === "class_id"
+                ? ctx.class_students.find(
+                    (m: any) => m.student_id === record.id,
+                  )?.class_id
+                : field === "name" && entity === "classes" && record.name
+                  ? sectionLabel(record)
+                  : record[field]
+            }
             ctx={ctx}
             editing={!!record.id}
           />
@@ -290,10 +293,47 @@ function Field({
   editing: boolean;
 }) {
   const label =
-      field === "level_number"
-        ? "Unity scene number"
-        : field.replaceAll("_", " ").replace(/\b\w/g, (x) => x.toUpperCase()),
+      field === "name" && entity === "classes"
+        ? "Section name"
+        : field === "teacher_id" && entity === "classes"
+          ? "Assigned teacher"
+          : field === "level_number"
+            ? "Unity scene number"
+            : field
+                .replaceAll("_", " ")
+                .replace(/\b\w/g, (x) => x.toUpperCase()),
     wide = ["content", "description", "learning_objective"].includes(field);
+  if (field === "class_id")
+    return (
+      <label>
+        Section
+        <select name="class_id" defaultValue={value || ""}>
+          <option value="">Not assigned to a section</option>
+          {ctx.classes
+            .filter(
+              (c: any) =>
+                c.id === value ||
+                (c.status === "active" &&
+                  ctx.profiles.some(
+                    (p: any) =>
+                      p.id === c.teacher_id && p.active && p.role === "teacher",
+                  )),
+            )
+            .map((c: any) => (
+              <option key={c.id} value={c.id}>
+                {sectionLabel(c)} -{" "}
+                {ctx.profiles.find((p: any) => p.id === c.teacher_id)?.name ||
+                  "No teacher"}
+                {c.school_year ? ` (${c.school_year})` : ""}
+              </option>
+            ))}
+        </select>
+        <small>
+          One section and one teacher per student. Changing this transfers the
+          student and preserves learning history.
+        </small>
+      </label>
+    );
   if (field === "teacher_id" && entity === "classes")
     return (
       <label key={field}>
@@ -379,9 +419,13 @@ function Field({
         }
         readOnly={field === "level_number" && editing}
         required={
-          !["username", "class_section", "school_year", "description"].includes(
-            field,
-          )
+          ![
+            "username",
+            "class_id",
+            "subject",
+            "school_year",
+            "description",
+          ].includes(field)
         }
       />
     </label>
@@ -396,15 +440,15 @@ function RecordRow({
   row: any;
   ctx: any;
 }) {
-  const name = row.name || row.title,
+  const name = entity === "classes" ? sectionLabel(row) : row.name || row.title,
     identifier =
-      row.teacher_id ||
-      row.student_id ||
-      (entity === "classes"
-        ? row.section
-        : entity === "lessons"
-          ? "Order " + row.order_number
-          : "Scene " + row.level_number),
+      entity === "classes"
+        ? [row.subject, row.school_year].filter(Boolean).join(" - ")
+        : row.teacher_id ||
+          row.student_id ||
+          (entity === "lessons"
+            ? "Order " + row.order_number
+            : "Scene " + row.level_number),
     detail =
       entity === "classes"
         ? ctx.profiles.find((p: any) => p.id === row.teacher_id)?.name ||

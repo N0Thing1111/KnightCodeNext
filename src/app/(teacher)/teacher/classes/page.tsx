@@ -1,3 +1,4 @@
+import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
 import { requireTeacher } from "@/lib/auth";
 import { getTeacherContext } from "@/lib/teacher-data";
@@ -16,16 +17,16 @@ export default async function Page({
   return (
     <>
       <Hero
-        eyebrow="CLASSROOM MANAGEMENT"
-        title="My Classes"
-        description="Create classes, import students, and monitor class performance."
+        eyebrow="SECTION MANAGEMENT"
+        title="My Sections"
+        description="Create sections, import students, and monitor section performance."
       >
         <Link
           prefetch={false}
           className="teacher-btn primary"
           href="/teacher/classes?action=new"
         >
-          + New Class
+          + New Section
         </Link>
       </Hero>
       <Alerts searchParams={q} />
@@ -33,32 +34,27 @@ export default async function Page({
         <section className="teacher-card teacher-form-card">
           <div className="teacher-card-head">
             <div>
-              <span className="teacher-eyebrow">CLASS DETAILS</span>
-              <h3>{edit ? "Edit Class" : "Create Class"}</h3>
+              <span className="teacher-eyebrow">SECTION DETAILS</span>
+              <h3>{edit ? "Edit Section" : "Create Section"}</h3>
             </div>
             <Link prefetch={false} href="/teacher/classes">
               Cancel
             </Link>
           </div>
-          <form action={saveClass} className="teacher-form">
+          <form
+            key={edit?.id ?? "new"}
+            action={saveClass}
+            className="teacher-form"
+          >
             <input type="hidden" name="id" value={edit?.id ?? 0} />
             <div className="teacher-form-grid">
               <label>
-                Class name
+                Section name
                 <input
                   name="name"
                   required
-                  defaultValue={edit?.name ?? ""}
-                  placeholder="BSIS Programming"
-                />
-              </label>
-              <label>
-                Section
-                <input
-                  name="section"
-                  required
-                  defaultValue={edit?.section ?? ""}
-                  placeholder="BSIS-C2"
+                  defaultValue={edit ? sectionLabel(edit) : ""}
+                  placeholder="Grade 11 - ICT A"
                 />
               </label>
               <label>
@@ -81,20 +77,20 @@ export default async function Page({
                   name="description"
                   rows={3}
                   defaultValue={edit?.description ?? ""}
-                  placeholder="Optional class description"
+                  placeholder="Optional section description"
                 />
               </label>
             </div>
-            <button className="teacher-btn primary">Save Class</button>
+            <button className="teacher-btn primary">Save Section</button>
           </form>
         </section>
       )}
       <section className="teacher-card">
         <div className="teacher-card-head">
           <div>
-            <span className="teacher-eyebrow">YOUR CLASSES</span>
+            <span className="teacher-eyebrow">YOUR SECTIONS</span>
             <h3>
-              {ctx.classes.length} class{ctx.classes.length === 1 ? "" : "es"}
+              {ctx.classes.length} section{ctx.classes.length === 1 ? "" : "s"}
             </h3>
           </div>
         </div>
@@ -123,10 +119,8 @@ export default async function Page({
                       {c.status}
                     </span>
                   </div>
-                  <h3>{c.name}</h3>
-                  <p>
-                    {c.section} · {c.subject}
-                  </p>
+                  <h3>{sectionLabel(c)}</h3>
+                  <p>{c.subject}</p>
                   <div className="class-card-meta">
                     <span>👥 {count} students</span>
                     <span>📅 {c.school_year}</span>
@@ -169,7 +163,7 @@ export default async function Page({
               );
             })
           ) : (
-            <div className="teacher-empty">No classes created yet.</div>
+            <div className="teacher-empty">No sections created yet.</div>
           )}
         </div>
       </section>
@@ -206,11 +200,15 @@ function ImportBox({ classId }: { classId: string }) {
           <input type="file" name="student_file" accept=".csv,.xlsx" required />
         </div>
         <div className="import-columns">
+          <p>
+            All rows are enrolled in the selected section. Any Section column in
+            an older file is ignored.
+          </p>
           <strong>Required columns</strong>
           <span>Student ID</span>
           <span>First Name + Last Name (or Name)</span>
           <span>Email</span>
-          <span>Optional: Username, Section</span>
+          <span>Optional: Username</span>
         </div>
         <button className="teacher-btn primary">
           Validate &amp; Preview →

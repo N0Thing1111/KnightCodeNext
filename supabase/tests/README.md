@@ -57,3 +57,7 @@ node scripts/tests/admin-restore.mjs
 
 These tests never connect to the live database or send email. They verify full
 restoration and rollback, not only saving/encrypting a backup.
+
+## Single-section membership
+
+Run `node supabase/tests/section-membership.mjs <folder-containing-pglite-node_modules>`. It uses an isolated in-memory PostgreSQL database, not the school database. It checks single membership, explicit transfer authorization, derived profile labels, assignment access after transfer, history preservation, and refusal to migrate conflicting legacy memberships. The atomic-restore test also includes the section migration.

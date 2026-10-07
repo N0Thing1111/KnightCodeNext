@@ -1,3 +1,4 @@
+import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
 import { requireStudent } from "@/lib/auth";
 import { getAssignmentScope, getStudentLearningData } from "@/lib/student-data";
@@ -112,9 +113,7 @@ export default async function AssignmentsPage() {
                 <div className="level-info">
                   <span className="muted-kicker">
                     {teacherMap.get(assignment.teacher_id) ?? "Teacher"}
-                    {group
-                      ? ` · ${group.name} ${group.section}`
-                      : " · Individual"}
+                    {group ? ` · ${sectionLabel(group)}` : " · Individual"}
                   </span>
                   <h3>{assignment.title}</h3>
                   <p>

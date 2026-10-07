@@ -51,19 +51,19 @@ export default async function Page({
         <div className="auth-visual-content">
           <span className="eyebrow">TEACHER COMMAND CENTER</span>
           <h1>
-            Bring your class
+            Bring your section
             <br />
             <span>into KnightCode.</span>
           </h1>
           <p>
-            Create classes, add your students, and track their progress from one
-            portal.
+            Create sections, add your students, and track their progress from
+            one portal.
           </p>
           <div className="auth-feature-grid">
             <div>
               <span>▦</span>
-              <b>Class management</b>
-              <small>Create and organize classes</small>
+              <b>Section management</b>
+              <small>Create and organize sections</small>
             </div>
             <div>
               <span>◉</span>

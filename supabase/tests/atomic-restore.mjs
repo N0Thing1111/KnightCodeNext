@@ -23,6 +23,7 @@ for (const f of [
   "202610050002_code_execution_history.sql",
   "202610070001_atomic_school_restore.sql",
   "202610070002_restore_safeupdate.sql",
+  "202610070003_single_section_membership.sql",
 ]) {
   await db.exec(
     readFileSync(

@@ -1,3 +1,4 @@
+import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
 import { requireTeacher } from "@/lib/auth";
 import { avatar, getTeacherContext, teacherStudents } from "@/lib/teacher-data";
@@ -63,14 +64,14 @@ export default async function Page({
             />
           </label>
           <label>
-            Class
+            Section
             <select name="class_id" defaultValue={q.class_id || ""}>
-              <option value="">All classes</option>
+              <option value="">All sections</option>
               {ctx.classes
                 .filter((c) => c.status === "active")
                 .map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name} · {c.section}
+                    {sectionLabel(c)}
                   </option>
                 ))}
             </select>

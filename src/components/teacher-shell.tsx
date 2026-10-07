@@ -27,7 +27,7 @@ export function TeacherShell({
   }, [teacher.theme_preference]);
   const links = [
     ["/teacher/dashboard", "⌂", "Dashboard"],
-    ["/teacher/classes", "▦", "My Classes"],
+    ["/teacher/classes", "▦", "My Sections"],
     ["/teacher/students", "♙", "Students"],
     ["/teacher/monitoring", "◉", "Student Monitoring"],
     ["/teacher/results", "◷", "Session Results"],
@@ -173,7 +173,7 @@ export function TeacherShell({
               ) : (
                 <div className="teacher-notify-empty">
                   ✓<strong>You&apos;re all caught up!</strong>
-                  <small>Class activity will appear here.</small>
+                  <small>Section activity will appear here.</small>
                 </div>
               )}
             </div>
@@ -202,7 +202,7 @@ export function TeacherShell({
 }
 function title(path: string) {
   if (path.includes("/classes") || path.includes("/class/"))
-    return path.includes("/class/") ? "Class Overview" : "My Classes";
+    return path.includes("/class/") ? "Section Overview" : "My Sections";
   if (path.includes("/students")) return "Students";
   if (path.includes("/monitoring") || path.includes("/student/"))
     return "Student Monitoring";

@@ -1,5 +1,6 @@
 "use client";
 
+import { sectionLabel } from "@/lib/section-label";
 import { useMemo, useState } from "react";
 import { createAssignment } from "@/app/actions/teacher";
 
@@ -67,16 +68,16 @@ export function AssignmentForm({
           <input type="datetime-local" name="due_date" />
         </label>
         <label>
-          Class / section
+          Section
           <select
             name="class_id"
             value={classId}
             onChange={(event) => changeClass(event.target.value)}
           >
-            <option value="0">No class selected — show all students</option>
+            <option value="0">No section selected — show all students</option>
             {classes.map((item) => (
               <option key={item.id} value={item.id}>
-                {item.name} · {item.section}
+                {sectionLabel(item)}
               </option>
             ))}
           </select>
@@ -90,7 +91,7 @@ export function AssignmentForm({
           >
             <option value="">
               {classId !== "0"
-                ? "Assign the whole selected class"
+                ? "Assign the whole selected section"
                 : "No individual student"}
             </option>
             {visibleStudents.map((student) => (
@@ -104,8 +105,8 @@ export function AssignmentForm({
               ? visibleStudents.length +
                 " student" +
                 (visibleStudents.length === 1 ? "" : "s") +
-                " in this class"
-              : "Select a class to filter this list"}
+                " in this section"
+              : "Select a section to filter this list"}
           </small>
         </label>
         <label>
@@ -140,7 +141,7 @@ export function AssignmentForm({
         </label>
       </div>
       <p className="teacher-note">
-        Select a class to assign everyone in it. To assign only one learner,
+        Select a section to assign everyone in it. To assign only one learner,
         choose that learner from the filtered student list. A lesson or specific
         challenge is required.
       </p>

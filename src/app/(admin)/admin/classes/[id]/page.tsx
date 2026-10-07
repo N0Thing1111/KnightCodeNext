@@ -1,3 +1,4 @@
+import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAdminContext } from "@/lib/admin-data";
@@ -32,22 +33,16 @@ export default async function Page({
   return (
     <>
       <Link className="admin-back" href="/admin/manage/classes">
-        ← Back to classes
+        ← Back to sections
       </Link>
       <AdminHero
-        title={cls.name}
-        description={
-          cls.section +
-          " · " +
-          cls.subject +
-          " · " +
-          (teacher?.name || "No teacher")
-        }
+        title={sectionLabel(cls)}
+        description={cls.subject + " · " + (teacher?.name || "No teacher")}
       />
       <Alerts q={q} />
       <div className="teacher-grid two">
         <section className="teacher-card">
-          <h3>Add a student</h3>
+          <h3>Add or transfer a student</h3>
           {available.length ? (
             <form action={saveRoster} className="teacher-form">
               <input type="hidden" name="class_id" value={cls.id} />
@@ -60,23 +55,31 @@ export default async function Page({
                   </option>
                   {available.map((s) => (
                     <option key={s.id} value={s.id}>
-                      {s.name} · {s.student_id}
+                      {s.name} · {s.student_id} -{" "}
+                      {ctx.classes.find((c) =>
+                        ctx.class_students.some(
+                          (m) => m.student_id === s.id && m.class_id === c.id,
+                        ),
+                      )?.name || "Unassigned"}
                     </option>
                   ))}
                 </select>
               </label>
-              <button className="teacher-btn primary">Add student</button>
+              <button className="teacher-btn primary">
+                Add / transfer student
+              </button>
             </form>
           ) : (
             <div className="teacher-empty">
-              All active students are already in this class.
+              All active students are already in this section.
             </div>
           )}
         </section>
         <section className="teacher-card">
           <h3>{students.length} enrolled students</h3>
           <p className="teacher-note">
-            Only students not already enrolled appear in the add dropdown.
+            Selecting a student from another section transfers them here. Their
+            progress and session history are preserved.
           </p>
         </section>
       </div>
@@ -99,7 +102,7 @@ export default async function Page({
                     <small>{s.student_id}</small>
                   </td>
                   <td>{s.email}</td>
-                  <td>{s.class_section || "—"}</td>
+                  <td>{sectionLabel(cls)}</td>
                   <td>
                     <form action={saveRoster}>
                       <input type="hidden" name="class_id" value={cls.id} />

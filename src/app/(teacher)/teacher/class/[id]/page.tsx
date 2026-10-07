@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
@@ -59,12 +60,8 @@ export default async function Page({
   return (
     <>
       <Hero
-        eyebrow="CLASS"
-        title={
-          <>
-            {cls.name} <span className="hero-inline-badge">{cls.section}</span>
-          </>
-        }
+        eyebrow="SECTION"
+        title={<>{sectionLabel(cls)}</>}
         description={
           cls.subject + " · " + (cls.school_year || "") + " · " + cls.status
         }
@@ -111,7 +108,7 @@ export default async function Page({
       </div>
       <div className="teacher-grid two">
         <section className="teacher-card">
-          <Head eyebrow="CLASS ROSTER" title="Students" />
+          <Head eyebrow="SECTION ROSTER" title="Students" />
           <div className="teacher-table-wrap">
             <table className="teacher-table">
               <thead>
@@ -178,7 +175,7 @@ export default async function Page({
                   <tr>
                     <td colSpan={4}>
                       <div className="teacher-empty">
-                        No students in this class.
+                        No students in this section.
                       </div>
                     </td>
                   </tr>
@@ -189,11 +186,16 @@ export default async function Page({
         </section>
         <section className="teacher-card">
           <Head eyebrow="ADD STUDENTS" title="Build this roster" />
+          <p className="teacher-note">
+            Students belong to one section. Moving a student removes the
+            previous membership but keeps their learning history. Transfers from
+            another teacher must be made by an administrator.
+          </p>
           {available.length > 0 && (
             <form action={addExistingStudent} className="teacher-form">
               <input type="hidden" name="class_id" value={cls.id} />
               <label>
-                Add an existing student
+                Move a student from another of your sections
                 <select name="student_id" required defaultValue="">
                   <option value="" disabled>
                     Choose student
@@ -205,7 +207,7 @@ export default async function Page({
                   ))}
                 </select>
               </label>
-              <button className="teacher-btn">Add to Class</button>
+              <button className="teacher-btn">Move to Section</button>
             </form>
           )}
           <div style={{ height: 14 }} />
@@ -228,10 +230,6 @@ export default async function Page({
                 Username (optional)
                 <input name="username" />
               </label>
-              <label>
-                Section (optional)
-                <input name="section" defaultValue={cls.section} />
-              </label>
             </div>
             <button className="teacher-btn primary">
               Create / Link Student
@@ -241,7 +239,7 @@ export default async function Page({
       </div>
       <div className="teacher-grid two">
         <section className="teacher-card">
-          <Head eyebrow="ASSIGNMENTS" title="Recent class assignments" />
+          <Head eyebrow="ASSIGNMENTS" title="Recent section assignments" />
           <div>
             {assignments.length ? (
               assignments.map((a) => {
@@ -265,7 +263,7 @@ export default async function Page({
           </div>
         </section>
         <section className="teacher-card">
-          <Head eyebrow="ABOUT" title="Class details" />
+          <Head eyebrow="ABOUT" title="Section details" />
           <p className="teacher-prose">
             {cls.description || "No description provided."}
           </p>

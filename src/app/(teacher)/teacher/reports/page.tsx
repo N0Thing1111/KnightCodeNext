@@ -8,7 +8,7 @@ import {
 import { Hero } from "@/components/teacher-ui";
 const labels: Record<ReportType, string> = {
   student_progress: "Student Progress",
-  class_performance: "Class Performance",
+  class_performance: "Section Performance",
   lesson_completion: "Lesson Completion",
   challenge_performance: "Challenge Performance",
   activity: "Activity",
@@ -31,7 +31,7 @@ export default async function Page({
       <Hero
         eyebrow="DATA & INSIGHTS"
         title="Reports"
-        description="Generate reports from the actual students, progress, activity, and classes assigned to you."
+        description="Generate reports from the actual students, progress, activity, and sections assigned to you."
       >
         <div className="hero-actions">
           <a

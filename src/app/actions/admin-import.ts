@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+import { sendTeacherPasswordEmail } from "@/lib/mail";
+
 type ImportRow = { name: string; email: string };
 
 function temporaryPassword() {
@@ -111,16 +113,27 @@ export async function importTeachers(formData: FormData) {
     }
     credentials.push({ ...row, teacher_id: code, password });
   }
-  await db
-    .from("admin_audit_log")
-    .insert({
-      admin_id: admin.id,
-      action: "import",
-      entity: "teachers",
-      details: { count: credentials.length },
-    });
+  await db.from("admin_audit_log").insert({
+    admin_id: admin.id,
+    action: "import",
+    entity: "teachers",
+    details: { count: credentials.length },
+  });
+  // Send only after the account-creation batch has finished successfully.
+  const delivered = await Promise.all(
+    credentials.map(async (row) => ({
+      ...row,
+      email_sent: await sendTeacherPasswordEmail({
+        email: row.email,
+        name: row.name,
+        teacherId: row.teacher_id,
+        temporaryPassword: row.password,
+        schoolLabel: schoolCode,
+      }),
+    })),
+  );
   const jar = await cookies();
-  jar.set("kc_admin_import", JSON.stringify(credentials), {
+  jar.set("kc_admin_import", JSON.stringify(delivered), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

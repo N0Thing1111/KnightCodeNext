@@ -63,7 +63,8 @@ export function AdminImporter() {
         <p className="admin-note">
           Use the columns <code>name,email</code>, with one teacher per row (up
           to 100). Preview before creating accounts. Each teacher receives a
-          generated ID and password, shown once for you to distribute.
+          generated ID and password, emailed to their address and shown in the
+          results for you to copy if sending fails.
         </p>
         <label className="admin-file-label">
           Teacher CSV

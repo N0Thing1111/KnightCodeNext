@@ -8,7 +8,7 @@ const links = [
   ["/admin", "⌂", "Overview"],
   ["/admin/manage/teachers", "♜", "Teachers"],
   ["/admin/manage/students", "♙", "Students"],
-  ["/admin/manage/classes", "▦", "Classes"],
+  ["/admin/manage/classes", "▦", "Sections"],
   ["/admin/manage/lessons", "▤", "Lessons"],
   ["/admin/manage/levels", "⌘", "Levels"],
   ["/admin/results", "◷", "Session results"],
@@ -100,7 +100,7 @@ function pageTitle(path: string) {
   if (path.includes("/manage/teachers")) return "Teachers";
   if (path.includes("/manage/students")) return "Students";
   if (path.includes("/manage/classes") || path.includes("/classes/"))
-    return "Classes";
+    return "Sections";
   if (path.includes("/manage/lessons")) return "Lessons";
   if (path.includes("/manage/levels")) return "Levels";
   if (path.includes("/results")) return "Session Results";

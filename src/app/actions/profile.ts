@@ -23,7 +23,6 @@ export async function updateProfile(
   const email = String(form.get("email") ?? "")
     .trim()
     .toLowerCase();
-  const section = String(form.get("class_section") ?? "").trim();
   const avatar = String(form.get("avatar_key") ?? "knight");
   const theme = String(form.get("theme_preference") ?? "dark");
   if (!name || name.length > 150)
@@ -78,7 +77,6 @@ export async function updateProfile(
     .from("profiles")
     .update({
       name,
-      class_section: section || null,
       avatar_key: avatar,
       profile_image: profileImage,
       theme_preference: theme,
