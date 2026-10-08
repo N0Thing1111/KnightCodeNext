@@ -20,7 +20,7 @@ export default async function Page({
     admin = createAdminClient(),
     { data: batch } = await admin
       .from("teacher_import_batches")
-      .select("*,sections(name,section)")
+      .select("*,classes(name,section)")
       .eq("id", id)
       .eq("teacher_id", t.id)
       .maybeSingle();
