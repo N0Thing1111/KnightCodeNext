@@ -284,3 +284,19 @@ assert.ok(maxActiveEmails <= 5);
 console.log(
   "PASS: restored student/teacher credentials emailed only after success, existing accounts and failed restores send nothing, repeated restore sends nothing, delivery failures preserve results/passwords, and SMTP concurrency is limited.",
 );
+
+// New databases reject legacy restores before creating accounts or sending email.
+version = 2;
+created = [];
+emails = [];
+calls = [];
+await assert.rejects(
+  () => restoreSchoolBackup(backup, "admin"),
+  /version 3 save/,
+);
+assert.equal(created.length, 0);
+assert.equal(emails.length, 0);
+assert.ok(calls.every((c) => c.name !== "restore_school_backup"));
+console.log(
+  "PASS legacy-save preflight protects Python history before account preparation.",
+);

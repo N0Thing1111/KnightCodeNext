@@ -1,3 +1,4 @@
+import { isGameLevelAvailable } from "@/lib/game-build";
 import { sectionLabel } from "@/lib/section-label";
 import { requireTeacher } from "@/lib/auth";
 import {
@@ -44,10 +45,12 @@ export default async function Page({
               .filter((m) => m.student_id === s.id)
               .map((m) => m.class_id),
           }))}
-          lessons={ctx.lessons.map((l) => ({ id: l.id, title: l.title }))}
+          lessons={ctx.lessons.map((l) => ({ id: l.id, title: l.title, pythonTitle: ctx.python.activities.some(a => a.lesson_id === l.id && a.published) ? "This lesson's Python activity" : undefined }))}
           levels={ctx.levels.map((l) => ({
             id: l.id,
             levelNumber: l.level_number,
+            lessonId: l.lesson_id,
+            available: isGameLevelAvailable(l),
             title: l.title,
           }))}
           defaultClassId={q.class_id || "0"}
@@ -162,7 +165,7 @@ export default async function Page({
                               }}
                             />
                           </span>
-                          <small>completed</small>
+                          <small>{!a.level_id && ctx.python.activities.some(py => py.lesson_id === a.lesson_id && py.published) ? "games + Python submitted" : "game completed"}</small>
                         </div>
                       </td>
                       <td className="assignment-action-cell">

@@ -22,8 +22,7 @@ export default async function ProgressPage() {
       .order("created_at", { ascending: false })
       .limit(20),
   ]);
-  const progress = new Map(learning.progress.map((row) => [row.level_id, row])),
-    levelMap = new Map(learning.levels.map((level) => [level.id, level])),
+  const levelMap = new Map(learning.levels.map((level) => [level.id, level])),
     history = activityResult.data ?? [],
     earnedCount = achievements.filter((a) => a.earned_at).length,
     xpInLevel = stats.xp % 500,
@@ -95,15 +94,8 @@ export default async function ProgressPage() {
               </div>
             )}
             {learning.lessons.map((lesson) => {
-              const levels = learning.levels.filter(
-                  (level) => level.lesson_id === lesson.id,
-                ),
-                done = levels.filter(
-                  (level) => progress.get(level.id)?.completed,
-                ).length,
-                pct = levels.length
-                  ? Math.round((done / levels.length) * 100)
-                  : 0;
+              const completion = learning.completion.get(lesson.id)!;
+              const pct = completion.pct;
               return (
                 <Link
                   href={`/lesson/${lesson.id}`}
@@ -116,13 +108,13 @@ export default async function ProgressPage() {
                       {lesson.title}
                     </span>
                     <strong>
-                      {done}/{levels.length}
+                      {completion.gamesDone}/{completion.gamesTotal} games
                     </strong>
                   </div>
                   <div className="progress-track">
                     <span style={{ width: `${pct}%` }} />
                   </div>
-                  <small>{pct}% complete</small>
+                  <small>{pct}% complete{learning.completion.get(lesson.id)?.pythonRequired && (learning.completion.get(lesson.id)?.pythonDone ? " (Python submitted)" : " (Python pending)")}</small>
                 </Link>
               );
             })}

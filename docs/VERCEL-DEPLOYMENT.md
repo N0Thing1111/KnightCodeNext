@@ -60,6 +60,6 @@ These checks do not prove full signed-in gameplay, performance saving, account m
 Vercel Functions limit request and response bodies to 4.5 MB:
 https://vercel.com/docs/functions/limitations
 
-The existing profile upload accepts files up to 5 MB in application code, so sufficiently large uploads can fail on Vercel before the application's validation runs. Keep uploads below 4 MB for this first deployment. Large imports, backup downloads, and restores also need checking against the same server-function limit. Unity game assets are static files, so this function-body limit does not prevent their delivery.
+The existing profile upload accepts files up to 5 MB in application code, so sufficiently large uploads can fail on Vercel before the application's validation runs. Keep uploads below 4 MB for this first deployment. Large imports still need checking against that server-function limit. The October 13 backup update uses private signed Storage transfers, supports 32 MB encrypted saves, and keeps large backup bytes out of the function request/response. See [PRIORITY-FIXES.md](PRIORITY-FIXES.md) for rollout status. Unity game assets are static files, so this function-body limit does not prevent their delivery.
 
 No application, PHP, or Unity source changes were required for this initial deployment.

@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { allRows, rowsForIds } from "@/lib/query-pages";
+import { sessionAssessment, latestActivity } from "@/lib/student-assessment";
 import { sectionLabel } from "@/lib/section-label";
 import { cache } from "react";
+import { getPythonCompletion } from "@/lib/python-data";
+import { lessonCompletion } from "@/lib/lesson-completion";
+import { isGameLevelAvailable } from "@/lib/game-build";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Profile } from "@/types/database";
 
@@ -27,95 +32,28 @@ const unique = <T>(items: T[]) => [...new Set(items)];
 
 export const getTeacherContext = cache(async (teacherId: string) => {
   const admin = db();
-  const [
-    { data: classes },
-    { data: assignments },
-    { data: levels },
-    { data: lessons },
-    { data: notices },
-  ] = await Promise.all([
-    admin
-      .from("classes")
-      .select("*")
-      .eq("teacher_id", teacherId)
-      .order("created_at", { ascending: false }),
-    admin
-      .from("assignments")
-      .select("*")
-      .eq("teacher_id", teacherId)
-      .order("created_at", { ascending: false }),
-    admin.from("levels").select("*").eq("active", true).order("level_number"),
-    admin.from("lessons").select("*").eq("active", true).order("order_number"),
-    admin
-      .from("teacher_notifications")
-      .select("*")
-      .eq("teacher_id", teacherId)
-      .order("is_read")
-      .order("created_at", { ascending: false })
-      .limit(12),
+  const [classList, assignments, levels, lessons, notificationResult] = await Promise.all([
+    allRows(() => admin.from("classes").select("*").eq("teacher_id", teacherId).order("created_at", { ascending: false }).order("id")),
+    allRows(() => admin.from("assignments").select("*").eq("teacher_id", teacherId).order("created_at", { ascending: false }).order("id")),
+    allRows(() => admin.from("levels").select("*").eq("active", true).order("level_number").order("id")),
+    allRows(() => admin.from("lessons").select("*").eq("active", true).order("order_number").order("id")),
+    admin.from("teacher_notifications").select("*").eq("teacher_id", teacherId).order("is_read").order("created_at", { ascending: false }).limit(12),
   ]);
-  const classList = classes ?? [];
-  const classIds = classList.map((c) => c.id);
-  const { data: memberships } = classIds.length
-    ? await admin.from("class_students").select("*").in("class_id", classIds)
-    : { data: [] };
-  const studentIds = unique((memberships ?? []).map((m) => m.student_id));
-  const [
-    { data: students },
-    { data: progress },
-    { data: activity },
-    { data: achievements },
-    { data: sessions },
-  ] = await Promise.all([
-    studentIds.length
-      ? admin
-          .from("profiles")
-          .select("*")
-          .in("id", studentIds)
-          .eq("role", "student")
-      : { data: [] },
-    studentIds.length
-      ? admin
-          .from("student_level_progress")
-          .select("*")
-          .in("student_id", studentIds)
-      : { data: [] },
-    studentIds.length
-      ? admin
-          .from("student_activity")
-          .select("*")
-          .in("student_id", studentIds)
-          .order("created_at", { ascending: false })
-          .limit(400)
-      : { data: [] },
-    studentIds.length
-      ? admin
-          .from("student_achievements")
-          .select("*,achievements(*)")
-          .in("student_id", studentIds)
-      : { data: [] },
-    studentIds.length
-      ? admin
-          .from("student_level_sessions")
-          .select("*")
-          .in("student_id", studentIds)
-          .order("started_at", { ascending: false })
-          .limit(500)
-      : { data: [] },
+  if (notificationResult.error) throw Error(notificationResult.error.message);
+  const memberships = await rowsForIds(classList.map(c => c.id), ids => admin.from("class_students").select("*").in("class_id", ids).order("class_id").order("student_id"));
+  const studentIds = unique(memberships.map(m => m.student_id));
+  const [students, progress, activity, achievements, sessions, pythonRuns] = await Promise.all([
+    rowsForIds(studentIds, ids => admin.from("profiles").select("*").in("id", ids).eq("role", "student").order("id")),
+    rowsForIds(studentIds, ids => admin.from("student_level_progress").select("*").in("student_id", ids).order("student_id").order("level_id")),
+    rowsForIds(studentIds, ids => admin.from("student_activity").select("*").in("student_id", ids).order("created_at", { ascending: false }).order("id")),
+    rowsForIds(studentIds, ids => admin.from("student_achievements").select("*,achievements(*)").in("student_id", ids).order("student_id").order("achievement_id")),
+    rowsForIds(studentIds, ids => admin.from("student_level_sessions").select("*").in("student_id", ids).order("started_at", { ascending: false }).order("id")),
+    rowsForIds(studentIds, ids => admin.from("python_runs").select("id,student_id,started_at").in("student_id", ids).order("started_at", { ascending: false }).order("id")),
   ]);
-  return {
-    classes: classList,
-    assignments: assignments ?? [],
-    levels: levels ?? [],
-    lessons: lessons ?? [],
-    memberships: memberships ?? [],
-    students: students ?? [],
-    progress: progress ?? [],
-    activity: activity ?? [],
-    achievements: achievements ?? [],
-    sessions: sessions ?? [],
-    notifications: notices ?? [],
-  };
+  activity.sort((a,b) => Date.parse(b.created_at)-Date.parse(a.created_at));
+  sessions.sort((a,b) => Date.parse(b.started_at)-Date.parse(a.started_at));
+  return { classes: classList, assignments, levels, lessons, memberships, students, progress,
+    activity, achievements, sessions, pythonRuns, notifications: notificationResult.data || [], python: await getPythonCompletion() };
 });
 
 export function assignedLevelIds(
@@ -134,10 +72,12 @@ export function assignedLevelIds(
       (!a.class_id || !classIds.has(a.class_id))
     )
       continue;
-    if (a.level_id) result.add(Number(a.level_id));
+    if (a.level_id) {
+      if (ctx.levels.some(l => l.id === Number(a.level_id) && isGameLevelAvailable(l))) result.add(Number(a.level_id));
+    }
     else if (a.lesson_id)
       ctx.levels
-        .filter((l) => l.lesson_id === a.lesson_id)
+        .filter((l) => l.lesson_id === a.lesson_id && isGameLevelAvailable(l))
         .forEach((l) => result.add(Number(l.id)));
   }
   return result;
@@ -166,8 +106,12 @@ export function teacherStudents(
     const completed = rows.filter((p) => p.completed).length;
     const attempts = rows.reduce((n, p) => n + Number(p.attempts || 0), 0);
     const mistakes = rows.reduce((n, p) => n + Number(p.mistakes || 0), 0);
-    const last =
-      ctx.activity.find((a) => a.student_id === student.id)?.created_at ?? null;
+    const assessment = sessionAssessment(ctx.sessions.filter(s => s.student_id === student.id && scope.has(Number(s.level_id))));
+    const last = latestActivity([
+      ...ctx.activity.filter(a => a.student_id === student.id).map(a => a.created_at),
+      ...ctx.pythonRuns.filter(r => r.student_id === student.id).map(r => r.started_at),
+      ...rows.map(p => p.updated_at),
+    ]);
     const pct = scope.size
       ? Math.round((completed / scope.size) * 1000) / 10
       : 0;
@@ -180,11 +124,11 @@ export function teacherStudents(
       completed_levels: completed,
       total_levels: scope.size,
       attempts,
-      failed_attempts: Math.max(0, attempts - completed),
+      failed_attempts: assessment.unsuccessful,
       mistakes,
       streak: Number(student.current_streak || 0),
       last_activity: last,
-      status: statusFor(last, pct, Math.max(0, attempts - completed)),
+      status: scope.size ? statusFor(last, pct, assessment.unsuccessful) : (last && Date.now() - Date.parse(last) < 14 * 86400000 ? "Recently Active" : "Inactive"),
     } as TeacherStudent;
   });
 }
@@ -199,17 +143,10 @@ export function assignmentCounts(
         .map((m) => m.student_id);
   let done = 0;
   for (const sid of unique(targetIds)) {
-    const required = assignment.level_id
-      ? [Number(assignment.level_id)]
-      : ctx.levels
-          .filter((l) => l.lesson_id === assignment.lesson_id)
-          .map((l) => Number(l.id));
-    const completed = new Set(
-      ctx.progress
-        .filter((p) => p.student_id === sid && p.completed)
-        .map((p) => Number(p.level_id)),
-    );
-    if (required.length && required.every((id) => completed.has(id))) done++;
+    if (assignment.level_id) {
+      const level = ctx.levels.find(l => l.id === Number(assignment.level_id));
+      if (level && level.active !== false && isGameLevelAvailable(level) && ctx.progress.some(p => p.student_id === sid && p.level_id === level.id && p.completed)) done++;
+    } else if (lessonCompletion(Number(assignment.lesson_id), sid, ctx.levels, ctx.progress, ctx.python.activities, ctx.python.submissions).complete) done++;
   }
   return { target: unique(targetIds).length, done };
 }
@@ -237,20 +174,7 @@ export function teacherStats(
     needs_attention: rows.filter((s) => s.status === "Needs Attention").length,
   };
 }
-export function avatar(key: string) {
-  return (
-    (
-      {
-        knight: "♞",
-        blue: "🛡️",
-        mage: "🧙",
-        fox: "🦊",
-        dragon: "🐉",
-        robot: "🤖",
-      } as Record<string, string>
-    )[key] ?? "♞"
-  );
-}
+export { avatar } from "@/lib/teacher-avatar";
 export function formatTime(value: number | null | undefined) {
   if (value == null) return "—";
   const m = Math.floor(value / 60),

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import "server-only";
 import {
   createCipheriv,
@@ -8,6 +7,7 @@ import {
 } from "crypto";
 import { gzipSync, gunzipSync } from "zlib";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { MAX_BACKUP_BYTES, MAX_BACKUP_JSON_BYTES } from "@/lib/backup-transfer-rules";
 export const BACKUP_TABLES = [
   "profiles",
   "lessons",
@@ -26,60 +26,40 @@ export const BACKUP_TABLES = [
   "announcements",
   "teacher_notifications",
 ] as const;
+export const PYTHON_BACKUP_TABLES = [
+  "python_activities",
+  "python_grants",
+  "python_drafts",
+  "python_runs",
+  "python_submissions",
+  "python_reviews",
+] as const;
 export type SchoolBackup = {
   format: "KnightCode Supabase school save";
-  version: 1 | 2;
+  version: 1 | 2 | 3;
   created_at: string;
   tables: Record<string, unknown[]>;
 };
-export async function captureBackup(): Promise<SchoolBackup> {
-  const db = createAdminClient(),
-    tables: Record<string, unknown[]> = {};
-  for (const table of BACKUP_TABLES) {
-    const allRows: any[] = [];
-    const keys =
-      table === "class_students"
-        ? ["class_id", "student_id"]
-        : table === "student_level_progress"
-          ? ["student_id", "level_id"]
-          : table === "student_achievements"
-            ? ["student_id", "achievement_id"]
-            : table === "student_telemetry_runs"
-              ? ["student_id", "level_id", "run_id"]
-              : ["id"];
-    for (let offset = 0; ; offset += 1000) {
-      let query = db.from(table).select("*");
-      for (const key of keys) query = query.order(key);
-      const { data, error } = await query.range(offset, offset + 999);
-      if (error) throw error;
-      allRows.push(...(data ?? []));
-      if (!data || data.length < 1000) break;
-    }
-    tables[table] =
-      table === "profiles"
-        ? allRows.filter((p) => p.role !== "admin")
-        : allRows;
-  }
-  return {
-    format: "KnightCode Supabase school save",
-    version: 2,
-    created_at: new Date().toISOString(),
-    tables,
-  };
+export async function captureBackup(adminId: string): Promise<SchoolBackup> {
+  const { data, error } = await createAdminClient().rpc("capture_school_backup", { p_admin: adminId });
+  if (error) throw Error("Could not capture a consistent save. Apply the priority-workflows migration and try again. " + error.message);
+  return data as SchoolBackup;
 }
 export function encryptBackup(data: SchoolBackup, password: string) {
   if (password.length < 12)
     throw Error("Use a backup password of at least 12 characters.");
+  const serialized = Buffer.from(JSON.stringify(data));
+  if (serialized.length > MAX_BACKUP_JSON_BYTES) throw Error("Save contents exceed the 128 MB expanded limit.");
   const salt = randomBytes(16),
     iv = randomBytes(12),
     key = pbkdf2Sync(password, salt, 210000, 32, "sha256"),
     cipher = createCipheriv("aes-256-gcm", key, iv);
   cipher.setAAD(Buffer.from("KnightCode-Supabase-save-v1"));
   const body = Buffer.concat([
-    cipher.update(gzipSync(Buffer.from(JSON.stringify(data)))),
+    cipher.update(gzipSync(serialized)),
     cipher.final(),
   ]);
-  return Buffer.from(
+  const file = Buffer.from(
     JSON.stringify({
       format: "KnightCode encrypted save",
       version: 2,
@@ -89,9 +69,12 @@ export function encryptBackup(data: SchoolBackup, password: string) {
       data: body.toString("base64"),
     }),
   );
+  if (file.length > MAX_BACKUP_BYTES) throw Error("This save exceeds the 32 MB transfer limit; request a database-level backup instead.");
+  return file;
 }
 export function decryptBackup(file: Buffer, password: string): SchoolBackup {
   try {
+    if (file.length > MAX_BACKUP_BYTES) throw Error();
     const outer = JSON.parse(file.toString("utf8"));
     if (outer.format !== "KnightCode encrypted save" || outer.version !== 2)
       throw Error();
@@ -108,18 +91,22 @@ export function decryptBackup(file: Buffer, password: string): SchoolBackup {
           decipher.update(Buffer.from(outer.data, "base64")),
           decipher.final(),
         ]),
+        { maxOutputLength: MAX_BACKUP_JSON_BYTES },
       ).toString("utf8"),
     );
     if (
       data.format !== "KnightCode Supabase school save" ||
-      ![1, 2].includes(data.version) ||
+      ![1, 2, 3].includes(data.version) ||
       !data.tables
     )
       throw Error();
     // Saves made before Run history remain restorable.
     if (data.version === 1 && data.tables.student_code_executions === undefined)
       data.tables.student_code_executions = [];
-    for (const t of BACKUP_TABLES)
+    for (const t of [
+      ...BACKUP_TABLES,
+      ...(data.version === 3 ? PYTHON_BACKUP_TABLES : []),
+    ])
       if (!Array.isArray(data.tables[t])) throw Error();
     return data;
   } catch {

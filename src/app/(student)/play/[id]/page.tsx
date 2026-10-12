@@ -51,7 +51,7 @@ export default async function PlayPage({
           </div>
         </div>
       </section>
-      {isGameLevelAvailable(level.level_number) ? (
+      {isGameLevelAvailable(level) ? (
         <UnityPlayer level={level} initial={progress} />
       ) : (
         <section className="panel game-unavailable">

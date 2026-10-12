@@ -103,6 +103,15 @@ export default async function Page({
             <button className="teacher-btn primary">Save school details</button>
           </form>
         </section>
+        <section className="teacher-card" id="support">
+          <h3>School contact and support</h3><p>These details appear on this deployment&apos;s student support page.</p>
+          <form action={saveAdminSettings} className="teacher-form">
+            <input type="hidden" name="settings_action" value="support" />
+            {[["support_contact","Contact person or office"],["support_email","Support email"],["support_phone","Phone or extension"],["support_hours","Office hours"]].map(([key,label]) => <label key={key}>{label}<input name={key} type={key === "support_email" ? "email" : "text"} maxLength={200} defaultValue={setting(ctx,key)} /></label>)}
+            <label>Instructions<textarea name="support_instructions" maxLength={2000} rows={4} defaultValue={setting(ctx,"support_instructions")} /></label>
+            <button className="teacher-btn primary">Save support details</button>
+          </form>
+        </section>
         <section className="teacher-card" id="theme">
           <h3>A look that feels like you</h3>
           <div className="admin-theme-options">

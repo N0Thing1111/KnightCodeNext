@@ -169,7 +169,8 @@ export async function manualAddStudent(f: FormData) {
         email,
         password,
         email_confirm: true,
-        user_metadata: {
+        app_metadata: { role: "student" },
+      user_metadata: {
           role: "student",
           student_id: studentId,
           username,

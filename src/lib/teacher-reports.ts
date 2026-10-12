@@ -1,3 +1,4 @@
+import { lessonCompletion } from "@/lib/lesson-completion";
 import { sectionLabel } from "@/lib/section-label";
 import {
   assignmentCounts,
@@ -73,7 +74,7 @@ export async function reportLines(teacherId: string, type: ReportType) {
         ),
       );
   if (type === "activity")
-    ctx.activity.slice(0, 100).forEach((a) => {
+    ctx.activity.forEach((a) => {
       const s = rows.find((x) => x.id === a.student_id),
         lv = ctx.levels.find((x) => x.id === a.level_id);
       lines.push(
@@ -91,7 +92,7 @@ export async function reportLines(teacherId: string, type: ReportType) {
     });
   if (type === "lesson_completion")
     ctx.lessons.forEach((l) => {
-      const related = ctx.assignments.filter((a) => a.lesson_id === l.id),
+      const related = ctx.assignments.filter((a) => a.lesson_id === l.id && !a.level_id),
         targets = new Set<string>();
       related.forEach((a) =>
         a.student_id
@@ -102,15 +103,7 @@ export async function reportLines(teacherId: string, type: ReportType) {
       );
       let done = 0;
       for (const sid of targets) {
-        const ids = ctx.levels
-            .filter((x) => x.lesson_id === l.id)
-            .map((x) => x.id),
-          completed = new Set(
-            ctx.progress
-              .filter((p) => p.student_id === sid && p.completed)
-              .map((p) => p.level_id),
-          );
-        if (ids.length && ids.every((id) => completed.has(id))) done++;
+        if (lessonCompletion(l.id, sid, ctx.levels, ctx.progress, ctx.python.activities, ctx.python.submissions).complete) done++;
       }
       if (targets.size)
         lines.push(

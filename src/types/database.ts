@@ -39,6 +39,7 @@ export interface Level {
   description: string;
   difficulty: string;
   xp_reward: number;
+  build_available?: boolean;
   active: boolean;
   starter_code_enabled: boolean;
   starter_code_template: string;

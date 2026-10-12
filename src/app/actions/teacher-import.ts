@@ -10,7 +10,8 @@ import { requireSectionMembership, setStudentSection } from "@/lib/sections";
 function password() {
   return "KC-" + crypto.randomUUID().replaceAll("-", "").slice(0, 8) + "!";
 }
-export async function confirmImport(form: FormData) {
+export type StudentImportState = { error?: string; result?: { created: (ImportRow & { temp_password: string; email_sent: boolean })[]; existing: ImportRow[]; errors: (ImportRow & { issue: string })[] } };
+export async function confirmImport(_previous: StudentImportState, form: FormData): Promise<StudentImportState> {
   const teacher = await requireTeacher(),
     id = String(form.get("batch_id") || ""),
     admin = createAdminClient(),
@@ -26,6 +27,7 @@ export async function confirmImport(form: FormData) {
       "/teacher/classes?error=" +
         encodeURIComponent("Import preview expired. Upload the file again."),
     );
+  if (batch.result) redirect("/teacher/import/" + id + "?done=1");
   await requireSectionMembership();
   const { data: targetSection } = await admin
     .from("classes")
@@ -109,7 +111,8 @@ export async function confirmImport(form: FormData) {
         email: row.email,
         password: temp,
         email_confirm: true,
-        user_metadata: {
+        app_metadata: { role: "student" },
+      user_metadata: {
           role: "student",
           student_id: row.student_id,
           username: row.username || null,
@@ -164,9 +167,9 @@ export async function confirmImport(form: FormData) {
       }),
     })),
   );
-  await admin
+  const saved = await admin
     .from("teacher_import_batches")
-    .update({ result: { created: delivered, existing, errors } })
+    .update({ result: { created: delivered.map(({ temp_password: secret, ...row }) => { void secret; return row; }), existing, errors } })
     .eq("id", id)
     .eq("teacher_id", teacher.id);
   await admin.from("teacher_notifications").upsert(
@@ -181,7 +184,7 @@ export async function confirmImport(form: FormData) {
     { onConflict: "teacher_id,notification_key" },
   );
   revalidatePath("/", "layout");
-  redirect("/teacher/import/" + id + "?done=1");
+  return { error: saved.error ? "Accounts were processed, but the import history could not be saved. Copy the credentials below and check the student list before importing again." : undefined, result: { created: delivered, existing, errors } };
 }
 export async function cancelImport(form: FormData) {
   const teacher = await requireTeacher(),

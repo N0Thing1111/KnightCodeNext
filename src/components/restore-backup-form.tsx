@@ -1,11 +1,30 @@
 "use client";
+import { prepareRestoreUpload, discardBackupTransfer } from "@/app/actions/backup-transfer";
+import { createClient } from "@/lib/supabase/client";
+import { BACKUP_BUCKET, MAX_BACKUP_BYTES } from "@/lib/backup-transfer-rules";
 import { useActionState } from "react";
 import { restoreAdminBackup } from "@/app/actions/admin-data";
 import type { RestoreResult } from "@/lib/admin-restore";
 
 export function RestoreBackupForm() {
   const [state, action, pending] = useActionState<RestoreResult, FormData>(
-    restoreAdminBackup,
+    async (_previous, form) => {
+      const file = form.get("save_file");
+      if (!(file instanceof File) || !file.size || file.size > MAX_BACKUP_BYTES) return { error: "Choose a save file up to 32 MB." };
+      form.delete("save_file");
+      form.set("file_size", String(file.size));
+      let path: string | undefined;
+      try {
+        const prepared = await prepareRestoreUpload(form);
+        if (prepared.error || !prepared.path || !prepared.token) return { error: prepared.error || "Upload unavailable." };
+        path = prepared.path;
+        const uploaded = await createClient().storage.from(BACKUP_BUCKET).uploadToSignedUrl(path, prepared.token, file, { contentType: "application/octet-stream" });
+        if (uploaded.error) return { error: "Upload failed. No records were restored. " + uploaded.error.message };
+        form.set("uploaded_path", path);
+        return await restoreAdminBackup({}, form);
+      } catch { return { error: "Connection interrupted. Check audit history before retrying the restore." }; }
+      finally { if (path) await discardBackupTransfer(path).catch(() => {}); }
+    },
     {},
   );
   return (
@@ -20,7 +39,7 @@ export function RestoreBackupForm() {
       </p>
       <form action={action} className="teacher-form">
         <label>
-          KnightCode save file
+          KnightCode save file (up to 32 MB)
           <input
             name="save_file"
             type="file"

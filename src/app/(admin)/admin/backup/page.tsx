@@ -1,3 +1,4 @@
+import { DownloadBackupForm } from "@/components/download-backup-form";
 import { RestoreBackupForm } from "@/components/restore-backup-form";
 import { AdminHero, Alerts } from "@/components/admin-ui";
 export default async function Page({
@@ -22,30 +23,7 @@ export default async function Page({
             hashes and uploaded image files are not included. Keep the original
             image storage separately.
           </p>
-          <form
-            method="post"
-            action="/api/admin/backup"
-            className="teacher-form"
-          >
-            <label>
-              Choose a backup password
-              <input
-                name="backup_password"
-                type="password"
-                minLength={12}
-                required
-              />
-            </label>
-            <label>
-              Confirm backup password
-              <input name="backup_confirm" type="password" required />
-            </label>
-            <label>
-              Your administrator password
-              <input name="admin_password" type="password" required />
-            </label>
-            <button className="teacher-btn primary">Download save file</button>
-          </form>
+          <DownloadBackupForm />
         </section>
         <section className="teacher-card">
           <h3>Restore a save file</h3>

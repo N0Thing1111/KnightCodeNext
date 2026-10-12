@@ -53,8 +53,7 @@ prepared account may remain. Manage/reset its password under Teachers/Students.
 If the connection fails after submission, check the admin audit history and
 counts before retrying: the server may have committed despite a lost response.
 
-The current browser upload limit is 4 MB (the application runs on Vercel). Larger
-saves need a separate large-file import workflow; they are rejected before restore.
+The updated transfer workflow supports encrypted saves up to 32 MB, with a 128 MB expanded-content limit. Signed uploads/downloads use private Supabase Storage so file bytes do not pass through Vercel function bodies. Migration 202610120005_backup_transfers.sql is already installed in the shared project. Older .knightsave files retain the same encryption format. See [PRIORITY-FIXES.md](PRIORITY-FIXES.md) for cleanup behavior, deployment status, and test steps.
 This restore path does not promise to recover data created after the save date.
 
 ## Verification

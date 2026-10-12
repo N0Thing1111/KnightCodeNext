@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from "next/link";
+import { getPythonActivities } from "@/lib/python-data";
+import { PythonActivitySettings } from "@/components/python-forms";
+import pythonStyles from "@/components/python.module.css";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { getAdminContext, displayStatus } from "@/lib/admin-data";
@@ -61,6 +64,7 @@ const configs: any = {
       "description",
       "difficulty",
       "active",
+      "build_available",
     ],
   },
 };
@@ -103,6 +107,10 @@ export default async function Page({
         ? {}
         : all.find((r: any) => String(r.id) === q.edit)
       : null;
+  const pythonActivity =
+    entity === "lessons" && editing?.id
+      ? (await getPythonActivities())?.find((a) => a.lesson_id === editing.id)
+      : null;
   let flash: any = null;
   try {
     flash = JSON.parse(jar.get("kc_admin_flash")?.value || "null");
@@ -143,6 +151,22 @@ export default async function Page({
       )}
       {editing && (
         <Editor entity={entity} config={config} record={editing} ctx={ctx} />
+      )}
+      {pythonActivity && (
+        <div className={pythonStyles.root}>
+          <section className={pythonStyles.card}>
+            <h2>Lesson Python activity</h2>
+            <p>
+              This activity is included when the lesson is assigned and unlocks
+              after its game levels. Saving a new version preserves instructions
+              in earlier runs.
+            </p>
+            <PythonActivitySettings
+              key={pythonActivity.id + ":" + pythonActivity.revision}
+              activity={pythonActivity}
+            />
+          </section>
+        </div>
       )}
       <section className="teacher-card">
         <form className="teacher-filterbar">
@@ -303,6 +327,7 @@ function Field({
                 .replaceAll("_", " ")
                 .replace(/\b\w/g, (x) => x.toUpperCase()),
     wide = ["content", "description", "learning_objective"].includes(field);
+  if (field === "build_available") return <label><input type="checkbox" name={field} value="1" defaultChecked={value === true} />Included in the current game build<small>Enable only after deploying this Unity scene. Otherwise it shows Coming Soon and does not block Python.</small></label>;
   if (field === "class_id")
     return (
       <label>

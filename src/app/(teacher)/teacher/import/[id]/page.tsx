@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { requireTeacher } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { issues, type ImportRow } from "@/lib/import-utils";
-import { cancelImport, confirmImport } from "@/app/actions/teacher-import";
+import { ImportConfirmForm } from "@/components/import-confirm-form";
+import { cancelImport } from "@/app/actions/teacher-import";
 export default async function Page({
   params,
   searchParams,
@@ -12,7 +13,7 @@ export default async function Page({
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const [{ id }, q, t] = await Promise.all([
+  const [{ id }, , t] = await Promise.all([
       params,
       searchParams,
       requireTeacher(),
@@ -26,7 +27,7 @@ export default async function Page({
       .maybeSingle();
   if (!batch || new Date(batch.expires_at) < new Date()) notFound();
   const result = batch.result as any;
-  if (q.done && result)
+  if (result)
     return (
       <>
         <section className="teacher-page-hero compact">
@@ -45,7 +46,7 @@ export default async function Page({
         <section className="teacher-card">
           <div className="teacher-card-head">
             <div>
-              <span className="teacher-eyebrow">ONE-TIME CREDENTIALS</span>
+              <span className="teacher-eyebrow">IMPORT HISTORY</span>
               <h3>New student accounts</h3>
             </div>
           </div>
@@ -67,7 +68,7 @@ export default async function Page({
                     <td>{r.name}</td>
                     <td>{r.email}</td>
                     <td>
-                      <code>{r.temp_password}</code>
+                      <span>Not stored — check email or reset if needed</span>
                     </td>
                     <td>
                       <span
@@ -84,8 +85,7 @@ export default async function Page({
             </table>
           </div>
           <p className="teacher-note">
-            Temporary passwords are shown only in this result. For any row
-            marked Not sent, share the password securely with that student.
+            Temporary passwords are never stored in this history. They were shown immediately after creation. If an email was not sent and the password was not copied, reset that student’s password.
           </p>
         </section>
       </>
@@ -167,12 +167,7 @@ export default async function Page({
             <button className="teacher-btn">Cancel</button>
           </form>
           {valid > 0 && (
-            <form action={confirmImport}>
-              <input type="hidden" name="batch_id" value={id} />
-              <button className="teacher-btn primary">
-                Continue with valid records →
-              </button>
-            </form>
+            <ImportConfirmForm id={id} />
           )}
         </div>
       </section>

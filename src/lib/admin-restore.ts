@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import "server-only";
 import { randomBytes } from "node:crypto";
-import { BACKUP_TABLES, type SchoolBackup } from "@/lib/admin-backup";
+import {
+  BACKUP_TABLES,
+  PYTHON_BACKUP_TABLES,
+  type SchoolBackup,
+} from "@/lib/admin-backup";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 import { sendStudentPasswordEmail, sendTeacherPasswordEmail } from "@/lib/mail";
@@ -22,8 +26,12 @@ export type RestoreResult = {
 
 export function validateRestoreBackup(backup: SchoolBackup) {
   const tables = backup.tables as Record<string, any[]>;
+  const requiredTables = [
+    ...BACKUP_TABLES,
+    ...(backup.version === 3 ? PYTHON_BACKUP_TABLES : []),
+  ];
   const ids = new Map<string, Set<string>>();
-  for (const table of BACKUP_TABLES) {
+  for (const table of requiredTables) {
     if (!Array.isArray(tables[table]))
       throw Error("Save file is missing " + table);
     const found = new Set<string>();
@@ -58,7 +66,7 @@ export function validateRestoreBackup(backup: SchoolBackup) {
     if (emails.has(email)) throw Error("Duplicate account email in save file.");
     emails.add(email);
   }
-  for (const table of BACKUP_TABLES) {
+  for (const table of requiredTables) {
     if (table === "profiles") continue; // student_id/teacher_id here are business IDs.
     for (const row of tables[table]) {
       for (const [column, target] of [
@@ -68,6 +76,13 @@ export function validateRestoreBackup(backup: SchoolBackup) {
         ["lesson_id", "lessons"],
         ["level_id", "levels"],
         ["achievement_id", "achievements"],
+        ...(table.startsWith("python_")
+          ? [
+              ["activity_id", "python_activities"],
+              ["run_id", "python_runs"],
+              ["submission_id", "python_submissions"],
+            ]
+          : []),
       ]) {
         if (row[column] != null && !ids.get(target)?.has(String(row[column])))
           throw Error(
@@ -89,9 +104,17 @@ export async function restoreSchoolBackup(
   validateRestoreBackup(backup);
   const db = createAdminClient();
   const ready = await db.rpc("school_restore_version");
-  if (ready.error || ready.data !== 1)
+  if (ready.error || ![1, 2].includes(ready.data))
     throw Error(
       "Restore is unavailable until migration 202610070001_atomic_school_restore.sql is applied. No school records were changed.",
+    );
+
+  if (
+    (backup.version === 3 && ready.data !== 2) ||
+    (backup.version !== 3 && ready.data === 2)
+  )
+    throw Error(
+      "This database requires a matching save format. Python-enabled databases need a new version 3 save; older saves cannot silently replace Python history. No accounts or records were changed. Keep the old file for a separately reviewed recovery.",
     );
 
   // Read every account, including beyond Supabase's default page size.
@@ -135,6 +158,7 @@ export async function restoreSchoolBackup(
       email: p.email,
       password,
       email_confirm: true,
+      app_metadata: { role: p.role },
       user_metadata: { role: p.role, name: p.name },
     });
     if (created.error || !created.data.user)

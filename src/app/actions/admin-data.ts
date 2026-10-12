@@ -5,17 +5,13 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { readTransfer, discardTransfer } from "@/lib/backup-transfer";
 import { decryptBackup } from "@/lib/admin-backup";
 import { restoreSchoolBackup, type RestoreResult } from "@/lib/admin-restore";
 async function verify(admin: any, password: string) {
   const s = await createClient(),
     r = await s.auth.signInWithPassword({ email: admin.email, password });
   if (r.error) throw Error("Administrator password is incorrect.");
-}
-async function audit(id: string, action: string, details: any = {}) {
-  await createAdminClient()
-    .from("admin_audit_log")
-    .insert({ admin_id: id, action, entity: "system", details });
 }
 function go(path: string, key: string, msg: string): never {
   revalidatePath("/admin", "layout");
@@ -30,50 +26,9 @@ export async function clearAdminData(f: FormData) {
       scope === "school" ? "CLEAR SCHOOL DATA" : "CLEAR LEARNING DATA";
     if (String(f.get("confirmation") || "") !== phrase)
       throw Error("The confirmation text does not match.");
-    const db = createAdminClient();
-    const learning: [string, string, "uuid" | "number"][] = [
-      ["student_code_executions", "id", "number"],
-      ["student_level_sessions", "id", "number"],
-      ["student_telemetry_runs", "student_id", "uuid"],
-      ["student_level_progress", "student_id", "uuid"],
-      ["student_activity", "id", "number"],
-      ["student_achievements", "student_id", "uuid"],
-      ["student_notifications", "id", "number"],
-      ["teacher_notifications", "id", "number"],
-    ];
-    for (const [table, key, kind] of learning) {
-      const query = db.from(table).delete();
-      const { error } =
-        kind === "number"
-          ? await query.gt(key, 0)
-          : await query.neq(key, "00000000-0000-0000-0000-000000000000");
-      if (error) throw error;
-    }
-    if (scope === "school") {
-      for (const [table, key] of [
-        ["announcements", "id"],
-        ["assignments", "id"],
-        ["class_students", "class_id"],
-        ["classes", "id"],
-      ] as const) {
-        const { error } = await db.from(table).delete().gt(key, 0);
-        if (error) throw error;
-      }
-      const { data: users } = await db
-        .from("profiles")
-        .select("id")
-        .in("role", ["student", "teacher"]);
-      for (const user of users ?? []) {
-        const { error } = await db.auth.admin.deleteUser(user.id);
-        if (error) throw error;
-      }
-    }
-    await audit(admin.id, "reset_" + scope);
-    go(
-      "/admin/data",
-      "notice",
-      "Selected records cleared. Lessons, levels, administrator access, and audit history were preserved.",
-    );
+    if (!["learning", "school"].includes(scope)) throw Error("Invalid clear scope.");
+    const { error } = await createAdminClient().rpc("clear_school_data", { p_admin: admin.id, p_scope: scope });
+    if (error) throw Error("Clear was not confirmed. Database errors roll back all changes; if the connection was interrupted, check audit history before retrying. " + error.message);
   } catch (e) {
     go(
       "/admin/data",
@@ -81,6 +36,11 @@ export async function clearAdminData(f: FormData) {
       e instanceof Error ? e.message : "Reset failed.",
     );
   }
+  go(
+    "/admin/data",
+    "notice",
+    "Selected records cleared. Lessons, levels, administrator access, and audit history were preserved.",
+  );
 }
 export async function restoreAdminBackup(
   _previous: RestoreResult,
@@ -88,19 +48,15 @@ export async function restoreAdminBackup(
 ): Promise<RestoreResult> {
   const admin = await requireAdmin();
   let result: RestoreResult;
+  const transferPath = String(f.get("uploaded_path") || "");
   try {
     await verify(admin, String(f.get("admin_password") || ""));
     if (String(f.get("confirmation") || "") !== "RESTORE SAVE FILE")
       throw Error("Type RESTORE SAVE FILE to confirm.");
-    const upload = f.get("save_file");
-    if (
-      !(upload instanceof File) ||
-      !upload.size ||
-      upload.size > 4 * 1024 * 1024
-    )
-      throw Error("Choose a KnightCode save file smaller than 4 MB.");
+    if (!transferPath) throw Error("Upload the save file using the restore form.");
+    const bytes = await readTransfer(transferPath, admin.id);
     const backup = decryptBackup(
-      Buffer.from(await upload.arrayBuffer()),
+      bytes,
       String(f.get("backup_password") || ""),
     );
     result = await restoreSchoolBackup(backup, admin.id);
@@ -111,6 +67,8 @@ export async function restoreAdminBackup(
           ? e.message
           : "Restore could not be confirmed. Check audit history before retrying.",
     };
+  } finally {
+    if (transferPath) await discardTransfer(transferPath, admin.id).catch(() => {});
   }
   revalidatePath("/", "layout");
   return result;

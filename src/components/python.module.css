@@ -1,0 +1,480 @@
+﻿.root {
+  --py-accent: #245dc7;
+  --py-danger: #b42337;
+  --py-success: #187442;
+  color: var(--text, #17233c);
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font, Inter, system-ui, sans-serif);
+}
+:global(html[data-theme="dark"]) .root {
+  --py-accent: #8ab9ff;
+  --py-danger: #ff9ba8;
+  --py-success: #75d6a0;
+}
+.root h1,
+.root h2,
+.root h3 {
+  color: inherit;
+  margin: 0 0 12px;
+}
+.root h2 {
+  font-size: 21px;
+}
+.root h3 {
+  font-size: 16px;
+}
+.root p {
+  color: var(--text-soft, #52627b);
+  line-height: 1.65;
+}
+.root a {
+  color: var(--py-accent);
+  text-underline-offset: 3px;
+}
+.root a:hover {
+  text-decoration: underline;
+}
+.card {
+  border: 1px solid var(--border, #dbe2ed);
+  border-radius: 14px;
+  padding: 24px;
+  margin: 20px 0;
+  background: var(--surface, #fff);
+  color: var(--text, #17233c);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.grid > * {
+  min-width: 0;
+}
+.root label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 12px 0 8px;
+}
+.root input,
+.root select,
+.root textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--border-strong, #c6d1e3);
+  border-radius: 8px;
+  background: var(--surface, #fff);
+  color: var(--text, #17233c);
+  font: inherit;
+}
+.root input::placeholder,
+.root textarea::placeholder {
+  color: var(--muted, #74839a);
+}
+.root input[type="checkbox"] {
+  display: inline;
+  width: auto;
+  margin-right: 8px;
+}
+.root textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+.root button,
+.root .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 9px 15px;
+  margin: 0;
+  border: 1px solid var(--border-strong, #c6d1e3);
+  border-radius: 8px;
+  background: var(--surface, #fff);
+  color: var(--text, #17233c);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  box-shadow: none;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+.root button:hover:not(:disabled),
+.root .button:hover {
+  background: var(--surface-soft, #f1f5fb);
+  border-color: var(--py-accent);
+  text-decoration: none;
+}
+.root .primary {
+  background: #245dc7;
+  border-color: #245dc7;
+  color: #fff;
+}
+.root .primary:hover:not(:disabled) {
+  background: #194da9;
+  border-color: #194da9;
+}
+.root .submit {
+  color: var(--py-accent);
+  border-color: var(--py-accent);
+}
+.root .stop:not(:disabled) {
+  color: var(--py-danger);
+}
+.root .quiet {
+  border-color: transparent;
+  background: transparent;
+}
+.root button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.root :focus-visible {
+  outline: 3px solid var(--py-accent);
+  outline-offset: 3px;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0;
+}
+.actions .quiet {
+  margin-left: auto;
+}
+.root .paneTitle {
+  display: block;
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+}
+.root pre,
+.root .editor {
+  background: var(--surface-soft, #f1f5fb);
+  color: var(--text, #17233c);
+  border: 1px solid var(--border, #dbe2ed);
+  border-radius: 10px;
+  padding: 16px;
+  font:
+    14px/1.75 Consolas,
+    "Courier New",
+    monospace;
+}
+.root pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 480px;
+  overflow: auto;
+  margin: 10px 0 18px;
+}
+.root .editor {
+  height: 360px;
+  min-height: 260px;
+  tab-size: 4;
+  resize: vertical;
+}
+.root .terminal {
+  height: 360px;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+.root .notice {
+  padding: 12px 15px;
+  border: 1px solid var(--border, #dbe2ed);
+  border-radius: 8px;
+  background: var(--surface-soft, #f1f5fb);
+  color: var(--text, #17233c);
+  margin: 16px 0;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+.root small {
+  display: block;
+  color: var(--text-soft, #52627b);
+  font-size: 12px;
+  margin: 5px 0 0;
+}
+.root summary {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 0;
+}
+.kicker {
+  display: block;
+  color: var(--py-accent);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin-bottom: 10px;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 3px 8px;
+  margin: 0 0 7px;
+  border-radius: 5px;
+  background: var(--surface-soft, #f1f5fb);
+  color: var(--text-soft, #52627b);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.status {
+  display: inline-block;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: var(--surface-soft, #f1f5fb);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.status[data-status="finished"] {
+  color: var(--py-success);
+}
+.status[data-status="error"],
+.status[data-status="timeout"] {
+  color: var(--py-danger);
+}
+.filters {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.3fr) repeat(2, minmax(150px, 1fr));
+  gap: 16px;
+}
+.filters label {
+  margin: 0;
+}
+.filters input,
+.filters select {
+  margin-top: 8px;
+}
+.filterForm {
+  padding-bottom: 4px;
+}
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--border, #dbe2ed);
+  border-radius: 10px;
+  margin-top: 16px;
+}
+.root table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.root th,
+.root td {
+  padding: 15px 16px;
+  text-align: left;
+  vertical-align: middle;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+.root th {
+  background: var(--surface-soft, #f1f5fb);
+  color: var(--text-soft, #52627b);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.root td {
+  border-top: 1px solid var(--border, #dbe2ed);
+}
+.root tbody tr:hover {
+  background: var(--surface-soft, #f1f5fb);
+}
+.root td strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+}
+.root td time {
+  display: block;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.root td:nth-child(1) {
+  min-width: 145px;
+}
+.activityCell {
+  min-width: 185px;
+  max-width: 290px;
+}
+.studentCell {
+  min-width: 155px;
+  max-width: 240px;
+}
+.root td .button {
+  min-height: 34px;
+  padding: 7px 11px;
+  font-size: 12px;
+}
+.tableFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-top: 16px;
+}
+.tableFooter p {
+  margin: 0;
+  font-size: 12px;
+}
+.tableFooter nav {
+  display: flex;
+  gap: 10px;
+}
+.root .tableHint {
+  font-size: 12px;
+  margin: 8px 0;
+}
+.root .empty {
+  padding: 36px 20px;
+  text-align: center;
+  color: var(--text-soft, #52627b);
+}
+.root :target {
+  scroll-margin-top: 95px;
+}
+@media (max-width: 1050px) {
+  .filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .filters label:first-child {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 800px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .card {
+    padding: 18px;
+  }
+  .root .terminal {
+    height: 260px;
+  }
+}
+@media (max-width: 520px) {
+  .filters {
+    grid-template-columns: 1fr;
+  }
+  .actions .quiet {
+    margin-left: 0;
+  }
+  .root button,
+  .root .button {
+    min-height: 42px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .root button,
+  .root .button {
+    transition: none;
+  }
+}
+
+/* A native text input over a display-only syntax layer keeps selection and typing accessible. */
+.codeEditor {
+  --syntax-comment: #42733c;
+  --syntax-keyword: #8836a5;
+  --syntax-string: #a13c25;
+  --syntax-number: #176f57;
+  --syntax-function: #795519;
+  --syntax-variable: #185b8f;
+  --syntax-constant: #174cbb;
+  position: relative;
+  height: 360px;
+  min-height: 260px;
+  resize: vertical;
+  overflow: hidden;
+  background: var(--surface-soft, #f1f5fb);
+  border: 1px solid var(--border, #dbe2ed);
+  border-radius: 10px;
+}
+:global(html[data-theme="dark"]) .codeEditor {
+  --syntax-comment: #8aaf76;
+  --syntax-keyword: #d49de0;
+  --syntax-string: #e4a184;
+  --syntax-number: #add5ac;
+  --syntax-function: #e4d79b;
+  --syntax-variable: #9cdcfe;
+  --syntax-constant: #79b8ef;
+}
+.codeEditor:focus-within {
+  outline: 2px solid var(--py-accent);
+  outline-offset: 2px;
+}
+.root .codeColors,
+.root .codeInput {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  min-height: 0;
+  margin: 0;
+  padding: 16px;
+  border: 0;
+  border-radius: 0;
+  font: 14px/1.75 Consolas, "Courier New", monospace;
+  font-weight: 400;
+  font-variant-ligatures: none;
+  letter-spacing: normal;
+  text-align: left;
+  text-transform: none;
+  tab-size: 4;
+  white-space: pre;
+  overflow-wrap: normal;
+  word-break: normal;
+  overflow: auto;
+  resize: none;
+}
+.root .codeColors {
+  pointer-events: none;
+  scrollbar-width: none;
+  background: transparent;
+  color: var(--text, #17233c);
+}
+.codeColors::-webkit-scrollbar { display: none; }
+.root .codeInput {
+  background: transparent;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  caret-color: var(--text, #17233c);
+  outline: none;
+}
+.codeInput::selection { background: rgb(85 145 230 / 30%); }
+.codeColors [data-token="comment"] { color: var(--syntax-comment); }
+.codeColors [data-token="keyword"] { color: var(--syntax-keyword); }
+.codeColors [data-token="string"] { color: var(--syntax-string); }
+.codeColors [data-token="number"] { color: var(--syntax-number); }
+.codeColors [data-token="function"],
+.codeColors [data-token="builtin"] { color: var(--syntax-function); }
+.codeColors [data-token="variable"] { color: var(--syntax-variable); }
+.codeColors [data-token="constant"] { color: var(--syntax-constant); }
+@media (forced-colors: active) {
+  .root .codeColors { display: none; }
+  .root .codeInput { color: CanvasText; -webkit-text-fill-color: CanvasText; caret-color: CanvasText; }
+}

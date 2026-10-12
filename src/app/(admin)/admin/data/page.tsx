@@ -1,3 +1,4 @@
+import { createAdminClient } from "@/lib/supabase/admin";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from "next/link";
 import { getAdminContext } from "@/lib/admin-data";
@@ -13,6 +14,11 @@ export default async function Page({
     tables =
       scope === "learning"
         ? [
+            "python_reviews",
+            "python_submissions",
+            "python_runs",
+            "python_drafts",
+            "student_code_executions",
             "student_level_sessions",
             "student_telemetry_runs",
             "student_level_progress",
@@ -22,6 +28,11 @@ export default async function Page({
             "teacher_notifications",
           ]
         : [
+            "python_reviews",
+            "python_submissions",
+            "python_runs",
+            "python_drafts",
+            "student_code_executions",
             "student_level_sessions",
             "student_telemetry_runs",
             "student_level_progress",
@@ -29,12 +40,20 @@ export default async function Page({
             "student_achievements",
             "student_notifications",
             "teacher_notifications",
+            "python_grants",
+            "teacher_import_batches",
             "announcements",
             "assignments",
             "class_students",
             "classes",
             "profiles",
           ];
+  const additional = tables.filter(t => !(t in ctx));
+  const extraCounts = Object.fromEntries(await Promise.all(additional.map(async t => {
+    const { count, error } = await createAdminClient().from(t).select("*", { count: "exact", head: true });
+    if (error) throw Error("Could not count records affected by reset.");
+    return [t, count ?? 0];
+  })));
   return (
     <>
       <AdminHero
@@ -72,7 +91,7 @@ export default async function Page({
         </div>
         <p className="admin-note">
           {scope === "learning"
-            ? "Clears performance, session results, activity, earned achievements, and notifications. Accounts, sections, assignments, lessons, and levels remain."
+            ? "Clears game performance, Python drafts, Runs, submissions, reviews, activity, earned achievements, and notifications. Resets game XP and streaks. Accounts, sections, assignments, lessons, and levels remain."
             : "Also removes teacher/student accounts, sections, enrolments, assignments, and announcements. Administrator access, settings, lessons, and levels remain."}
         </p>
         <div className="teacher-table-wrap">
@@ -90,7 +109,7 @@ export default async function Page({
                   <td>
                     {t === "profiles"
                       ? ctx.profiles.filter((p) => p.role !== "admin").length
-                      : ((ctx as any)[t]?.length ?? 0)}
+                      : (extraCounts[t] ?? (ctx as any)[t]?.length ?? 0)}
                   </td>
                 </tr>
               ))}

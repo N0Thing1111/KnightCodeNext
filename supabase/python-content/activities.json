@@ -1,0 +1,140 @@
+﻿[
+  {
+    "order": 1,
+    "title": "Plan a purchase",
+    "concept": "Sequence",
+    "instructions": "A notebook costs 35 pesos. Read the quantity and then the money paid, each as a whole number. Calculate the total before calculating the change. Print the total on the first line and the change on the second line. Assume there is enough money. Use calculations, not answers typed directly into print().",
+    "guide": "A variable remembers a value. int(input()) reads a whole number. Multiplication uses *. Subtraction uses -. Python follows your instructions from top to bottom. Example: price = 10, quantity = 2, then total = price * quantity. print(total) displays 20.",
+    "starter": "# Read quantity, then money paid.\nquantity = int(input())\nmoney = int(input())\n# Calculate the total and change, then print each on its own line.\n",
+    "cases": [
+      {
+        "label": "Three notebooks",
+        "inputs": ["3", "120"],
+        "expected": "105\n15"
+      },
+      { "label": "Exactly enough", "inputs": ["2", "70"], "expected": "70\n0" },
+      { "label": "One notebook", "inputs": ["1", "50"], "expected": "35\n15" }
+    ],
+    "extension": "Try a different notebook price and explain which calculation needs to change. Restore the required price before submitting."
+  },
+  {
+    "order": 2,
+    "title": "Check the fuel warning",
+    "concept": "If conditions",
+    "instructions": "Read a whole-number fuel amount. If fuel is below 5, print Low fuel. Always print Check complete afterward. When fuel is 5 or higher, the only output should be Check complete. Use an if condition so the warning is a decision, not a fixed message.",
+    "guide": "An if runs its indented instructions only when a condition is true. < means less than. Put a colon after the condition and four spaces before its body. Example: if score > 10: followed by an indented print(\"Target reached\"). A line without that indentation runs after the decision.",
+    "starter": "fuel = int(input())\n# Add a condition for the warning.\n\nprint(\"Check complete\")\n",
+    "cases": [
+      {
+        "label": "Low fuel",
+        "inputs": ["2"],
+        "expected": "Low fuel\nCheck complete"
+      },
+      {
+        "label": "At the boundary",
+        "inputs": ["5"],
+        "expected": "Check complete"
+      },
+      { "label": "Enough fuel", "inputs": ["12"], "expected": "Check complete" }
+    ],
+    "extension": "Predict what changes if you use <= instead of <. Try fuel 5 to check your prediction."
+  },
+  {
+    "order": 3,
+    "title": "Can I afford the notebook?",
+    "concept": "If and else",
+    "instructions": "A notebook costs 35 pesos. Read the money available as a whole number. If it is enough, print Buy and then the remaining money on the next line. Otherwise print Save more. Handle exactly 35 correctly. Use if and else to express the two choices.",
+    "guide": ">= means greater than or equal to. else runs when the if condition is false; else also ends with a colon. Both branches need indentation. Read the money once, choose the branch, and calculate change only in the affordable branch.",
+    "starter": "money = int(input())\nprice = 35\n# Choose one of two actions and print the required result.\n",
+    "cases": [
+      { "label": "Money left over", "inputs": ["50"], "expected": "Buy\n15" },
+      { "label": "Exact amount", "inputs": ["35"], "expected": "Buy\n0" },
+      { "label": "Not enough", "inputs": ["20"], "expected": "Save more" }
+    ],
+    "extension": "Explain why using > instead of >= would make the exact-amount case wrong."
+  },
+  {
+    "order": 4,
+    "title": "Track a changing balance",
+    "concept": "State and updates",
+    "instructions": "Read an opening balance, a deposit, and a withdrawal, in that order. Add the deposit to the balance first. If the updated balance can cover the withdrawal, subtract it and print the final balance. Otherwise print Declined and then the unchanged updated balance on the next line. Assume nonnegative whole-number inputs.",
+    "guide": "balance = balance + deposit replaces the old value with the new one. Later conditions see the new value. A decision made before an update can give a different result. Trace the value after each step on paper before running.",
+    "starter": "balance = int(input())\ndeposit = int(input())\nwithdrawal = int(input())\n# Update the balance before deciding about the withdrawal.\n",
+    "cases": [
+      {
+        "label": "Deposit makes it possible",
+        "inputs": ["10", "30", "35"],
+        "expected": "5"
+      },
+      {
+        "label": "Withdrawal declined",
+        "inputs": ["10", "5", "20"],
+        "expected": "Declined\n15"
+      },
+      {
+        "label": "Use the full balance",
+        "inputs": ["20", "15", "35"],
+        "expected": "0"
+      }
+    ],
+    "extension": "Move the condition before the deposit temporarily. Which example now behaves incorrectly, and why?"
+  },
+  {
+    "order": 5,
+    "title": "Total several items",
+    "concept": "Repeat with a for loop",
+    "instructions": "Read how many items there are. Then read one whole-number price for each item. Use a for loop to add all prices and print only the final total. Zero items must produce 0. Do not write one separate input line for every example item: the loop should work for any nonnegative count.",
+    "guide": "range(count) repeats count times. Start total at 0 before the loop. Inside the loop, read a price and add it to total. Indented lines repeat; a print placed after the loop runs once. Example: for step in range(3): repeats its body three times.",
+    "starter": "count = int(input())\ntotal = 0\n# Repeat reading and adding a price count times.\n\nprint(total)\n",
+    "cases": [
+      {
+        "label": "Three items",
+        "inputs": ["3", "10", "20", "5"],
+        "expected": "35"
+      },
+      { "label": "No items", "inputs": ["0"], "expected": "0" },
+      { "label": "One item", "inputs": ["1", "17"], "expected": "17" }
+    ],
+    "extension": "Also calculate the number of items costing more than 20. Remove the extra output before submitting the required version."
+  },
+  {
+    "order": 6,
+    "title": "Save until the target",
+    "concept": "While conditions",
+    "instructions": "Read a positive whole-number target. Starting with savings of 0, repeatedly read a positive deposit while savings are below the target. Stop asking as soon as the target is reached or exceeded. Print the savings and then the number of deposits, on separate lines. Use a while loop with an update that makes the condition eventually false.",
+    "guide": "while repeats as long as its condition is true. Initialize savings and count before the loop; update both inside it. Forgetting the savings update can create an endless loop. The target may be reached exactly or exceeded, so compare using < rather than !=.",
+    "starter": "target = int(input())\nsavings = 0\ndeposits = 0\n# Keep accepting deposits only while savings are below target.\n\nprint(savings)\nprint(deposits)\n",
+    "cases": [
+      {
+        "label": "Reach exactly",
+        "inputs": ["50", "20", "30"],
+        "expected": "50\n2"
+      },
+      {
+        "label": "Go above target",
+        "inputs": ["40", "25", "25"],
+        "expected": "50\n2"
+      },
+      { "label": "One deposit", "inputs": ["10", "15"], "expected": "15\n1" }
+    ],
+    "extension": "Explain why savings != target can keep requesting deposits forever when a deposit takes savings above the target."
+  },
+  {
+    "order": 7,
+    "title": "Repair the ticket counter",
+    "concept": "Plan, combine, and debug",
+    "instructions": "Read the number of visitors, then one whole-number age per visitor. Tickets cost 5 for ages below 12 and 10 for everyone else. Use repetition and a decision to compute the total and print it once. Repair the starter program: it contains mistakes in its starting total, loop count, and age boundary. Test zero visitors and age exactly 12 before submitting.",
+    "guide": "Trace a small example before editing. Ask: what should total be before anyone arrives? How many ages should be read? Which branch includes age 12? Fix the cause, then rerun the same case and a different case. A for loop and an if/else can work together.",
+    "starter": "visitors = int(input())\ntotal = 1\nfor visitor in range(visitors + 1):\n    age = int(input())\n    if age <= 12:\n        total = total + 5\n    else:\n        total = total + 10\nprint(total)\n",
+    "cases": [
+      {
+        "label": "Mixed ages",
+        "inputs": ["3", "8", "12", "20"],
+        "expected": "25"
+      },
+      { "label": "No visitors", "inputs": ["0"], "expected": "0" },
+      { "label": "Boundary age", "inputs": ["1", "12"], "expected": "10" }
+    ],
+    "extension": "Describe the effect of each original bug. Then consider how you would add a separate senior ticket price."
+  }
+]

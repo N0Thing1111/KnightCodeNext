@@ -68,7 +68,8 @@ export async function POST(request: NextRequest) {
     email,
     password,
     email_confirm: true,
-    user_metadata: { role: "teacher", name, teacher_id: teacherId },
+    app_metadata: { role: "teacher" },
+      user_metadata: { role: "teacher", name, teacher_id: teacherId },
   });
   if (created.error || !created.data.user)
     return redirectError(

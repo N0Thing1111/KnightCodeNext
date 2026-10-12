@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { getPythonActivities } from "@/lib/python-data";
+import { createClient } from "@/lib/supabase/server";
 import { notFound, redirect } from "next/navigation";
 import { LessonViewBeacon } from "@/components/lesson-view-beacon";
 import { requireStudent } from "@/lib/auth";
@@ -21,13 +23,22 @@ export default async function LessonPage({
     completed = levels.filter(
       (level) => progress.get(level.id)?.completed,
     ).length,
-    pct = levels.length ? Math.round((completed / levels.length) * 100) : 0,
+    pct = data.completion.get(id)?.pct || 0,
     nextLevel = levels.find(
       (level) =>
         !progress.get(level.id)?.completed &&
         data.playable.has(level.id) &&
-        isGameLevelAvailable(level.level_number),
+        isGameLevelAvailable(level),
     );
+  const activity = (await getPythonActivities())?.find(
+    (a) => a.lesson_id === id && a.published,
+  );
+  const completion = data.completion.get(id)!;
+  const db = await createClient();
+  const access = activity
+    ? await db.rpc("python_can_start", { p_activity: activity.id })
+    : null;
+  if (access?.error) throw Error(access.error.message);
   return (
     <main className="page-container lesson-page">
       <LessonViewBeacon lessonId={id} />
@@ -54,7 +65,7 @@ export default async function LessonPage({
             <span style={{ width: `${pct}%` }} />
           </div>
           <small>
-            {completed} of {levels.length} levels complete
+            {completion.gamesDone} of {completion.gamesTotal} playable game levels complete{completion.pythonRequired ? (completion.pythonDone ? "; Python submitted" : "; Python submission pending") : ""}
           </small>
           {nextLevel && (
             <Link
@@ -120,7 +131,7 @@ export default async function LessonPage({
         <div className="level-modern-list">
           {levels.map((level) => {
             const row = progress.get(level.id),
-              buildAvailable = isGameLevelAvailable(level.level_number),
+              buildAvailable = isGameLevelAvailable(level),
               canPlay = data.playable.has(level.id) && buildAvailable,
               status = row?.completed
                 ? "Completed"
@@ -166,6 +177,53 @@ export default async function LessonPage({
           })}
         </div>
       </section>
+      {activity && data.scope.fullLessonIds.has(id) && (
+        <section className="levels-section" id="python-activity">
+          <div className="section-heading-row">
+            <div>
+              <span className="panel-kicker">AFTER THE GAME</span>
+              <h2>Apply the lesson in Python</h2>
+              <p>
+                This activity is included with your lesson. Complete its available game levels to unlock it. Coming Soon levels do not block Python; if no game is available yet, you can start Python now.
+              </p>
+            </div>
+          </div>
+          <article className="level-modern-row">
+            <div
+              className={"level-number-badge" + (access?.data ? "" : " locked")}
+            >
+              Py
+            </div>
+            <div className="level-info">
+              <span className="muted-kicker">{activity.content.concept}</span>
+              <h3>{activity.content.title}</h3>
+              <p>
+                {access?.data
+                  ? "Write a program, try it, and submit your work for teacher feedback."
+                  : completion.gamesDone +
+                    " of " +
+                    completion.gamesTotal +
+                    " playable game levels complete. Your progress is saved."}
+              </p>
+            </div>
+            <div
+              className={
+                "level-status " + (access?.data ? "in-progress" : "locked")
+              }
+            >
+              <i />
+              {completion.pythonDone ? "Submitted" : access?.data ? "Ready to code" : "Locked"}
+            </div>
+            {access?.data ? (
+              <a className="btn btn-primary" href={"/lesson/" + id + "/python"}>
+                {completion.pythonDone ? "Open Python" : "Start Python"} <span>→</span>
+              </a>
+            ) : (
+              <span className="btn btn-locked">Finish game levels</span>
+            )}
+          </article>
+        </section>
+      )}
     </main>
   );
 }

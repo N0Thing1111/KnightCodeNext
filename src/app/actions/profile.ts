@@ -32,6 +32,14 @@ export async function updateProfile(
   if (!allowedAvatars.has(avatar) || !["light", "dark"].includes(theme))
     return { error: "Please choose valid profile settings." };
   let profileImage = student.profile_image;
+  let uploadedImage: string | null = null;
+  const fail = async (message: string) => {
+    if (uploadedImage) await supabase.storage.from("profile-images").remove([uploadedImage]);
+    return { error: message };
+  };
+  const currentPassword = String(form.get("current_password") ?? "");
+  const newPassword = String(form.get("new_password") ?? "");
+  if (newPassword && newPassword.length < 8) return { error: "New password must be at least 8 characters." };
   const picture = form.get("profile_image");
   if (picture instanceof File && picture.size) {
     if (picture.size > 5 * 1024 * 1024)
@@ -48,30 +56,27 @@ export async function updateProfile(
       return {
         error: "The profile picture could not be uploaded. Please try again.",
       };
-    if (profileImage)
-      await supabase.storage.from("profile-images").remove([profileImage]);
+
     profileImage = path;
+    uploadedImage = path;
   } else if (form.get("use_custom_picture") === "0") {
-    if (profileImage)
-      await supabase.storage.from("profile-images").remove([profileImage]);
+
     profileImage = null;
   }
-  const currentPassword = String(form.get("current_password") ?? "");
-  const newPassword = String(form.get("new_password") ?? "");
   if (newPassword) {
     if (newPassword.length < 8)
-      return { error: "New password must be at least 8 characters." };
+      return fail("New password must be at least 8 characters.");
     const check = await supabase.auth.signInWithPassword({
       email: student.email,
       password: currentPassword,
     });
-    if (check.error) return { error: "Current password is incorrect." };
+    if (check.error) return fail("Current password is incorrect.");
     const changed = await supabase.auth.updateUser({ password: newPassword });
-    if (changed.error) return { error: changed.error.message };
+    if (changed.error) return fail(changed.error.message);
   }
   if (email !== student.email) {
     const updated = await supabase.auth.updateUser({ email });
-    if (updated.error) return { error: updated.error.message };
+    if (updated.error) return fail(updated.error.message);
   }
   const { error } = await supabase
     .from("profiles")
@@ -82,7 +87,10 @@ export async function updateProfile(
       theme_preference: theme,
     })
     .eq("id", student.id);
-  if (error) return { error: error.message };
+  if (error) return fail(error.message);
+  if (student.profile_image && student.profile_image !== profileImage) {
+    await supabase.storage.from("profile-images").remove([student.profile_image]);
+  }
   revalidatePath("/", "layout");
   return {
     success:

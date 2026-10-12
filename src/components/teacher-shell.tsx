@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { TeacherProfile } from "@/lib/teacher-data";
-import { avatar } from "@/lib/teacher-data";
+import { avatar } from "@/lib/teacher-avatar";
 
 export function TeacherShell({
   teacher,

@@ -121,7 +121,8 @@ export async function saveAdminEntity(f: FormData) {
           email,
           password,
           email_confirm: true,
-          user_metadata: {
+          app_metadata: { role: role },
+      user_metadata: {
             role,
             name,
             student_id: role === "student" ? code : null,
@@ -304,6 +305,7 @@ export async function saveAdminEntity(f: FormData) {
       description: str(f, "description"),
       difficulty: str(f, "difficulty"),
       active: f.get("active") === "1",
+      build_available: f.get("build_available") === "1",
       starter_code_enabled: f.get("starter_code_enabled") === "1",
       starter_code_locked: f.get("starter_code_locked") === "1",
       starter_code_template: template,
@@ -361,11 +363,13 @@ export async function resetManagedPassword(f: FormData) {
       password = tempPassword(),
       { data: p } = await a
         .from("profiles")
-        .select("name,email,student_id,username,school_code")
+        .select("name,email,student_id,teacher_id,username,school_code")
         .eq("id", id)
-        .single(),
-      { error } = await a.auth.admin.updateUserById(id, { password });
-    if (error || !p) throw Error(error?.message || "Account not found.");
+        .eq("role", entity === "teachers" ? "teacher" : "student")
+        .maybeSingle();
+    if (!p) throw Error("Account not found.");
+    const { error } = await a.auth.admin.updateUserById(id, { password });
+    if (error) throw Error(error.message);
     let emailSent = false;
     if (entity === "students")
       emailSent = await sendStudentPasswordEmail({
@@ -377,6 +381,7 @@ export async function resetManagedPassword(f: FormData) {
         schoolLabel: p.school_code,
         reason: "reset",
       });
+    if (entity === "teachers") emailSent = await sendTeacherPasswordEmail({ email: p.email, name: p.name, teacherId: p.teacher_id || "", temporaryPassword: password, schoolLabel: p.school_code, reason: "reset" });
     await audit(admin.id, "reset_password", entity, id);
     const jar = await cookies();
     jar.set(
@@ -475,6 +480,15 @@ export async function saveAdminSettings(f: FormData) {
           .from("admin_settings")
           .upsert({ setting_key: key, setting_value: value });
       }
+    } else if (action === "support") {
+      const email = str(f,"support_email");
+      if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw Error("Enter a valid support email.");
+      const keys = ["support_contact","support_email","support_phone","support_hours","support_instructions"];
+      const rows = keys.map(key => ({ setting_key: key, setting_value: str(f,key) }));
+      if (rows.some(r => r.setting_value.length > (r.setting_key === "support_instructions" ? 2000 : 200))) throw Error("Support details are too long.");
+      const { error } = await a.from("admin_settings").upsert(rows);
+      if (error) throw Error(error.message);
+      revalidatePath("/support");
     } else if (action === "theme") {
       const theme = str(f, "theme") === "light" ? "light" : "dark";
       await a

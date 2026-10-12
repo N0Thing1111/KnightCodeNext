@@ -1,3 +1,4 @@
+import { lessonCompletion } from "@/lib/lesson-completion";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
@@ -71,15 +72,8 @@ export default async function Page({
   try {
     flash = JSON.parse(jar.get("kc_teacher_flash")?.value || "null");
   } catch {}
-  const completed = new Set(
-      progress.filter((p) => p.completed).map((p) => p.id),
-    ),
-    completedLessons = ctx.lessons.filter((l) => {
-      const ids = ctx.levels
-        .filter((x) => x.lesson_id === l.id && scope.has(Number(x.id)))
-        .map((x) => x.id);
-      return ids.length && ids.every((x) => completed.has(x));
-    }).length;
+  const assignedLessons = new Set(ctx.assignments.filter(a => !a.level_id && (a.student_id === id || cls.some(c => c!.id === a.class_id))).map(a => Number(a.lesson_id)));
+  const completedLessons = ctx.lessons.filter(l => assignedLessons.has(Number(l.id)) && lessonCompletion(Number(l.id), id, ctx.levels, ctx.progress, ctx.python.activities, ctx.python.submissions).complete).length;
   return (
     <>
       <Back href="/teacher/monitoring" label="Back to monitoring" />

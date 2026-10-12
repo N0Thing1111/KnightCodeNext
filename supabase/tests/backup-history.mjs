@@ -9,31 +9,15 @@ const rows = Array.from({ length: 1005 }, (_, id) => ({
   source: `move(right) // ${id}`,
 }));
 const calls = [];
+let rpcError = null;
 const fakeDb = {
-  from(table) {
-    const query = {
-      select() {
-        return query;
-      },
-      order() {
-        return query;
-      },
-      async range(start, end) {
-        calls.push([table, start, end]);
-        const data =
-          table === "student_code_executions"
-            ? rows
-            : table === "profiles"
-              ? [
-                  { id: "admin", role: "admin" },
-                  { id: "student", role: "student" },
-                ]
-              : [];
-        return { data: data.slice(start, end + 1), error: null };
-      },
-    };
-    return query;
-  },
+  async rpc(name, args) {
+    calls.push([name, args]);
+    const tables = Object.fromEntries([...exports.BACKUP_TABLES, ...exports.PYTHON_BACKUP_TABLES].map(t => [t, []]));
+    tables.profiles = [{ id: "student", role: "student" }];
+    tables.student_code_executions = rows;
+    return { data: { format: "KnightCode Supabase school save", version: 3, created_at: new Date().toISOString(), tables }, error: rpcError };
+  }
 };
 const source = readFileSync(
   new URL("../../src/lib/admin-backup.ts", import.meta.url),
@@ -51,20 +35,36 @@ vm.runInNewContext(js, {
   Buffer,
   require(name) {
     if (name === "server-only") return {};
+    if (name === "@/lib/backup-transfer-rules") return { MAX_BACKUP_BYTES: 32*1024*1024, MAX_BACKUP_JSON_BYTES: 128*1024*1024 };
     if (name === "@/lib/supabase/admin")
       return { createAdminClient: () => fakeDb };
     return require(name);
   },
 });
 const { captureBackup, encryptBackup, decryptBackup } = exports;
-const backup = await captureBackup();
-assert.equal(backup.version, 2);
+const backup = await captureBackup("admin");
+assert.equal(backup.version, 3);
 assert.equal(backup.tables.student_code_executions.length, 1005);
 assert.equal(backup.tables.profiles.length, 1);
-assert.ok(
-  calls.some(([t, start]) => t === "student_code_executions" && start === 1000),
-);
+assert.equal(calls.length, 1);
+assert.equal(calls[0][0], "capture_school_backup");
+assert.equal(calls[0][1].p_admin, "admin");
+rpcError = { message: "lock timeout" };
+await assert.rejects(() => captureBackup("admin"), /lock timeout/);
+rpcError = null;
+const pythonBackup = backup;
+for (const t of exports.PYTHON_BACKUP_TABLES) assert.ok(Array.isArray(pythonBackup.tables[t]));
 const password = "isolated-test-password";
+assert.equal(
+  decryptBackup(encryptBackup(pythonBackup, password), password).version,
+  3,
+);
+const missingPython = structuredClone(pythonBackup);
+delete missingPython.tables.python_runs;
+assert.throws(
+  () => decryptBackup(encryptBackup(missingPython, password), password),
+  /Cannot open/,
+);
 const reopened = decryptBackup(encryptBackup(backup, password), password);
 assert.equal(
   reopened.tables.student_code_executions[1004].source,
@@ -89,5 +89,13 @@ assert.throws(
   /Cannot open/,
 );
 console.log(
-  "PASS: backup pagination beyond 1,000 Runs, encryption round trip, old saves, invalid saves, admin exclusion",
+  "PASS: atomic snapshot RPC, fail-closed capture, encryption beyond 1,000 Runs, old/invalid saves",
 );
+
+const large = structuredClone(backup);
+large.tables.student_code_executions = [{ source: require("node:crypto").randomBytes(4*1024*1024).toString("base64") }];
+const encryptedLarge = encryptBackup(large,password);
+assert.ok(encryptedLarge.length > 4.5*1024*1024);
+assert.equal(decryptBackup(encryptedLarge,password).tables.student_code_executions[0].source,large.tables.student_code_executions[0].source);
+assert.throws(()=>decryptBackup(Buffer.alloc(33*1024*1024),password),/Cannot open/);
+console.log("PASS encrypted save above Vercel payload limit and oversize rejection.");

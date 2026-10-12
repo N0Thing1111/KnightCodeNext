@@ -12,7 +12,7 @@ export default async function LessonsPage() {
   ]);
   const progress = new Map(data.progress.map((row) => [row.level_id, row]));
   const availableCount = data.levels.filter((level) =>
-    isGameLevelAvailable(level.level_number),
+    isGameLevelAvailable(level),
   ).length;
   return (
     <main className="page-container lessons-page">
@@ -58,9 +58,8 @@ export default async function LessonsPage() {
           const done = levels.filter(
             (level) => progress.get(level.id)?.completed,
           ).length;
-          const pct = levels.length
-            ? Math.round((done / levels.length) * 100)
-            : 0;
+          const completion = data.completion.get(lesson.id)!;
+          const pct = completion.pct;
           const started =
             done > 0 ||
             levels.some(
@@ -95,7 +94,7 @@ export default async function LessonsPage() {
               <div className="card-progress">
                 <div>
                   <span>
-                    {done} / {levels.length} levels
+                    {completion.gamesDone} / {completion.gamesTotal} available game levels{completion.pythonRequired ? (completion.pythonDone ? " + Python submitted" : " + Python pending") : ""}
                   </span>
                   <b>{pct}%</b>
                 </div>
@@ -137,7 +136,7 @@ export default async function LessonsPage() {
           )}
           {data.levels.map((level) => {
             const row = progress.get(level.id);
-            const buildAvailable = isGameLevelAvailable(level.level_number);
+            const buildAvailable = isGameLevelAvailable(level);
             const canPlay = data.playable.has(level.id) && buildAvailable;
             const status = row?.completed
               ? "Completed"

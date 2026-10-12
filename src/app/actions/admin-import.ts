@@ -83,6 +83,7 @@ export async function importTeachers(formData: FormData) {
       email: row.email,
       password,
       email_confirm: true,
+      app_metadata: { role: "teacher" },
       user_metadata: { role: "teacher", name: row.name, teacher_id: code },
     });
     if (created.error || !created.data.user) {

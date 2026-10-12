@@ -248,6 +248,18 @@ export function StudentShell({
                       href={notice.link || "#"}
                       className={`notification-item ${notice.is_read ? "" : "unread"}`}
                       onClick={() => markRead(notice.id)}
+                      onNavigate={(event) => {
+                        if (
+                          notice.link &&
+                          (/^\/lesson\/\d+\/python(?:[?#]|$)/.test(
+                            notice.link,
+                          ) ||
+                            notice.link.startsWith("/activities?run="))
+                        ) {
+                          event.preventDefault();
+                          window.location.assign(notice.link);
+                        }
+                      }}
                     >
                       <span className={`notification-type ${notice.type}`}>
                         {notice.type === "achievement"
@@ -299,7 +311,7 @@ export function StudentShell({
         <span>
           © {new Date().getFullYear()} KnightCode · Code. Learn. Conquer.
         </span>
-        <Link href="/profile">Contact & Support</Link>
+        <Link href="/support">Contact & Support</Link>
       </footer>
     </div>
   );
@@ -310,6 +322,7 @@ function pageTitle(path: string) {
   if (path.startsWith("/lesson/")) return "Lesson";
   if (path.startsWith("/assignments")) return "My Assignments";
   if (path.startsWith("/progress")) return "My Progress";
+  if (path.startsWith("/support")) return "Contact & Support";
   if (path.startsWith("/profile")) return "Profile";
   if (path.startsWith("/play/")) return "Challenge";
   return "Dashboard";

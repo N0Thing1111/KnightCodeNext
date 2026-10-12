@@ -6,6 +6,6 @@ export async function proxy(request: NextRequest) {
 }
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|assets/|game_build/).*)",
+    "/((?!_next/static|_next/image|favicon.ico|python/runtime-worker[.]js|assets/|game_build/).*)",
   ],
 };

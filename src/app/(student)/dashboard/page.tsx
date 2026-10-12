@@ -28,7 +28,7 @@ export default async function DashboardPage() {
   const playableLevels = learning.levels.filter(
     (level) =>
       learning.playable.has(level.id) &&
-      isGameLevelAvailable(level.level_number),
+      isGameLevelAvailable(level),
   );
   const nextLevel =
     playableLevels.find((level) => !progress.get(level.id)?.completed) ??
@@ -46,9 +46,7 @@ export default async function DashboardPage() {
   const lessonDone = lessonLevels.filter(
     (level) => progress.get(level.id)?.completed,
   ).length;
-  const lessonPct = lessonLevels.length
-    ? Math.round((lessonDone / lessonLevels.length) * 100)
-    : 0;
+  const lessonPct = currentLesson ? learning.completion.get(currentLesson.id)?.pct || 0 : 0;
   const nextIndex = nextLevel
     ? learning.levels.findIndex((level) => level.id === nextLevel.id)
     : 0;
@@ -203,15 +201,8 @@ export default async function DashboardPage() {
         </div>
         <div className="learning-path">
           {learning.lessons.map((lesson, index) => {
-            const levels = learning.levels.filter(
-                (level) => level.lesson_id === lesson.id,
-              ),
-              done = levels.filter(
-                (level) => progress.get(level.id)?.completed,
-              ).length,
-              pct = levels.length
-                ? Math.round((done / levels.length) * 100)
-                : 0,
+            const completion = learning.completion.get(lesson.id)!;
+            const pct = completion.pct,
               state =
                 pct >= 100
                   ? "completed"
@@ -231,7 +222,8 @@ export default async function DashboardPage() {
                   <span className="path-copy">
                     <b>{lesson.title}</b>
                     <small>
-                      {done}/{levels.length} levels
+                      {completion.gamesDone}/{completion.gamesTotal} available levels
+                      {learning.completion.get(lesson.id)?.pythonRequired && (learning.completion.get(lesson.id)?.pythonDone ? " + Python submitted" : " + Python pending")}
                     </small>
                   </span>
                   <span className="path-percent">{pct}%</span>
@@ -436,7 +428,7 @@ export default async function DashboardPage() {
               upcoming.map((level) => {
                 const canPlay =
                     learning.playable.has(level.id) &&
-                    isGameLevelAvailable(level.level_number),
+                    isGameLevelAvailable(level),
                   row = progress.get(level.id),
                   isNext = nextLevel?.id === level.id,
                   status = row?.completed

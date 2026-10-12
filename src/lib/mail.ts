@@ -87,7 +87,7 @@ export async function sendTeacherPasswordEmail(input: {
   email: string;
   name: string;
   teacherId: string;
-  reason?: "welcome" | "restore";
+  reason?: "welcome" | "restore" | "reset";
   temporaryPassword: string;
   schoolLabel?: string | null;
 }): Promise<boolean> {
@@ -99,6 +99,7 @@ export async function sendTeacherPasswordEmail(input: {
       ? "Your school administrator has recreated your KnightCode teacher account while restoring a school save at " +
         school +
         ". Use the new temporary password below."
+      : input.reason === "reset" ? "Your school administrator reset your KnightCode teacher password at " + school + "."
       : "Your KnightCode teacher account has been created by your school administrator at " +
         school +
         ".",
@@ -117,7 +118,7 @@ export async function sendTeacherPasswordEmail(input: {
     input,
     input.reason === "restore"
       ? "Your KnightCode teacher account has been restored"
-      : "Your KnightCode teacher account is ready",
+      : input.reason === "reset" ? "Your KnightCode teacher password was reset" : "Your KnightCode teacher account is ready",
     lines.join("\n"),
   );
 }

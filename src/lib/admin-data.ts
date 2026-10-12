@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { allRows } from "@/lib/query-pages";
 import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -25,17 +26,21 @@ export const getAdminContext = cache(async () => {
   ] as const;
   const results = await Promise.all(
     tables.map(async (table) => {
-      let q: any = db.from(table).select("*");
-      if (table === "profiles") q = q.order("created_at", { ascending: false });
-      if (table === "lessons") q = q.order("order_number");
-      if (table === "levels") q = q.order("level_number");
-      if (table === "student_activity" || table === "admin_audit_log")
-        q = q.order("created_at", { ascending: false }).limit(500);
-      if (table === "student_level_sessions")
-        q = q.order("started_at", { ascending: false }).limit(500);
-      const { data, error } = await q;
-      if (error) throw error;
-      return [table, data ?? []] as const;
+      const key = table === "admin_settings" ? "setting_key" : ["student_level_progress", "student_achievements", "student_telemetry_runs", "class_students"].includes(table) ? "student_id" : "id";
+      const data = await allRows(() => {
+        let q = db.from(table).select("*");
+        if (["profiles","student_activity","admin_audit_log"].includes(table)) q = q.order("created_at", { ascending: false });
+        if (table === "student_level_sessions") q = q.order("started_at", { ascending: false });
+        if (table === "lessons") q = q.order("order_number");
+        if (table === "levels") q = q.order("level_number");
+        q = q.order(key);
+        if (["student_level_progress","student_telemetry_runs"].includes(table)) q = q.order("level_id");
+        if (table === "student_telemetry_runs") q = q.order("run_id");
+        if (table === "class_students") q = q.order("class_id");
+        if (table === "student_achievements") q = q.order("achievement_id");
+        return q;
+      });
+      return [table, data] as const;
     }),
   );
   return Object.fromEntries(results) as Record<(typeof tables)[number], any[]>;
