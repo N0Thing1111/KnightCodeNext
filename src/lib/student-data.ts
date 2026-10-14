@@ -45,8 +45,9 @@ const getActiveLevels = cache(async () => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("levels")
-    .select("*")
+    .select("*, lessons!inner(id)")
     .eq("active", true)
+    .eq("lessons.active", true)
     .order("level_number");
   if (error) throw error;
   return (data ?? []) as Level[];
@@ -75,24 +76,28 @@ const getStudentProgress = cache(async (studentId: string) => {
 
 export const getAssignmentScope = cache(
   async (studentId: string): Promise<Scope> => {
-    const [assignments, activeLevels] = await Promise.all([
+    const [assignments, activeLevels, activeLessons] = await Promise.all([
       getAssignments(studentId),
       getActiveLevels(),
+      getActiveLessons(),
     ]);
+    const activeLessonIds = new Set(activeLessons.map(lesson => lesson.id));
     const levelById = new Map(activeLevels.map((level) => [level.id, level]));
     const lessonIds = new Set<number>();
     const fullLessonIds = new Set<number>();
     const directLevelIds = new Set<number>();
 
     for (const row of assignments) {
-      if (row.lesson_id) {
+      if (row.lesson_id && activeLessonIds.has(row.lesson_id)) {
         lessonIds.add(row.lesson_id);
         if (!row.level_id) fullLessonIds.add(row.lesson_id);
       }
       if (row.level_id) {
-        directLevelIds.add(row.level_id);
         const directLevel = levelById.get(row.level_id);
-        if (directLevel) lessonIds.add(directLevel.lesson_id);
+        if (directLevel) {
+          directLevelIds.add(row.level_id);
+          lessonIds.add(directLevel.lesson_id);
+        }
       }
     }
 

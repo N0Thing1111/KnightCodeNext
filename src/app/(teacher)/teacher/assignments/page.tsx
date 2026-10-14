@@ -46,7 +46,7 @@ export default async function Page({
               .map((m) => m.class_id),
           }))}
           lessons={ctx.lessons.map((l) => ({ id: l.id, title: l.title, pythonTitle: ctx.python.activities.some(a => a.lesson_id === l.id && a.published) ? "This lesson's Python activity" : undefined }))}
-          levels={ctx.levels.map((l) => ({
+          levels={ctx.levels.filter(l => ctx.lessons.some(lesson => lesson.id === l.lesson_id)).map((l) => ({
             id: l.id,
             levelNumber: l.level_number,
             lessonId: l.lesson_id,

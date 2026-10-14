@@ -282,6 +282,14 @@ export async function createAssignment(f: FormData) {
       if (!data) throw Error("Invalid challenge.");
       actualLesson = data.lesson_id;
     }
+    const { data: activeLesson, error: lessonError } = await admin()
+      .from("lessons")
+      .select("id")
+      .eq("id", actualLesson)
+      .eq("active", true)
+      .maybeSingle();
+    if (lessonError) throw Error(lessonError.message);
+    if (!activeLesson) throw Error("This lesson is archived or no longer available. Choose an active lesson.");
     const due = str(f, "due_date");
     const { data: assignment, error } = await admin()
       .from("assignments")

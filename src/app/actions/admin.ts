@@ -271,14 +271,16 @@ export async function saveAdminEntity(f: FormData) {
           allowedAttributes: {},
         }),
         order_number: num(f, "order_number"),
-        active: true,
       };
-      if (!row.title || !row.order_number)
-        throw Error("Title and order are required.");
+      if (!row.title || !Number.isSafeInteger(row.order_number) || row.order_number < 1)
+        throw Error("Enter a title and a positive whole-number lesson order.");
+      if (id && (!Number.isSafeInteger(Number(id)) || Number(id) < 1))
+        throw Error("Invalid lesson.");
       const q = id
         ? a.from("lessons").update(row).eq("id", Number(id))
-        : a.from("lessons").insert(row);
+        : a.from("lessons").insert({ ...row, active: true });
       const { data, error } = await q.select("id").single();
+      if (error?.code === "23505") throw Error("That lesson order is already used. Choose a different order number.");
       if (error) throw Error(error.message);
       await audit(admin.id, id ? "update" : "create", entity, id || data.id);
       return id ? "Changes saved." : "Lesson created.";
@@ -333,6 +335,14 @@ export async function setAdminEntityStatus(f: FormData) {
   await finish("/admin/manage/" + entity, async (admin) => {
     const a = db();
     let q;
+    if (entity === "lessons") {
+      const lessonId = Number(id);
+      if (!Number.isSafeInteger(lessonId) || lessonId < 1) throw Error("Invalid lesson.");
+      const { error } = await a.from("lessons").update({ active: restore }).eq("id", lessonId).select("id").single();
+      if (error) throw Error(error.message);
+      await audit(admin.id, restore ? "restore" : "archive", entity, id);
+      return restore ? "Lesson restored." : "Lesson archived. Linked levels, assignments, and learning history are preserved.";
+    }
     if (entity === "classes")
       q = a
         .from("classes")
@@ -408,6 +418,17 @@ export async function deleteAdminEntity(f: FormData) {
     id = str(f, "id");
   await finish("/admin/manage/" + entity, async (admin) => {
     const a = db();
+    if (entity === "lessons") {
+      const lessonId = Number(id);
+      if (!Number.isSafeInteger(lessonId) || lessonId < 1) throw Error("Invalid lesson.");
+      if (str(f, "confirm_delete") !== "1") throw Error("Confirm that you want to permanently delete this unused lesson.");
+      const { error } = await a.rpc("delete_unused_lesson", { p_admin: admin.id, p_lesson: lessonId });
+      if (error?.code === "PGRST202" || error?.code === "42883")
+        throw Error("Safe lesson deletion is not installed yet. Apply the lesson-management database update first; you can still archive this lesson.");
+      if (error) throw Error(error.message);
+      // The database records deletion and its audit entry in one transaction.
+      return "Unused lesson permanently deleted.";
+    }
     if (entity === "classes") {
       const { error } = await a.from("classes").delete().eq("id", Number(id));
       if (error) throw Error(error.message);

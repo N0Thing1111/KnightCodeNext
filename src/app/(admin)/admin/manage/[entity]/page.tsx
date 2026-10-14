@@ -43,7 +43,7 @@ const configs: any = {
   lessons: {
     label: "Lessons",
     description:
-      "Shape the programming curriculum without changing the Unity game build.",
+      "Create and edit lessons, archive them while preserving history, or permanently delete an unused lesson.",
     fields: [
       "title",
       "description",
@@ -119,6 +119,11 @@ export default async function Page({
     <>
       <AdminHero title={config.label} description={config.description}>
         <div className="admin-hero-actions">
+          {entity === "students" && (
+            <Link className="teacher-btn" href="/admin/import/students">
+              Import students
+            </Link>
+          )}
           {entity === "teachers" && (
             <Link className="teacher-btn" href="/admin/import">
               Import teachers
@@ -152,19 +157,29 @@ export default async function Page({
       {editing && (
         <Editor entity={entity} config={config} record={editing} ctx={ctx} />
       )}
-      {pythonActivity && (
+      {entity === "lessons" && editing && !editing.id && (
+        <p className="teacher-alert">Save the lesson first, then open Edit to add its Python activity.</p>
+      )}
+      {entity === "lessons" && editing?.id && (
         <div className={pythonStyles.root}>
           <section className={pythonStyles.card}>
             <h2>Lesson Python activity</h2>
             <p>
-              This activity is included when the lesson is assigned and unlocks
-              after its game levels. Saving a new version preserves instructions
-              in earlier runs.
+              A published activity is included when this lesson is assigned and
+              unlocks after its available game levels. Coming Soon levels do not
+              block access. Earlier Runs keep their original instructions.
             </p>
-            <PythonActivitySettings
-              key={pythonActivity.id + ":" + pythonActivity.revision}
-              activity={pythonActivity}
-            />
+            {pythonActivity ? (
+              <PythonActivitySettings
+                key={pythonActivity.id + ":" + pythonActivity.revision}
+                activity={pythonActivity}
+              />
+            ) : (
+              <>
+                <p>This lesson has no Python activity yet. Add its instructions, starter code, and practice examples below.</p>
+                <PythonActivitySettings key={"new:" + editing.id} lessonId={editing.id} />
+              </>
+            )}
           </section>
         </div>
       )}
@@ -509,20 +524,18 @@ function RecordRow({
               Roster
             </Link>
           )}
-          {entity !== "lessons" && (
-            <form action={setAdminEntityStatus}>
-              <input type="hidden" name="entity" value={entity} />
-              <input type="hidden" name="id" value={row.id} />
-              <input
-                type="hidden"
-                name="restore"
-                value={archived ? "1" : "0"}
-              />
-              <button className="teacher-btn">
-                {archived ? "Restore" : "Archive"}
-              </button>
-            </form>
-          )}
+          <form action={setAdminEntityStatus}>
+            <input type="hidden" name="entity" value={entity} />
+            <input type="hidden" name="id" value={row.id} />
+            <input
+              type="hidden"
+              name="restore"
+              value={archived ? "1" : "0"}
+            />
+            <button className="teacher-btn">
+              {archived ? "Restore" : "Archive"}
+            </button>
+          </form>
           {["teachers", "students"].includes(entity) && (
             <details>
               <summary>Reset password</summary>
@@ -535,7 +548,7 @@ function RecordRow({
               </form>
             </details>
           )}
-          {["teachers", "students", "classes"].includes(entity) && (
+          {["teachers", "students", "classes", "lessons"].includes(entity) && (
             <details>
               <summary>Delete permanently</summary>
               <form
@@ -544,7 +557,17 @@ function RecordRow({
               >
                 <input type="hidden" name="entity" value={entity} />
                 <input type="hidden" name="id" value={row.id} />
-                <small>This also removes linked records.</small>
+                <small>
+                  {entity === "lessons"
+                    ? "Only unused lessons can be deleted. Linked levels, assignments, Python activities, or recorded lesson visits block deletion. Archive the lesson to preserve these records."
+                    : "This also removes linked records."}
+                </small>
+                {entity === "lessons" && (
+                  <label className="admin-check">
+                    <input type="checkbox" name="confirm_delete" value="1" required />
+                    Permanently delete this unused lesson
+                  </label>
+                )}
                 <button className="teacher-btn admin-delete">
                   Confirm delete
                 </button>

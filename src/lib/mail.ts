@@ -60,7 +60,7 @@ export async function sendStudentPasswordEmail(
         school +
         ". Use the new temporary password below."
       : input.reason === "welcome"
-        ? "Your KnightCode account has been created by your teacher at " +
+        ? "Your KnightCode account has been created by your school at " +
           school +
           "."
         : "Your KnightCode password was reset by your teacher at " +

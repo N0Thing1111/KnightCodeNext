@@ -64,7 +64,7 @@ export function activeProfiles(
 }
 export function displayStatus(row: any, entity: string) {
   if (entity === "classes") return row.status;
-  if (entity === "levels" || entity === "teachers" || entity === "students")
+  if (entity === "lessons" || entity === "levels" || entity === "teachers" || entity === "students")
     return row.active ? "active" : "archived";
   return row.active === false ? "hidden" : "active";
 }

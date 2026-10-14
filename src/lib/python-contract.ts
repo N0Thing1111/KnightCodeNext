@@ -70,6 +70,12 @@ export const pythonResultSchema = z.object({
 });
 export const pythonRequestSchema = z.discriminatedUnion("op", [
   z.object({
+    op: z.literal("create_activity"),
+    lesson: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+    content: pythonContentSchema,
+    published: z.boolean(),
+  }),
+  z.object({
     op: z.literal("draft"),
     activity: z.uuid(),
     source: z.string().max(32768),

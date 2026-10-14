@@ -1,5 +1,6 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { pythonRequestSchema } from "@/lib/python-contract";
 
 export async function POST(request: NextRequest) {
@@ -40,6 +41,36 @@ export async function POST(request: NextRequest) {
   const p = parsed.data;
   let response;
   switch (p.op) {
+    case "create_activity": {
+      // Authorize from the signed-in profile before using the server-only client.
+      const { data: profile, error: profileError } = await db
+        .from("profiles")
+        .select("role,active")
+        .eq("id", claims.claims.sub)
+        .maybeSingle();
+      if (profileError || !profile?.active || profile.role !== "admin")
+        return NextResponse.json(
+          { error: "An active administrator account is required." },
+          { status: 403 },
+        );
+      // The lesson FK and unique lesson_id constraint also protect concurrent requests.
+      response = await createAdminClient()
+        .from("python_activities")
+        .insert({ lesson_id: p.lesson, content: p.content, published: p.published })
+        .select("id")
+        .single();
+      if (response.error?.code === "23505")
+        return NextResponse.json(
+          { error: "This lesson already has a Python activity. Refresh the page to edit it." },
+          { status: 409 },
+        );
+      if (response.error?.code === "23503")
+        return NextResponse.json(
+          { error: "This lesson no longer exists. Refresh the lesson list." },
+          { status: 404 },
+        );
+      break;
+    }
     case "draft":
       response = await db.rpc("python_save_draft", {
         p_activity: p.activity,

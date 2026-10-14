@@ -494,4 +494,37 @@ await db.exec(readFileSync(new URL("../migrations/202610120005_backup_transfers.
 const bucket=(await db.query("select * from storage.buckets where id='school-backup-transfers'")).rows[0];
 assert.equal(bucket.public,false); assert.equal(Number(bucket.file_size_limit),33554432);
 console.log("PASS stale revision rejection/no partial Run, matching revision/idempotency, private unpublished history, credential redaction, private backup bucket.");
+// Lesson removal uses the same atomic lock as backup/restore; all tests are in memory.
+await db.exec(readFileSync(new URL('../migrations/202610140001_lesson_management.sql',import.meta.url),'utf8'));
+await db.exec('reset role');
+await db.exec(`insert into lessons(id,title,order_number) values
+ (800,'Unused example',800),(801,'Level owner',801),(802,'Assigned example',802),
+ (803,'Python owner',803),(804,'Viewed example',804),(805,'Rollback example',805);
+ insert into levels(id,lesson_id,level_number,order_in_lesson,title) values(801,801,801,1,'Protected level');
+ insert into assignments(teacher_id,student_id,lesson_id,title) values('${teacher}','${newStudent}',802,'Protected assignment');
+ insert into python_activities(lesson_id,content) values(803,'{}');
+ insert into student_activity(student_id,action_type,metadata) values('${newStudent}','lesson_viewed','{"lesson_id":804}');`);
+await as(newStudent);
+await assert.rejects(()=>db.query('select delete_unused_lesson($1,$2)',[admin,800]),/permission denied/);
+await db.exec('reset role; set role service_role');
+await assert.rejects(()=>db.query('select delete_unused_lesson($1,$2)',[teacher,800]),/Administrator required/);
+for(const id of [801,802,803,804]) {
+ await assert.rejects(()=>db.query('select delete_unused_lesson($1,$2)',[admin,id]),/Archive it instead/);
+}
+await db.query('select delete_unused_lesson($1,$2)',[admin,800]);
+await assert.rejects(()=>db.query('select delete_unused_lesson($1,$2)',[admin,800]),/Lesson not found/);
+await db.exec('reset role');
+assert.equal((await db.query('select count(*)::int n from lessons where id between 800 and 805')).rows[0].n,5);
+assert.equal((await db.query("select count(*)::int n from admin_audit_log where entity='lessons' and action='delete' and record_id='800'")).rows[0].n,1);
+assert.equal((await db.query('select count(*)::int n from levels where id=801')).rows[0].n,1);
+assert.equal((await db.query('select count(*)::int n from assignments where lesson_id=802')).rows[0].n,1);
+assert.equal((await db.query('select count(*)::int n from python_activities where lesson_id=803')).rows[0].n,1);
+await db.exec(`create function test_reject_lesson_audit() returns trigger language plpgsql as $$ begin
+ if new.entity='lessons' and new.record_id='805' then raise exception 'Test audit failure'; end if; return new; end $$;
+ create trigger test_lesson_audit before insert on admin_audit_log for each row execute function test_reject_lesson_audit();`);
+await assert.rejects(()=>db.query('select delete_unused_lesson($1,$2)',[admin,805]),/Test audit failure/);
+assert.equal((await db.query('select count(*)::int n from lessons where id=805')).rows[0].n,1,'Failed audit rolls deletion back');
+await db.exec('drop trigger test_lesson_audit on admin_audit_log; drop function test_reject_lesson_audit()');
+console.log('PASS safe lesson deletion: unused only, role isolation, linked-level/assignment/Python/visit protection, atomic audit and rollback.');
+
 await db.close();
