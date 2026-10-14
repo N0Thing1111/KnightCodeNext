@@ -1,0 +1,67 @@
+.shell { --game-controls: #0b1931; }
+.toolbar { height: auto; min-height: 52px; padding: 6px 12px; flex-wrap: wrap; }
+.title { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.title strong { font-size: 13px; }
+.controls { display: flex; align-items: center; gap: 8px; }
+.shell .toolbar button, .shell .toolbar a {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 40px; padding: 8px 12px; border: 1px solid #466082;
+  border-radius: 7px; background: #122541; color: #f4f8ff;
+  font-size: 13px; line-height: 1.2; font-weight: 600; font-family: inherit; cursor: pointer; text-decoration: none;
+}
+.shell .toolbar button:focus-visible, .shell .toolbar a:focus-visible { outline: 3px solid #8ab9ff; outline-offset: 2px; }
+.shell .toolbar .detailsToggle { display: none; }
+.viewport {
+  position: relative; width: 100%; aspect-ratio: 1080 / 600;
+  container-type: size; display: grid; place-items: center;
+  min-width: 0; min-height: 0; overflow: hidden; background: #000;
+}
+.viewport .stage { width: min(100cqw, 180cqh); height: min(100cqh, 55.555556cqw); aspect-ratio: 1080 / 600; }
+.rotate { display: none; }
+.shell .statusbar { flex-direction: row; gap: 8px; padding: 4px 12px; min-height: 44px; font-size: 12px; }
+.statusbar > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.statusbar button { flex-shrink: 0; min-height: 34px; padding: 6px 10px; font: inherit; border: 1px solid #466082; border-radius: 6px; background: #122541; color: #f4f8ff; cursor: pointer; }
+.viewMessage { margin: 0; padding: 8px 12px; font-size: 12px; color: #d7e4f8; background: #122541; }
+.shell:fullscreen, .shell[data-expanded="true"] {
+  position: fixed; inset: 0; z-index: 10000; width: 100%; height: 100vh; height: 100dvh;
+  max-width: none; margin: 0; border: 0; border-radius: 0;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  display: flex; flex-direction: column; box-sizing: border-box; background: #000;
+}
+.shell:fullscreen .viewport, .shell[data-expanded="true"] .viewport { flex: 1; aspect-ratio: auto; }
+.shell:fullscreen .toolbar .detailsToggle, .shell[data-expanded="true"] .toolbar .detailsToggle { display: inline-flex; }
+:global(body):has(.shell[data-expanded="true"]) { overflow: hidden; }
+:global(body):has(.shell[data-expanded="true"]) :global(.kc-sidebar),
+:global(body):has(.shell[data-expanded="true"]) :global(.kc-utilitybar),
+:global(body):has(.shell[data-expanded="true"]) :global(.kc-footer),
+:global(body):has(.shell[data-expanded="true"]) :global(.sidebar-overlay),
+:global(.play-page):has(.shell[data-expanded="true"]) > :not(.shell) { display: none; }
+@media (max-width: 900px), (max-width: 1200px) and (max-height: 600px) and (pointer: coarse) {
+  .shell[data-view="game"] {
+    position: fixed; inset: 0; z-index: 10000; width: 100%; height: 100vh; height: 100dvh;
+    max-width: none; margin: 0; border: 0; border-radius: 0;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    display: flex; flex-direction: column; box-sizing: border-box; background: #000;
+  }
+  .shell[data-view="game"] .viewport { flex: 1; aspect-ratio: auto; }
+  .shell .toolbar .detailsToggle { display: inline-flex; }
+  .title strong { display: none; }
+  .toolbar { flex-wrap: nowrap; gap: 6px; }
+  .shell .toolbar button, .shell .toolbar a { padding: 8px; font-size: 12px; }
+  :global(body):has(.shell[data-view="game"]) { overflow: hidden; }
+  :global(body):has(.shell[data-view="game"]) :global(.kc-sidebar),
+  :global(body):has(.shell[data-view="game"]) :global(.kc-utilitybar),
+  :global(body):has(.shell[data-view="game"]) :global(.kc-footer),
+  :global(body):has(.shell[data-view="game"]) :global(.sidebar-overlay),
+  :global(.play-page):has(.shell[data-view="game"]) > :not(.shell) { display: none; }
+}
+@media (orientation: portrait) and (max-width: 900px) {
+  .shell[data-view="game"] .rotate, .shell:fullscreen .rotate, .shell[data-expanded="true"] .rotate {
+    position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 28px; text-align: center;
+    background: #081428; color: #f4f8ff;
+  }
+  .rotate h2 { color: #f4f8ff; font-size: 24px; margin: 12px 0; }
+  .rotate p { color: #c3d3eb; font-size: 15px; line-height: 1.6; max-width: 34ch; }
+  .rotateIcon { font-size: 42px; }
+}

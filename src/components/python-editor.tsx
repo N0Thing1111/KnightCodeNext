@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { pythonRequestSchema, type PythonActivity, type PythonResult } from "@/lib/python-contract";
+import { PythonPracticeChecks } from "@/components/python-practice-checks";
 import { PythonCodeEditor } from "@/components/python-code-editor";
 import styles from "@/components/python.module.css";
 
@@ -359,6 +360,7 @@ export function PythonEditor({
     }
   }
   return (
+    <>
     <section className={styles.card}>
       <span className={styles.kicker}>CODING WORKSPACE</span>
       <h2>Write, run, and improve</h2>
@@ -415,15 +417,7 @@ export function PythonEditor({
         <button disabled={busy || saving || !!pending} onClick={draft}>
           Save draft
         </button>
-        <button
-          disabled={
-            busy || saving || !!pending || !lastRun || lastRun.source !== code
-          }
-          className={styles.submit}
-          onClick={submit}
-        >
-          Submit this Run
-        </button>
+
         <button
           disabled={busy || saving || !!pending}
           className={styles.quiet}
@@ -452,26 +446,27 @@ export function PythonEditor({
         your draft before leaving. Closing during execution may leave a Run
         marked “Result pending.”
       </p>
-      {checks.length > 0 && (
-        <>
-          <h3>Practice checks</h3>
-          <p>
-            These browser-reported checks are feedback, not a teacher grade.
-          </p>
-          {checks.map((c, i) => (
-            <details key={i}>
-              <summary>
-                {c.passed ? "Passed" : "Check again"}: {c.label}
-              </summary>
-              <p>Expected</p>
-              <pre>{c.expected}</pre>
-              <p>Your output</p>
-              <pre>{c.actual || "(No output)"}</pre>
-              {c.error && <pre>{c.error}</pre>}
-            </details>
-          ))}
-        </>
-      )}
     </section>
+    <PythonPracticeChecks cases={activity.content.cases} checks={checks} running={busy} stale={checks.length > 0 && lastRun?.source !== code} />
+    <section className={styles.card + " " + styles.submissionSection} aria-label="Submit your work">
+      <span className={styles.kicker}>SUBMISSION</span>
+      <h2>Submit your work</h2>
+      <p>Ready for your teacher to review your approach? Submit your latest saved Run. Practice checks are guidance; you can submit a Run even if some examples do not pass.</p>
+      <p>{pending ? "Save the pending result before submitting." : !lastRun ? "Run your program and wait for its result to save first." : lastRun.source !== code ? "Your code has changed. Run it again before submitting this version." : "Your latest saved Run is ready to submit."}</p>
+      <div className={styles.actions}>
+        <button
+          disabled={
+            busy || saving || !!pending || !lastRun || lastRun.source !== code
+          }
+          className={styles.submit}
+          onClick={submit}
+        >
+          Submit this Run
+        </button>
+        <a href="#history">View submissions and teacher feedback</a>
+      </div>
+      <p>After submitting, open that Run in the history below to read its teacher feedback.</p>
+    </section>
+    </>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
-import { useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import styles from "@/components/unity-player.module.css";
 import type { Level, LevelProgress } from "@/types/database";
 import { formatDuration, formatLevelTime } from "@/lib/format";
 
@@ -10,6 +11,44 @@ export function UnityPlayer({
   level: Level;
   initial: LevelProgress | null;
 }) {
+  const shell = useRef<HTMLElement>(null);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [viewMessage, setViewMessage] = useState("");
+
+  useEffect(() => {
+    const changed = () => setFullscreen(document.fullscreenElement === shell.current);
+    document.addEventListener("fullscreenchange", changed);
+    return () => document.removeEventListener("fullscreenchange", changed);
+  }, []);
+
+  async function toggleFullscreen() {
+    if (document.fullscreenElement === shell.current) {
+      try { await document.exitFullscreen(); } catch { setViewMessage("Use your browser's fullscreen exit control to return."); }
+      return;
+    }
+    if (expanded) { setExpanded(false); setViewMessage(""); return; }
+    setShowDetails(false);
+    setViewMessage("");
+    try {
+      if (!shell.current?.requestFullscreen) throw Error("Fullscreen unavailable");
+      await shell.current.requestFullscreen();
+    } catch {
+      setExpanded(true);
+      setViewMessage("Game expanded to fit this browser window. Browser fullscreen is unavailable here.");
+    }
+  }
+
+  async function toggleDetails() {
+    if (document.fullscreenElement === shell.current) {
+      try { await document.exitFullscreen(); } catch { setViewMessage("Exit fullscreen first to view the level details."); return; }
+    }
+    setExpanded(false);
+    setViewMessage("");
+    setShowDetails(value => !value);
+  }
+
   const [status, setStatus] = useState("Loading game…");
   const [levelStats, setLevelStats] = useState(initial);
   const [session, setSession] = useState<Record<
@@ -223,19 +262,27 @@ export function UnityPlayer({
 
   return (
     <>
-      <section className="game-shell" aria-label="KnightCode game area">
-        <div className="game-toolbar">
-          <div>
-            <span className="game-brand-dot">♞</span>
-            <strong>KnightCode Challenge</strong>
+      <section
+        ref={shell}
+        className={"game-shell " + styles.shell}
+        data-view={showDetails ? "details" : "game"}
+        data-expanded={expanded}
+        aria-label="KnightCode game area"
+        onKeyDown={event => { if (event.key === "Escape" && expanded) { setExpanded(false); setViewMessage(""); } }}
+      >
+        <div className={"game-toolbar " + styles.toolbar}>
+          <div className={styles.title}>
+            <a href={"/lesson/" + level.lesson_id}>Back to lesson</a>
+            <strong>Level {level.level_number} · {level.title}</strong>
           </div>
-          <div className="game-toolbar-meta">
-            <span>Level {level.level_number}</span>
-            <span>·</span>
-            <span>{level.difficulty}</span>
+          <div className={styles.controls}>
+            <button type="button" className={styles.detailsToggle} onClick={() => void toggleDetails()}>{showDetails ? "Back to game" : "Level details"}</button>
+            <button type="button" onClick={() => void toggleFullscreen()} aria-pressed={fullscreen || expanded}>{fullscreen ? "Exit fullscreen" : expanded ? "Exit expanded view" : "Fullscreen"}</button>
           </div>
         </div>
-        <div className="game-stage" id="unity-container">
+        {viewMessage && <p className={styles.viewMessage} role="status">{viewMessage}</p>}
+        <div className={styles.viewport}>
+        <div className={"game-stage " + styles.stage} id="unity-container">
           <canvas
             id="unity-canvas"
             style={{
@@ -248,7 +295,13 @@ export function UnityPlayer({
             }}
           />
         </div>
-        <div className="game-statusbar">
+        <div className={styles.rotate}>
+          <span className={styles.rotateIcon} aria-hidden="true">↻</span>
+          <h2>Turn your phone sideways</h2>
+          <p>Landscape gives the puzzle and code editor more room. Rotate your phone to play, or open Level details above.</p>
+        </div>
+        </div>
+        <div className={"game-statusbar " + styles.statusbar}>
           <span role="status">{status}</span>
           <button
             type="button"

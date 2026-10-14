@@ -478,3 +478,33 @@
   .root .codeColors { display: none; }
   .root .codeInput { color: CanvasText; -webkit-text-fill-color: CanvasText; caret-color: CanvasText; }
 }
+
+/* Activity checks and teacher assessment have distinct, theme-aware sections. */
+.checkSummary { font-weight: 600; }
+.checkList { display: grid; gap: 12px; margin-top: 20px; }
+.checkItem { border: 1px solid var(--border, #dbe2ed); border-radius: 10px; background: var(--surface, #fff); }
+.root .checkItem summary { padding: 16px; line-height: 1.6; }
+.checkTitle { margin-right: 12px; }
+.checkStatus { display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 6px; background: var(--surface-soft, #f1f5fb); color: var(--text-soft, #52627b); }
+.checkStatus[data-result="passed"] { color: var(--py-success); }
+.checkStatus[data-result="error"], .checkStatus[data-result="mismatch"] { color: var(--py-danger); }
+.checkBody { padding: 20px 16px 8px; border-top: 1px solid var(--border, #dbe2ed); }
+.comparison, .ratings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.comparison > *, .ratings > * { min-width: 0; }
+.root .comparison h3 { margin-bottom: 5px; font-size: 14px; }
+.root .checkBody pre { font-size: 13px; }
+.feedbackSection { border-top: 4px solid var(--py-accent); margin-top: 32px; }
+.reviewCard { padding: 22px; margin-top: 20px; border: 1px solid var(--border, #dbe2ed); border-radius: 12px; background: var(--surface-soft, #f1f5fb); }
+.reviewHeading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.root .reviewHeading h3 { margin: 0; }
+.rating { padding: 16px; border: 1px solid var(--border, #dbe2ed); border-radius: 8px; background: var(--surface, #fff); }
+.rating > span { display: block; font-size: 13px; font-weight: 600; }
+.rating > strong { display: block; font-size: 26px; margin: 8px 0; }
+.rating strong small { display: inline; font-size: 14px; font-weight: 400; }
+.writtenFeedback { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border, #dbe2ed); }
+.root .writtenFeedback p { color: var(--text, #17233c); white-space: pre-wrap; overflow-wrap: anywhere; }
+.reviewForm { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--border, #dbe2ed); }
+.reviewForm select { margin-top: 10px; }
+.submissionSection { border-top: 3px solid var(--border-strong, #c6d1e3); }
+@media (max-width: 950px) { .comparison, .ratings { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .reviewCard { padding: 16px; } .checkStatus { margin-top: 6px; } }

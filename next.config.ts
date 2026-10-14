@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   // Separate build output allows verification without replacing a running dev build.
   distDir: process.env.KC_BUILD_DIR || ".next",
   experimental: { serverActions: { bodySizeLimit: "6mb" } },
+  outputFileTracingIncludes: {
+    "/api/teacher/reports": ["./public/fonts/reports/*.ttf"],
+  },
   async headers() {
     return [
       {

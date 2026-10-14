@@ -1,4 +1,5 @@
 ﻿"use client";
+import { storedPythonRating } from "@/lib/python-ratings";
 import { useState } from "react";
 import styles from "@/components/python.module.css";
 import { useRouter } from "next/navigation";
@@ -28,7 +29,13 @@ export function PythonForm({
         setMessage("");
         const data = Object.fromEntries(new FormData(event.currentTarget));
         try {
-          const body = { ...data, op };
+          // Convert the visible 1–5 rubric to the unchanged 0–4 API contract.
+          // This preserves existing database reviews and backup compatibility.
+          const body = { ...data, op,
+            logic: storedPythonRating(Number(data.logic)),
+            application: storedPythonRating(Number(data.application)),
+            correctness: storedPythonRating(Number(data.correctness)),
+          };
           const response = await fetch("/api/python", {
             method: "POST",
             headers: { "Content-Type": "application/json" },

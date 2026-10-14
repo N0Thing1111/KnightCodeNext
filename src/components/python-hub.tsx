@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getPythonActivities, getPythonRoster } from "@/lib/python-data";
+import { PythonPracticeChecks } from "@/components/python-practice-checks";
+import { displayedPythonRating, pythonRatingBands, pythonRatingCriteria } from "@/lib/python-ratings";
 import { PythonForm } from "@/components/python-forms";
 import type { Profile } from "@/types/database";
 import type { PythonRun } from "@/lib/python-contract";
@@ -325,6 +327,7 @@ export async function PythonHub({
         </div>
       </section>
       {selected && (
+        <>
         <section className={styles.card} id="run-review">
           <h2>{selected.activity_snapshot.content.title}: Run review</h2>
           {staff && (
@@ -386,91 +389,72 @@ export async function PythonHub({
               )}
             </div>
           </div>
-          <h3>Practice checks (browser-reported, not a grade)</h3>
-          {selected.result.checks?.map((c, i) => (
-            <details key={i}>
-              <summary>
-                {c.passed ? "Passed" : "Check again"}: {c.label}
-              </summary>
-              <pre>{`Expected:\n${c.expected}\n\nActual:\n${c.actual}\n${c.error}`}</pre>
-            </details>
-          ))}
-          {submission ? (
-            <>
-              <h3>Submission and feedback</h3>
-              <p>
-                Submitted {when(submission.submitted_at)}. Every resubmission
-                keeps its own review history.
-              </p>
-              {reviews.data?.map((r) => (
-                <article key={r.id}>
-                  <p>
-                    <strong>
-                      {r.status.replaceAll("_", " ")} ·{" "}
-                      {r.logic + r.application + r.correctness}/12
-                    </strong>{" "}
-                    — {r.reviewer_name}, {when(r.created_at)}
-                  </p>
-                  <p>
-                    Logic {r.logic}/4 · Application {r.application}/4 ·
-                    Correctness {r.correctness}/4
-                  </p>
+          </section>
+          <PythonPracticeChecks
+            cases={selected.activity_snapshot.content.cases}
+            checks={selected.result.checks}
+            saved
+          />
+          <section className={styles.card} aria-label="Submission status">
+            <span className={styles.kicker}>SUBMISSION</span>
+            <h2>{submission ? "Submitted for teacher review" : "Practice Run — not submitted"}</h2>
+            <p>{submission
+              ? `Submitted ${when(submission.submitted_at)}. Reviews below belong to this submission. Each resubmission keeps its own review history.`
+              : "Running code saves practice history. It does not submit your work for marking. Use Submit this Run in the coding workspace when you are ready."}</p>
+          </section>
+          <section className={`${styles.card} ${styles.feedbackSection}`} aria-label="Teacher feedback">
+            <span className={styles.kicker}>TEACHER REVIEW</span>
+            <h2>Teacher feedback</h2>
+            <p>Your teacher evaluates your programming logic, use of the lesson concept, and correctness. Practice-check results are separate from these ratings.</p>
+            {!submission && <p className={styles.notice}>This Run has not been submitted, so it has no teacher review yet.</p>}
+            {submission && !reviews.data?.length && <p className={styles.notice}>Awaiting teacher review. Your submission is saved; no rating has been given yet.</p>}
+            {reviews.data?.map((r, index) => (
+              <article className={styles.reviewCard} key={r.id}>
+                <div className={styles.reviewHeading}>
+                  <h3>{index === 0 ? "Latest feedback" : "Earlier feedback"}</h3>
+                  <span className={styles.status}>{r.status === "passed" ? "Passed" : r.status === "needs_revision" ? "Needs revision" : "Reviewed"}</span>
+                </div>
+                <p>Reviewed by <strong>{r.reviewer_name}</strong> · {when(r.created_at)}</p>
+                <div className={styles.ratings}>
+                  {pythonRatingCriteria.map(({ key, label }) => (
+                    <div className={styles.rating} key={key}>
+                      <span>{label}</span>
+                      <strong>{displayedPythonRating(r[key])}<small> / 5</small></strong>
+                      <small>{pythonRatingBands[r[key]]}</small>
+                    </div>
+                  ))}
+                </div>
+                <p>Rubric total: <strong>{displayedPythonRating(r.logic) + displayedPythonRating(r.application) + displayedPythonRating(r.correctness)} / 15</strong>. Each criterion uses a 1–5 rating; the review outcome is set by your teacher.</p>
+                <div className={styles.writtenFeedback}>
+                  <h3>Teacher&apos;s comments</h3>
                   <p>{r.feedback}</p>
-                </article>
-              ))}
-              {!reviews.data?.length && <p>Awaiting teacher review.</p>}
-              {staff && (
-                <PythonForm
-                  op="review"
-                  submitLabel="Save review and notify student"
-                >
-                  <input
-                    type="hidden"
-                    name="submission"
-                    value={submission.id}
-                  />
-                  <label>
-                    Review outcome
-                    <select name="status">
-                      <option value="reviewed">Reviewed</option>
-                      <option value="needs_revision">Needs revision</option>
-                      <option value="passed">Passed</option>
-                    </select>
-                  </label>
-                  <p>
-                    0 = not demonstrated, 1 = beginning, 2 = partly correct, 3 =
-                    mostly correct, 4 = clearly demonstrated. Do not deduct
-                    points just for extra Runs or longer time.
-                  </p>
-                  <div className={styles.grid}>
-                    {["logic", "application", "correctness"].map((key) => (
-                      <label key={key}>
-                        {key}
-                        <input
-                          type="number"
-                          min="0"
-                          max="4"
-                          step="1"
-                          name={key}
-                          required
-                        />
+                </div>
+              </article>
+            ))}
+            {staff && submission && (
+              <div className={styles.reviewForm}>
+                <h3>Write a review</h3>
+                <PythonForm op="review" submitLabel="Save review and notify student">
+                  <input type="hidden" name="submission" value={submission.id} />
+                  <label>Review outcome<select name="status"><option value="reviewed">Reviewed</option><option value="needs_revision">Needs revision</option><option value="passed">Passed</option></select></label>
+                  <p>Rate each criterion from 1 to 5 using the descriptions below. Do not deduct points just for extra Runs or longer time. The total does not automatically set the review outcome.</p>
+                  <div className={styles.ratings}>
+                    {pythonRatingCriteria.map(({ key, label, description }) => (
+                      <label key={key}>{label}
+                        <small>{description}</small>
+                        <select name={key} required defaultValue="">
+                          <option value="" disabled>Choose a rating</option>
+                          {pythonRatingBands.map((band, i) => <option value={i + 1} key={band}>{i + 1} — {band}</option>)}
+                        </select>
                       </label>
                     ))}
                   </div>
-                  <label>
-                    Feedback
-                    <textarea name="feedback" required maxLength={4000} />
-                  </label>
+                  <label>Feedback<textarea name="feedback" required maxLength={4000} placeholder="Explain what worked and the next step the student should take." /></label>
                 </PythonForm>
-              )}
-            </>
-          ) : (
-            <p>
-              This is a practice Run. The student has not submitted it for
-              marking.
-            </p>
-          )}
-        </section>
+              </div>
+            )}
+          </section>
+        </>
       )}
     </div>
   );

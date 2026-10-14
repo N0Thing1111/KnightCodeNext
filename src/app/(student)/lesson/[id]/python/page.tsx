@@ -71,6 +71,7 @@ export default async function Page({
               <span className={styles.kicker}>YOUR TASK</span>
               <h2>What your program should do</h2>
               <p>{activity.content.instructions}</p>
+              <p className={styles.notice}>Output format matters in the example checks. Print only the words and values the task requests, in the shown order and on the shown lines. Extra messages can cause an output mismatch even when your calculation is correct. Your teacher evaluates your approach separately.</p>
               <div className={styles.grid}>
                 <details open>
                   <summary>Python help</summary>
