@@ -65,3 +65,17 @@
   .rotate p { color: #c3d3eb; font-size: 15px; line-height: 1.6; max-width: 34ch; }
   .rotateIcon { font-size: 42px; }
 }
+
+/* Unity owns this input and its OK button; keep it above the game, including fullscreen. */
+.shell .mobileKeyboard {
+  z-index: 10001; box-sizing: border-box; color-scheme: light;
+  max-height: 55dvh; overflow: auto;
+}
+.shell .mobileKeyboard textarea, .shell .mobileKeyboard input {
+  box-sizing: border-box; font: 16px/1.4 monospace; color: #14213a;
+  background: #fff; min-height: 44px; max-height: 35dvh;
+}
+.shell .mobileKeyboard button {
+  color: #14213a; background: #fff; font: 600 16px/1.4 sans-serif;
+  min-height: 44px; cursor: pointer;
+}

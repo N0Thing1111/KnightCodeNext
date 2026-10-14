@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { attachUnityMobileKeyboard } from "@/lib/unity-mobile-keyboard";
 import styles from "@/components/unity-player.module.css";
 import type { Level, LevelProgress } from "@/types/database";
 import { formatDuration, formatLevelTime } from "@/lib/format";
@@ -21,6 +22,11 @@ export function UnityPlayer({
     const changed = () => setFullscreen(document.fullscreenElement === shell.current);
     document.addEventListener("fullscreenchange", changed);
     return () => document.removeEventListener("fullscreenchange", changed);
+  }, []);
+
+  useEffect(() => {
+    if (!shell.current) return;
+    return attachUnityMobileKeyboard(shell.current, styles.mobileKeyboard);
   }, []);
 
   async function toggleFullscreen() {
