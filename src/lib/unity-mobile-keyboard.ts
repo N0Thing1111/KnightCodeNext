@@ -1,5 +1,6 @@
 // Unity's WebGL runtime appends its native keyboard editor to document.body.
-// Keep that same editor (and its listeners/value) inside our fullscreen element.
+// Keep it there: moving a focused field can dismiss the phone keyboard.
+// UnityPlayer fullscreens the document, so body inputs remain eligible for focus.
 export function attachUnityMobileKeyboard(host: HTMLElement, className: string) {
   type KeyboardPanel = HTMLElement & {
     input?: HTMLInputElement | HTMLTextAreaElement;
@@ -9,7 +10,7 @@ export function attachUnityMobileKeyboard(host: HTMLElement, className: string) 
   let panel: KeyboardPanel | null = null;
   const viewport = window.visualViewport;
   const position = () => {
-    if (!panel?.isConnected) return;
+    if (!host.isConnected || !panel?.isConnected) return;
     const covered = viewport ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop) : 0;
     panel.style.bottom = `${covered}px`;
   };
@@ -27,19 +28,6 @@ export function attachUnityMobileKeyboard(host: HTMLElement, className: string) 
     candidate.classList.add(className);
     input.setAttribute("aria-label", "Game code editor");
     input.setAttribute("autocapitalize", "off");
-    const focused = document.activeElement === input;
-    const start = input.selectionStart;
-    const end = input.selectionEnd;
-    // Reparenting focused inputs can fire blur. Unity would close this editor
-    // on blur, so suppress only the event caused by this synchronous move.
-    const movingBlur = (event: Event) => event.stopImmediatePropagation();
-    input.addEventListener("blur", movingBlur, true);
-    host.appendChild(candidate);
-    if (focused) {
-      input.focus({ preventScroll: true });
-      if (start !== null && end !== null) input.setSelectionRange(start, end);
-    }
-    input.removeEventListener("blur", movingBlur, true);
     position();
   };
   const observer = new MutationObserver(records => {
@@ -56,6 +44,6 @@ export function attachUnityMobileKeyboard(host: HTMLElement, className: string) 
     viewport?.removeEventListener("scroll", position);
     window.removeEventListener("resize", position);
     // Let Unity handle its normal blur/save/close lifecycle before unmount.
-    if (panel?.isConnected && host.contains(panel)) panel.input?.blur();
+    if (panel?.isConnected) panel.input?.blur();
   };
 }

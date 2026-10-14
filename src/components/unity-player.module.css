@@ -66,16 +66,57 @@
   .rotateIcon { font-size: 42px; }
 }
 
-/* Unity owns this input and its OK button; keep it above the game, including fullscreen. */
-.shell .mobileKeyboard {
+/* Body stays within document fullscreen. Preserve Unity focus and its native editor. */
+:global(body):has(.shell) .mobileKeyboard {
   z-index: 10001; box-sizing: border-box; color-scheme: light;
   max-height: 55dvh; overflow: auto;
 }
-.shell .mobileKeyboard textarea, .shell .mobileKeyboard input {
+:global(body):has(.shell) .mobileKeyboard textarea, :global(body):has(.shell) .mobileKeyboard input {
   box-sizing: border-box; font: 16px/1.4 monospace; color: #14213a;
   background: #fff; min-height: 44px; max-height: 35dvh;
 }
-.shell .mobileKeyboard button {
+:global(body):has(.shell) .mobileKeyboard button {
   color: #14213a; background: #fff; font: 600 16px/1.4 sans-serif;
   min-height: 44px; cursor: pointer;
+}
+
+/* Short landscape screens need height for the puzzle. Use the side gutters
+   for controls instead of subtracting two full-width bars from game height. */
+@media (orientation: landscape) and (max-height: 600px) and (max-width: 900px),
+       (orientation: landscape) and (max-height: 600px) and (max-width: 1200px) and (pointer: coarse) {
+  .shell[data-view="game"], .shell[data-expanded="true"] {
+    display: grid; grid-template-columns: 84px minmax(0, 1fr) 84px;
+    grid-template-rows: minmax(0, 1fr); gap: 0; isolation: isolate;
+  }
+  .shell[data-view="game"] .toolbar, .shell[data-expanded="true"] .toolbar { display: contents; }
+  .shell[data-view="game"] .title, .shell[data-expanded="true"] .title {
+    grid-column: 1; grid-row: 1; align-self: start; padding: 6px 4px;
+  }
+  .shell[data-view="game"] .title strong, .shell[data-expanded="true"] .title strong { display: none; }
+  .shell[data-view="game"] .controls, .shell[data-expanded="true"] .controls {
+    grid-column: 3; grid-row: 1; align-self: start; flex-direction: column; padding: 6px 4px;
+  }
+  .shell[data-view="game"] .toolbar button, .shell[data-view="game"] .toolbar a,
+  .shell[data-expanded="true"] .toolbar button, .shell[data-expanded="true"] .toolbar a {
+    width: 100%; min-height: 44px; padding: 6px 4px; font-size: 11px;
+    white-space: normal; text-align: center; box-sizing: border-box;
+  }
+  .shell[data-view="game"] .viewport, .shell[data-expanded="true"] .viewport {
+    grid-column: 2; grid-row: 1; height: 100%; width: 100%; aspect-ratio: auto;
+  }
+  .shell[data-view="game"] .statusbar, .shell[data-expanded="true"] .statusbar {
+    position: absolute; left: env(safe-area-inset-left, 0px); bottom: env(safe-area-inset-bottom, 0px);
+    width: 84px; box-sizing: border-box; flex-direction: column; padding: 6px 4px;
+    border: 0; font-size: 11px; text-align: center; background: #0b1931;
+  }
+  .shell[data-view="game"] .statusbar > span, .shell[data-expanded="true"] .statusbar > span {
+    white-space: normal; overflow-wrap: anywhere;
+  }
+  .shell[data-view="game"] .statusbar button, .shell[data-expanded="true"] .statusbar button {
+    min-height: 44px; width: 100%; padding: 4px; font-size: 11px;
+  }
+  .shell[data-view="game"] .viewMessage, .shell[data-expanded="true"] .viewMessage {
+    position: absolute; right: 0; bottom: 0; width: 84px; box-sizing: border-box;
+    padding: 4px; font-size: 10px; z-index: 1;
+  }
 }

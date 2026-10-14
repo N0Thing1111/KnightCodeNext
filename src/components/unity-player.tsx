@@ -19,9 +19,14 @@ export function UnityPlayer({
   const [viewMessage, setViewMessage] = useState("");
 
   useEffect(() => {
-    const changed = () => setFullscreen(document.fullscreenElement === shell.current);
+    const changed = () => setFullscreen((document.fullscreenElement === shell.current || document.fullscreenElement === document.documentElement));
     document.addEventListener("fullscreenchange", changed);
-    return () => document.removeEventListener("fullscreenchange", changed);
+    return () => {
+      document.removeEventListener("fullscreenchange", changed);
+      if (document.fullscreenElement === document.documentElement) {
+        void document.exitFullscreen().catch(() => {});
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -30,7 +35,7 @@ export function UnityPlayer({
   }, []);
 
   async function toggleFullscreen() {
-    if (document.fullscreenElement === shell.current) {
+    if ((document.fullscreenElement === shell.current || document.fullscreenElement === document.documentElement)) {
       try { await document.exitFullscreen(); } catch { setViewMessage("Use your browser's fullscreen exit control to return."); }
       return;
     }
@@ -38,8 +43,10 @@ export function UnityPlayer({
     setShowDetails(false);
     setViewMessage("");
     try {
-      if (!shell.current?.requestFullscreen) throw Error("Fullscreen unavailable");
-      await shell.current.requestFullscreen();
+      if (!document.documentElement.requestFullscreen) throw Error("Fullscreen unavailable");
+      // Unity creates its mobile input under body before focusing it. The whole
+      // document must be in fullscreen so that initial focus is permitted.
+      await document.documentElement.requestFullscreen();
     } catch {
       setExpanded(true);
       setViewMessage("Game expanded to fit this browser window. Browser fullscreen is unavailable here.");
@@ -47,7 +54,7 @@ export function UnityPlayer({
   }
 
   async function toggleDetails() {
-    if (document.fullscreenElement === shell.current) {
+    if ((document.fullscreenElement === shell.current || document.fullscreenElement === document.documentElement)) {
       try { await document.exitFullscreen(); } catch { setViewMessage("Exit fullscreen first to view the level details."); return; }
     }
     setExpanded(false);
@@ -272,7 +279,7 @@ export function UnityPlayer({
         ref={shell}
         className={"game-shell " + styles.shell}
         data-view={showDetails ? "details" : "game"}
-        data-expanded={expanded}
+        data-expanded={expanded || fullscreen}
         aria-label="KnightCode game area"
         onKeyDown={event => { if (event.key === "Escape" && expanded) { setExpanded(false); setViewMessage(""); } }}
       >
