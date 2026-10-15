@@ -110,3 +110,8 @@ Restore uses the same SMTP settings as normal account-creation emails. It sends 
 Do not repeat a restore merely to resend an email. The recreated accounts already exist on a second restore, so their passwords are preserved and no new email is sent. If sending fails, copy the displayed password and share it manually. If the result page is lost, use account management to reset that account's password. A connection loss or server timeout can still hide a completed restore response: check audit history and restored counts before attempting another restore.
 
 This email update requires no additional SQL migration or Unity export. Deploy the website code and retain the existing SMTP environment settings. Mocked tests cover both account roles, matching temporary passwords, no emails for existing accounts or failed restores, no repeat emails on a second restore, email-failure results, and the concurrency limit. No real emails or production restores were performed for these tests.
+
+
+## Run history cleanup
+
+For targeted history cleanup that preserves progress, submissions, and reviews, see [RUN-HISTORY-CLEANUP.md](RUN-HISTORY-CLEANUP.md). This is separate from the full learning-record reset. Apply migration `202610150001_run_history_cleanup.sql` before using the new tab or restoring a save created after that migration.

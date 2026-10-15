@@ -284,6 +284,7 @@ export async function PythonHub({
                     <span className={styles.status} data-status={r.status}>
                       {statusLabel(r.status)}
                     </span>
+                    {r.result.history_cleared_at && <small>Code/output cleared</small>}
                   </td>
                   <td>
                     {submissions.data?.some((s) => s.run_id === r.id)
@@ -345,16 +346,19 @@ export async function PythonHub({
               ? `Active execution: ${(selected.result.elapsed_ms / 1000).toFixed(2)} seconds (excludes waiting for input).`
               : ""}
           </p>
+          {selected.result.history_cleared_at && <p className={styles.notice}>Code, input answers, output, and example-check details were cleared by an administrator on {when(selected.result.history_cleared_at)}. The submission and teacher feedback below were preserved.</p>}
           <details>
             <summary>Instructions used for this Run</summary>
             <p>{selected.activity_snapshot.content.instructions}</p>
           </details>
+          {!selected.result.history_cleared_at && <>
           <div className={styles.grid}>
             <div>
-              <h3>Previous Run</h3>
+              <h3>Previous retained Run</h3>
               <pre>
-                {previous?.source ||
-                  "This is the student's first saved Run for this activity."}
+                {previous?.result.history_cleared_at
+                  ? "Code/output for this earlier Run was cleared by an administrator."
+                  : previous?.source || "No earlier retained Run for this activity."}
               </pre>
             </div>
             <div>
@@ -362,7 +366,7 @@ export async function PythonHub({
               <pre>{selected.source}</pre>
             </div>
           </div>
-          {previous && (
+          {previous && !previous.result.history_cleared_at && (
             <p>
               {previous.source === selected.source
                 ? "The source is unchanged from the previous Run."
@@ -389,12 +393,13 @@ export async function PythonHub({
               )}
             </div>
           </div>
+          </>}
           </section>
-          <PythonPracticeChecks
+          {!selected.result.history_cleared_at && <PythonPracticeChecks
             cases={selected.activity_snapshot.content.cases}
             checks={selected.result.checks}
             saved
-          />
+          />}
           <section className={styles.card} aria-label="Submission status">
             <span className={styles.kicker}>SUBMISSION</span>
             <h2>{submission ? "Submitted for teacher review" : "Practice Run — not submitted"}</h2>
@@ -431,7 +436,8 @@ export async function PythonHub({
                 </div>
               </article>
             ))}
-            {staff && submission && (
+            {staff && submission && selected.result.history_cleared_at && <p className={styles.notice}>Existing feedback is retained. New reviews are unavailable here because the original code has been cleared.</p>}
+            {staff && submission && !selected.result.history_cleared_at && (
               <div className={styles.reviewForm}>
                 <h3>Write a review</h3>
                 <PythonForm op="review" submitLabel="Save review and notify student">

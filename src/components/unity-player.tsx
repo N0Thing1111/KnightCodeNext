@@ -136,7 +136,7 @@ export function UnityPlayer({
 
       loader = document.createElement("script");
       loader.src =
-        "/game_build/Build/game_build.loader.js?v=20261005-run-history";
+        "/game_build/Build/game_build.loader.js?v=20261015-mobile-starter-caret";
       loader.async = true;
       loader.dataset.knightcodeRuntime = "loader";
       loader.onload = async () => {
@@ -148,11 +148,11 @@ export function UnityPlayer({
             canvas,
             {
               dataUrl:
-                "/game_build/Build/game_build.data?v=20261005-run-history",
+                "/game_build/Build/game_build.data?v=20261015-mobile-starter-caret",
               frameworkUrl:
-                "/game_build/Build/game_build.framework.js?v=20261005-run-history",
+                "/game_build/Build/game_build.framework.js?v=20261015-mobile-starter-caret",
               codeUrl:
-                "/game_build/Build/game_build.wasm?v=20261005-run-history",
+                "/game_build/Build/game_build.wasm?v=20261015-mobile-starter-caret",
               streamingAssetsUrl: "/game_build/StreamingAssets",
               companyName: "DefaultCompany",
               productName: "KnightCode",

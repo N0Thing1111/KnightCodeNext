@@ -4,12 +4,40 @@ import Link from "next/link";
 import { getAdminContext } from "@/lib/admin-data";
 import { clearAdminData } from "@/app/actions/admin-data";
 import { AdminHero, Alerts } from "@/components/admin-ui";
+import { requireAdmin } from "@/lib/auth";
+import { getPythonRoster } from "@/lib/python-data";
+import { RunHistoryCleanup } from "@/components/run-history-cleanup";
+// Request-time defaults for this authenticated server page.
+const phDate = (daysAgo: number) => new Date(Date.now() + 8 * 3600000 - daysAgo * 86400000).toISOString().slice(0, 10);
 export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const [q, ctx] = await Promise.all([searchParams, getAdminContext()]),
+  const q = await searchParams;
+  const admin = await requireAdmin();
+  if (!q.scope || q.scope === "history") {
+    const roster = await getPythonRoster(admin);
+    return <>
+      <AdminHero title="Data Management" description="Manage retained Run history separately from school resets and backups." />
+      <Alerts q={q} />
+      <section className="teacher-card">
+        <div className="admin-tabs">
+          <Link className="teacher-btn primary" href="?scope=history" aria-current="page">Run history</Link>
+          <Link className="teacher-btn" href="?scope=learning">Learning records reset</Link>
+          <Link className="teacher-btn" href="?scope=school">School data reset</Link>
+        </div>
+        <Link className="teacher-btn" href="/admin/backup">Save or restore school data</Link>
+        <p className="admin-note">Run history cleanup preserves learning progress and feedback. The reset tabs have a wider effect and can erase those records.</p>
+      </section>
+      <RunHistoryCleanup
+        students={roster.students.map(({ id, name, student_id, class_id }) => ({ id, name, student_id, class_id }))}
+        sections={roster.sections.map(({ id, name }) => ({ id, name }))}
+        defaultBefore={phDate(30)} maxBefore={phDate(1)}
+      />
+    </>;
+  }
+  const ctx = await getAdminContext(),
     scope = q.scope === "school" ? "school" : "learning",
     tables =
       scope === "learning"
@@ -76,6 +104,7 @@ export default async function Page({
       <section className="teacher-card">
         <h2>Choose what to clear</h2>
         <div className="admin-tabs">
+          <Link className="teacher-btn" href="?scope=history">Run history</Link>
           <Link
             className={"teacher-btn " + (scope === "learning" ? "primary" : "")}
             href="?scope=learning"

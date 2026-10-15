@@ -1,0 +1,11 @@
+.root { min-width: 0; }
+.fields { border: 0; padding: 0; margin: 0; min-width: 0; }
+.legend { font-weight: 700; padding: 0; margin-bottom: 20px; color: var(--t-text); }
+.description { margin: 0; padding: 14px; border: 1px solid var(--t-border); border-radius: 10px; background: var(--t-surface2); }
+.confirm { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--t-border); }
+.secondary { display: block; color: var(--t-muted); margin-top: 4px; }
+.table { min-width: 640px; }
+.table th { white-space: nowrap; }
+.table td { overflow-wrap: normal; word-break: normal; }
+.root button { background: var(--t-surface2); color: var(--t-text); }
+.root button:disabled { cursor: wait; opacity: .65; }

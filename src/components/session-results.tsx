@@ -30,7 +30,7 @@ export function SessionResults({
       </p>
       <p className="teacher-note">
         Open Review Runs to see each submitted program. Scroll the table
-        sideways on smaller screens.
+        sideways on smaller screens. Unfinished means this session has no recorded completion; it does not mean the student is still playing. Separate visits can create separate sessions.
       </p>
       <div
         className="teacher-table-wrap session-table-wrap"
@@ -114,7 +114,7 @@ export function SessionResults({
                           "status-badge " + (s.completed ? "on" : "muted")
                         }
                       >
-                        {s.completed ? "Completed" : "In progress"}
+                        {s.completed ? "Completed" : "Unfinished"}
                       </span>
                     </td>
                     <td>{s.attempts.toLocaleString()}</td>

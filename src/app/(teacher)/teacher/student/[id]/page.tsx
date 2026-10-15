@@ -343,7 +343,7 @@ export default async function Page({
                         #{lv?.level_number} · {lv?.title}
                       </td>
                       <td>{s.session_number}</td>
-                      <td>{s.completed ? "Completed" : "In progress"}</td>
+                      <td>{s.completed ? "Completed" : "Unfinished"}</td>
                       <td>{s.attempts}</td>
                       <td>{s.mistakes}</td>
                       <td>{formatTime(s.play_time_seconds)}</td>

@@ -27,6 +27,8 @@ export type PythonActivity = {
   published: boolean;
 };
 export type PythonResult = {
+  /** Set only by administrator cleanup; submissions and reviews remain intact. */
+  history_cleared_at?: string;
   output: string;
   error: string;
   inputs: string[];

@@ -87,7 +87,7 @@ export function SessionResultFilters({
         <select name="status" defaultValue={filters.status}>
           <option value="">Any status</option>
           <option value="completed">Completed</option>
-          <option value="started">In progress</option>
+          <option value="started">Unfinished</option>
         </select>
       </label>
       <label>

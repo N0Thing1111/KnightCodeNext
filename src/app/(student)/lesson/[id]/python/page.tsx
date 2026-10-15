@@ -31,7 +31,7 @@ export default async function Page({
     db.from("lessons").select("title,order_number").eq("id", id).maybeSingle(),
     db
       .from("python_runs")
-      .select("id,source")
+      .select("id,source,result")
       .eq("activity_id", activity.id)
       .eq("student_id", student.id)
       .neq("status", "running")
@@ -106,7 +106,7 @@ export default async function Page({
               activity={activity}
               studentId={student.id}
               initialSource={draft.data?.source ?? activity.content.starter}
-              initialRun={latest.data?.[0] ?? null}
+              initialRun={latest.data?.[0]?.result?.history_cleared_at ? null : latest.data?.[0] ?? null}
             />
           </>
         ) : (
