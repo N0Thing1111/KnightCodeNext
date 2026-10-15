@@ -1,26 +1,17 @@
 import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
-import { getAdminContext, setting } from "@/lib/admin-data";
+import { getAdminContext, getAdminSessionOverview, setting } from "@/lib/admin-data";
 import { CardHead } from "@/components/admin-ui";
 export default async function Page() {
   const admin = await requireAdmin(),
     ctx = await getAdminContext(),
+    sessionOverview = await getAdminSessionOverview(),
     students = ctx.profiles.filter((p) => p.role === "student"),
     teachers = ctx.profiles.filter((p) => p.role === "teacher"),
     classes = ctx.classes.filter((c) => c.status === "active"),
-    recent = ctx.student_level_sessions.slice(0, 5),
-    week = [...Array(7)].map((_, i) => {
-      const d = new Date();
-      d.setDate(d.getDate() - 6 + i);
-      const key = d.toISOString().slice(0, 10);
-      return {
-        label: d.toLocaleDateString("en-US", { weekday: "short" }),
-        count: ctx.student_level_sessions.filter((s) =>
-          String(s.started_at).startsWith(key),
-        ).length,
-      };
-    }),
+    recent = sessionOverview.recent,
+    week = sessionOverview.week,
     max = Math.max(1, ...week.map((x) => x.count));
   return (
     <>

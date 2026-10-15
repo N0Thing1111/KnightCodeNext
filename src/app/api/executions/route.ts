@@ -8,7 +8,7 @@ const execution = z.object({
   run_id: z.string().regex(/^[A-Za-z0-9_-]{16,64}$/),
   scene_name: z.string().regex(/^\d+$/),
   execution_number: z.number().int().min(1).max(100000),
-  restart_number: z.number().int().min(0).max(100),
+  restart_number: z.number().int().min(0).max(1000000),
   source: z.string().max(32768),
   source_truncated: z.boolean(),
   status: z.enum([
@@ -48,10 +48,13 @@ export async function POST(request: Request) {
     p_level_id: parsed.data.level_id,
     p_payload: parsed.data,
   });
-  if (error)
+  if (error) {
+    const invalid = ["Invalid Run history", "Invalid Run position", "Run source cannot be replaced", "Save level progress before Run history"].includes(error.message);
+    const denied = error.message.includes("not assigned") || error.message.includes("authentication required");
     return NextResponse.json(
       { ok: false, message: "Unable to save Run history." },
-      { status: 500 },
+      { status: invalid ? 422 : denied ? 403 : 500 },
     );
+  }
   return NextResponse.json({ ok: true });
 }

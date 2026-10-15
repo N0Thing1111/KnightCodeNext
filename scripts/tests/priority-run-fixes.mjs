@@ -1,0 +1,22 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import vm from "node:vm";
+import {createRequire} from "node:module";
+const require=createRequire(import.meta.url),ts=require("typescript");
+function load(file,mocks={}) { const exports={};vm.runInNewContext(ts.transpileModule(fs.readFileSync(new URL("../../"+file,import.meta.url),"utf8"),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports,Date,require:n=>mocks[n]||{}});return exports; }
+const box={module:{exports:{}},setTimeout:f=>setTimeout(f,0)};
+vm.runInNewContext(fs.readFileSync(new URL("../../public/assets/js/performance-bridge.js",import.meta.url),"utf8"),box);
+const calls=[],messages=[];let offline=true;
+const bridge=box.module.exports.createPerformanceBridge(async(done,p)=>{calls.push(p.sequence);if(p.sequence===1)throw Object.assign(Error("invalid"),{status:422});if(offline)throw Object.assign(Error("offline"),{status:503});return {ok:true};},"1",s=>messages.push(s));
+const p={telemetry_version:2,scene_name:"1",attempts:101};
+const invalid=bridge.recordAttempt({...p,sequence:1});const rejected=assert.rejects(invalid,/invalid/);
+const completion=bridge.completeLevel({...p,sequence:2});
+await bridge.flush();await rejected;
+assert.equal(calls.filter(n=>n===1).length,1,"Permanent rejection is not retried");assert.equal(bridge.hasPending(),true,"Network failures remain retryable");
+offline=false;await bridge.retryPending();await completion;assert.equal(bridge.hasPending(),false);assert.match(messages.at(-1),/earlier record.*rejected/,"Do not hide missing history after later success");
+const assessment=load("src/lib/student-assessment.ts");assert.equal(assessment.sessionAssessment([{attempts:6,completed:false}]).unsuccessful,assessment.sessionAssessment([],5).unsuccessful);
+assert.equal(assessment.sessionAssessment([{attempts:1,completed:true}],5).unsuccessful,5,"Successful replay is not a failure");
+const status=load("src/lib/python-run-status.ts"),now=Date.now();
+const stale={status:"running",started_at:new Date(now-4*86400000).toISOString(),last_seen_at:null};
+assert.equal(status.isAbandonedPythonRun(stale,now),true);assert.equal(status.isAbandonedPythonRun({...stale,last_seen_at:new Date(now).toISOString()},now),false);assert.equal(status.isAbandonedPythonRun({...stale,status:"finished"},now),false);
+console.log("PASS priority JS: invalid queue head, retryable failure recovery, visible rejection, assessment preservation and stale/live Python labels.");

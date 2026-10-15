@@ -51,6 +51,16 @@ async function finish(path: string, job: (admin: any) => Promise<string>) {
   revalidatePath("/", "layout");
   redirect(url(path, key, msg));
 }
+async function undoNewAccount(client: ReturnType<typeof createAdminClient>, id: string, email: string, cause: unknown): Promise<never> {
+  const message = cause instanceof Error ? cause.message : "Account setup failed.";
+  try {
+    const removed = await client.auth.admin.deleteUser(id);
+    if (removed.error) throw Error(removed.error.message);
+  } catch {
+    throw Error(message + " The newly created account could not be removed. Ask an administrator to find " + email + " and finish setup/reset its password before retrying.");
+  }
+  throw Error(message + " The new account was removed; correct the details and try again.");
+}
 function tempPassword() {
   return "KC-" + crypto.randomUUID().replaceAll("-", "").slice(0, 12) + "!";
 }
@@ -156,24 +166,14 @@ export async function saveAdminEntity(f: FormData) {
           student_id: code,
           username,
         });
-      const { error } = await a
-        .from("profiles")
-        .update(patch)
-        .eq("id", userId)
-        .eq("role", role);
-      if (error) throw Error(error.message);
-      if (role === "student") {
-        try {
-          await setStudentSection(
-            userId,
-            num(f, "class_id") || null,
-            admin.id,
-            true,
-          );
-        } catch (error) {
-          if (!id) await a.auth.admin.deleteUser(userId);
-          throw error;
-        }
+      try {
+        const { error } = await a.from("profiles").update(patch)
+          .eq("id", userId).eq("role", role).select("id").single();
+        if (error) throw Error(error.message);
+        if (role === "student") await setStudentSection(userId, num(f, "class_id") || null, admin.id, true);
+      } catch (error) {
+        if (!id) await undoNewAccount(a, userId, email, error);
+        throw error;
       }
       await audit(admin.id, id ? "update" : "create", entity, userId);
       if (password) {

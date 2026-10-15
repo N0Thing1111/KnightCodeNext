@@ -6,11 +6,12 @@ import { PythonPracticeChecks } from "@/components/python-practice-checks";
 import { PythonCodeEditor } from "@/components/python-code-editor";
 import styles from "@/components/python.module.css";
 
-async function api(body: unknown) {
+async function api(body: unknown, keepalive = false) {
   const response = await fetch("/api/python", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
+    keepalive,
   });
   const result = await response.json();
   if (!response.ok) throw Error(result.error || "Saving failed.");
@@ -125,10 +126,31 @@ export function PythonEditor({
         location.assign(url.href);
       }
     };
+    const abandon = () => {
+      const run = current.current;
+      if (!run) return;
+      current.current = null;
+      kill();
+      // Compact request stays below keepalive limits; source was saved at Start.
+      void api({ op: "abandon", id: run.id }, true).catch(() => {});
+    };
+    const heartbeat = setInterval(() => {
+      const run = current.current;
+      if (run) void api({ op: "heartbeat", id: run.id }).catch(() => {});
+    }, 60000);
+    const resume = (event: PageTransitionEvent) => {
+      if (event.persisted) location.reload();
+    };
+    window.addEventListener("pagehide", abandon);
+    window.addEventListener("pageshow", resume);
     document.addEventListener("click", leave, true);
     window.addEventListener("beforeunload", warn);
     return () => {
       mounted.current = false;
+      abandon();
+      clearInterval(heartbeat);
+      window.removeEventListener("pagehide", abandon);
+      window.removeEventListener("pageshow", resume);
       kill();
       window.removeEventListener("beforeunload", warn);
       document.removeEventListener("click", leave, true);
@@ -230,7 +252,10 @@ export function PythonEditor({
     try {
       await api({ op: "start", activity: activity.id, revision: activity.revision, id, source: code });
       savedSource.current = code;
-      if (!mounted.current) return;
+      if (!mounted.current) {
+        void api({ op: "abandon", id }, true).catch(() => {});
+        return;
+      }
       current.current = {
         id,
         source: code,
@@ -443,8 +468,9 @@ export function PythonEditor({
       </p>
       <p>
         Run records your coding process; Submit sends that Run for review. Save
-        your draft before leaving. Closing during execution may leave a Run
-        marked “Result pending.”
+        your draft before leaving. Closing during execution stops the Run. If the
+        connection is lost, a pending Run is shown as unfinished after 24 hours
+        without contact from its page.
       </p>
     </section>
     <PythonPracticeChecks cases={activity.content.cases} checks={checks} running={busy} stale={checks.length > 0 && lastRun?.source !== code} />

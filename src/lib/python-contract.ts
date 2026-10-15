@@ -51,6 +51,7 @@ export type PythonRun = {
   result: Partial<PythonResult>;
   started_at: string;
   finished_at: string | null;
+  last_seen_at?: string | null;
   activity_snapshot: { revision: number; content: PythonContent };
 };
 export const pythonResultSchema = z.object({
@@ -95,6 +96,8 @@ export const pythonRequestSchema = z.discriminatedUnion("op", [
     status: z.enum(["finished", "error", "stopped", "timeout"]),
     result: pythonResultSchema,
   }),
+  z.object({ op: z.literal("heartbeat"), id: z.uuid() }),
+  z.object({ op: z.literal("abandon"), id: z.uuid() }),
   z.object({ op: z.literal("submit"), id: z.uuid() }),
   z.object({
     op: z.literal("review"),

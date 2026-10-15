@@ -15,3 +15,13 @@ export function lessonCompletion(lessonId: number, studentId: string, levels: Co
   complete: total > 0 && done === total, pct: total ? Math.round(done / total * 100) : 0,
   started: pythonDone || own.some(p => required.some(l => l.id === p.level_id) && (p.completed || (p.attempts || 0) > 0)) };
 }
+
+export function summarizeCompletion(rows: Pick<ReturnType<typeof lessonCompletion>, "gamesTotal" | "gamesDone" | "pythonRequired" | "pythonDone">[]) {
+ const gamesTotal = rows.reduce((n, c) => n + c.gamesTotal, 0);
+ const gamesDone = rows.reduce((n, c) => n + c.gamesDone, 0);
+ const pythonTotal = rows.filter(c => c.pythonRequired).length;
+ const pythonDone = rows.filter(c => c.pythonRequired && c.pythonDone).length;
+ const tasksTotal = gamesTotal + pythonTotal, tasksDone = gamesDone + pythonDone;
+ return { gamesTotal, gamesDone, pythonTotal, pythonDone, tasksTotal, tasksDone,
+  overallPct: tasksTotal ? Math.round(tasksDone / tasksTotal * 100) : 0 };
+}

@@ -3,6 +3,7 @@
   function createPerformanceBridge(save, sceneName, status, saveExecution) {
     const pending = [];
     let working = false;
+    let rejected = 0;
     const run =
       "legacy_" +
       (root.crypto?.randomUUID?.() ||
@@ -73,6 +74,7 @@
               pending.shift();
               item.resolve(result);
               status(
+                rejected ? "Latest save succeeded, but " + rejected + " earlier record(s) were rejected. Reload after updating the app if this continues." :
                 item.kind === "execution"
                   ? "Run history saved"
                   : item.body.telemetry_version === 2
@@ -82,6 +84,17 @@
               saved = true;
               break;
             } catch (error) {
+              // Invalid records cannot be repaired by retrying the same bytes.
+              // Keep auth/network/server errors queued; let later cumulative
+              // snapshots recover progress after a permanently invalid record.
+              if ([400, 413, 422].includes(error.status)) {
+                pending.shift();
+                rejected++;
+                item.reject(error);
+                status("A game record was rejected: " + error.message + ". Later saves will still be attempted.");
+                saved = true;
+                break;
+              }
               if (attempt === 2) {
                 status(
                   "Progress not saved. Keep this page open and press Retry saving.",
@@ -106,8 +119,8 @@
         status(error.message);
         return Promise.reject(error);
       }
-      return new Promise((resolve) => {
-        pending.push({ kind: "progress", body, resolve });
+      return new Promise((resolve, reject) => {
+        pending.push({ kind: "progress", body, resolve, reject });
         drain();
       });
     }
@@ -116,8 +129,8 @@
         return Promise.reject(
           new Error("Run history scene does not match this level."),
         );
-      return new Promise((resolve) => {
-        pending.push({ kind: "execution", body, resolve });
+      return new Promise((resolve, reject) => {
+        pending.push({ kind: "execution", body, resolve, reject });
         drain();
       });
     }

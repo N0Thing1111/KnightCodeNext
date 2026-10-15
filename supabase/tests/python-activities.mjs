@@ -527,4 +527,6 @@ assert.equal((await db.query('select count(*)::int n from lessons where id=805')
 await db.exec('drop trigger test_lesson_audit on admin_audit_log; drop function test_reject_lesson_audit()');
 console.log('PASS safe lesson deletion: unused only, role isolation, linked-level/assignment/Python/visit protection, atomic audit and rollback.');
 
+await (await import("./priority-run-fixes.mjs")).checkPriorityRunFixes(db, { admin, teacher, student: newStudent, activity, as });
+await (await import("./history-read-summaries.mjs")).checkHistorySummaries(db, { teacher, student: newStudent, as });
 await db.close();

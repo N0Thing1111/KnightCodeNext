@@ -1,49 +1,38 @@
+import { activityWeek } from "@/lib/activity-week";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { allRows } from "@/lib/query-pages";
 import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+// Master records for forms/settings only; event history is queried separately.
 export const getAdminContext = cache(async () => {
-  const db = createAdminClient();
-  const tables = [
-    "profiles",
-    "classes",
-    "class_students",
-    "lessons",
-    "levels",
-    "assignments",
-    "student_level_progress",
-    "student_activity",
-    "student_level_sessions",
-    "achievements",
-    "student_achievements",
-    "student_notifications",
-    "student_telemetry_runs",
-    "announcements",
-    "teacher_notifications",
-    "admin_settings",
-    "admin_audit_log",
-  ] as const;
-  const results = await Promise.all(
-    tables.map(async (table) => {
-      const key = table === "admin_settings" ? "setting_key" : ["student_level_progress", "student_achievements", "student_telemetry_runs", "class_students"].includes(table) ? "student_id" : "id";
-      const data = await allRows(() => {
-        let q = db.from(table).select("*");
-        if (["profiles","student_activity","admin_audit_log"].includes(table)) q = q.order("created_at", { ascending: false });
-        if (table === "student_level_sessions") q = q.order("started_at", { ascending: false });
-        if (table === "lessons") q = q.order("order_number");
-        if (table === "levels") q = q.order("level_number");
-        q = q.order(key);
-        if (["student_level_progress","student_telemetry_runs"].includes(table)) q = q.order("level_id");
-        if (table === "student_telemetry_runs") q = q.order("run_id");
-        if (table === "class_students") q = q.order("class_id");
-        if (table === "student_achievements") q = q.order("achievement_id");
-        return q;
-      });
-      return [table, data] as const;
-    }),
-  );
-  return Object.fromEntries(results) as Record<(typeof tables)[number], any[]>;
+ const db = createAdminClient();
+ const tables = ["profiles", "classes", "class_students", "lessons", "levels", "admin_settings"] as const;
+ const results = await Promise.all(tables.map(async table => {
+  const data = await allRows(() => {
+   let q = db.from(table).select("*");
+   if (table === "profiles") q = q.order("created_at", { ascending: false });
+   if (table === "lessons") q = q.order("order_number");
+   if (table === "levels") q = q.order("level_number");
+   if (table === "class_students") return q.order("class_id").order("student_id");
+   return q.order(table === "admin_settings" ? "setting_key" : "id");
+  });
+  return [table, data] as const;
+ }));
+ return Object.fromEntries(results) as Record<(typeof tables)[number], any[]>;
+});
+export const getAdminSessionOverview = cache(async () => {
+ const db = createAdminClient();
+ const [recent, week] = await Promise.all([
+  db.from("student_level_sessions").select("*").order("started_at", { ascending: false }).order("id", { ascending: false }).limit(5),
+  Promise.all(activityWeek().map(async day => {
+   const result = await db.from("student_level_sessions").select("id", { count: "exact", head: true }).gte("started_at", day.start).lt("started_at", day.end);
+   if (result.error) throw Error(result.error.message);
+   return { label: day.label, count: result.count || 0 };
+  })),
+ ]);
+ if (recent.error) throw Error(recent.error.message);
+ return { recent: recent.data || [], week };
 });
 
 export function setting(

@@ -1,0 +1,59 @@
+.page { min-width: 0; }
+.page :global(.panel), .page :global(.metric-card) { min-width: 0; }
+.page :global(.progress-content-grid) { grid-template-columns: minmax(0, 1fr) minmax(220px, .45fr); align-items: start; }
+.page :global(.panel-title-row) { flex-wrap: wrap; gap: 12px; }
+.page :global(.panel h2) { font-size: 20px; overflow-wrap: anywhere; }
+.page :global(.panel-kicker), .page :global(.muted-kicker) { font-size: 11px; }
+.page :global(.metric-card > span) { font-size: 13px; color: var(--text-soft); }
+.page :global(.metric-card small) { font-size: 12px; line-height: 1.6; color: var(--text-soft); }
+.page :global(.lesson-progress-item) { padding: 16px; }
+.page :global(.lesson-progress-meta) { font-size: 14px; align-items: flex-start; gap: 12px; }
+.page :global(.lesson-progress-meta > span) { min-width: 0; overflow-wrap: anywhere; line-height: 1.6; }
+.page :global(.lesson-progress-meta b) { display: block; color: var(--text-soft); font-size: 12px; }
+.page :global(.lesson-progress-meta strong) { flex: 0 0 auto; font-size: 12px; white-space: nowrap; }
+.page :global(.lesson-progress-item small) { font-size: 12px; line-height: 1.6; color: var(--text-soft); }
+.page :global(.progress-ring-large) { width: min(170px, 100%); height: auto; aspect-ratio: 1; flex-shrink: 0; }
+.page :global(.progress-ring-panel .progress-track) { width: 100%; }
+.page :global(.progress-ring-panel p), .page :global(.progress-ring-panel > small), .page :global(.progress-ring-large small) { font-size: 13px; color: var(--text-soft); }
+.page :global(.progress-ring-panel h3) { font-size: 18px; }
+.breakdown { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-bottom: 18px; }
+.total { color: var(--text-soft); margin: 14px 0; }
+.total strong { font-size: 28px; color: var(--text); }
+.stats { display: flex; flex-wrap: wrap; gap: 18px 28px; margin: 20px 0 12px; }
+.stats dt { font-size: 12px; color: var(--text-soft); }
+.stats dd { margin: 5px 0 0; color: var(--text); font-size: 20px; font-weight: 700; }
+.note { font-size: 13px; line-height: 1.7; color: var(--text-soft); margin: 8px 0 0; }
+.next { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 18px; }
+.next > div { min-width: 0; }
+.next > a { flex-shrink: 0; min-height: 44px; }
+.lessonDetails { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-size: 12px; color: var(--text-soft); margin: 10px 0 6px; }
+.tag { padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-strong); color: var(--text); }
+.page :global(.history-table th), .page :global(.history-table td) { font-size: 13px; }
+.page :global(.history-table td small), .page :global(.achievement-card small) { font-size: 12px; }
+.page :global(.achievement-card b) { font-size: 14px; }
+.page :global(.achievement-card p) { font-size: 13px; line-height: 1.6; }
+.page :global(.achievement-grid) { grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+@media (max-width: 1000px) {
+  .page :global(.metric-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .page :global(.progress-content-grid) { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 700px) {
+  .breakdown { grid-template-columns: minmax(0, 1fr); }
+  .next { align-items: stretch; flex-direction: column; gap: 16px; }
+  .page :global(.panel) { padding: 18px; }
+  .page :global(.page-hero) { align-items: stretch; flex-direction: column; gap: 18px; }
+  .page :global(.page-hero-stat) { min-width: 0; }
+  .page :global(.lesson-progress-meta) { flex-direction: column; gap: 6px; }
+  .page :global(.lesson-progress-meta strong) { white-space: normal; }
+  .page :global(.history-table) { min-width: 0; display: block; }
+  .page :global(.history-table thead) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .page :global(.history-table tbody) { display: grid; gap: 12px; }
+  .page :global(.history-table tbody tr) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-soft); }
+  .page :global(.history-table td) { display: block; min-width: 0; border: 0; padding: 8px; overflow-wrap: anywhere; }
+  .page :global(.history-table td:nth-child(2)) { grid-column: 1 / -1; grid-row: 2; }
+  .page :global(.history-table td::before) { content: attr(data-label); display: block; margin-bottom: 6px; font-size: 11px; font-weight: 600; color: var(--text-soft); }
+  .page :global(.history-table td:last-child) { grid-column: 1 / -1; }
+}
+@media (max-width: 380px) {
+  .page :global(.metric-grid) { grid-template-columns: minmax(0, 1fr); }
+}

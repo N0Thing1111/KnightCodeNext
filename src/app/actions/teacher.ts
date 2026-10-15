@@ -122,6 +122,16 @@ export async function addExistingStudent(f: FormData) {
     return "Student added to this section.";
   });
 }
+async function undoNewAccount(client: ReturnType<typeof createAdminClient>, id: string, email: string, cause: unknown): Promise<never> {
+  const message = cause instanceof Error ? cause.message : "Account setup failed.";
+  try {
+    const removed = await client.auth.admin.deleteUser(id);
+    if (removed.error) throw Error(removed.error.message);
+  } catch {
+    throw Error(message + " The newly created account could not be removed. Ask an administrator to find " + email + " and finish setup/reset its password before retrying.");
+  }
+  throw Error(message + " The new account was removed; correct the details and try again.");
+}
 function temporaryPassword() {
   return "KC-" + crypto.randomUUID().replaceAll("-", "").slice(0, 8) + "!";
 }
@@ -147,7 +157,7 @@ export async function manualAddStudent(f: FormData) {
       throw Error("Student ID, name, and a valid email are required.");
     await requireSectionMembership();
     const a = admin();
-    let { data: profile } = await a
+    const lookup = await a
       .from("profiles")
       .select("*")
       .eq("role", "student")
@@ -162,6 +172,8 @@ export async function manualAddStudent(f: FormData) {
       )
       .limit(1)
       .maybeSingle();
+    if (lookup.error) throw Error(lookup.error.message);
+    let profile = lookup.data;
     let password: string | null = null;
     if (!profile) {
       password = temporaryPassword();
@@ -181,6 +193,7 @@ export async function manualAddStudent(f: FormData) {
         throw Error(
           created.error?.message || "Could not create student account.",
         );
+      try {
       const updated = await a
         .from("profiles")
         .update({
@@ -195,6 +208,9 @@ export async function manualAddStudent(f: FormData) {
         .single();
       if (updated.error) throw Error(updated.error.message);
       profile = updated.data;
+      } catch (error) {
+        await undoNewAccount(a, created.data.user.id, email, error);
+      }
     } else if (username) {
       const { data: used } = await a
         .from("profiles")
@@ -207,7 +223,7 @@ export async function manualAddStudent(f: FormData) {
     try {
       await setStudentSection(profile.id, classId, teacher.id);
     } catch (error) {
-      if (password) await a.auth.admin.deleteUser(profile.id);
+      if (password) await undoNewAccount(a, profile.id, email, error);
       throw error;
     }
     if (password) {

@@ -47,9 +47,13 @@ export default async function Page({
       .filter(
         (a) => a.student_id === id || cls.some((c) => c!.id === a.class_id),
       )
-      .slice(0, 10),
-    activity = ctx.activity.filter((a) => a.student_id === id).slice(0, 30),
-    ach = ctx.achievements.filter((a) => a.student_id === id);
+      .slice(0, 10);
+  const [activityResult, achievementResult] = await Promise.all([
+    createAdminClient().from("student_activity").select("*").eq("student_id", id).order("created_at", { ascending: false }).order("id").limit(30),
+    createAdminClient().from("student_achievements").select("*,achievements(*)").eq("student_id", id),
+  ]);
+  if (activityResult.error || achievementResult.error) throw Error("Unable to load student activity.");
+  const activity = activityResult.data || [], ach = achievementResult.data || [];
   const sessionPage = Math.max(
     1,
     Math.min(100000, Math.floor(Number(q.sessions)) || 1),

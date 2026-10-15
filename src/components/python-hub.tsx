@@ -6,18 +6,10 @@ import { displayedPythonRating, pythonRatingBands, pythonRatingCriteria } from "
 import { PythonForm } from "@/components/python-forms";
 import type { Profile } from "@/types/database";
 import type { PythonRun } from "@/lib/python-contract";
+import { pythonRunStatusLabel } from "@/lib/python-run-status";
 import styles from "@/components/python.module.css";
 const when = (value: string) =>
   new Date(value).toLocaleString("en-PH", { timeZone: "Asia/Manila" });
-const statusLabel = (value: string) =>
-  ({
-    running: "Result pending",
-    finished: "Finished",
-    error: "Python error",
-    stopped: "Stopped",
-    timeout: "Time limit",
-  })[value as "running" | "finished" | "error" | "stopped" | "timeout"] ||
-  value;
 export async function PythonHub({
   actor,
   params = {},
@@ -282,7 +274,7 @@ export async function PythonHub({
                   </td>
                   <td>
                     <span className={styles.status} data-status={r.status}>
-                      {statusLabel(r.status)}
+                      {pythonRunStatusLabel(r)}
                     </span>
                     {r.result.history_cleared_at && <small>Code/output cleared</small>}
                   </td>
@@ -340,7 +332,7 @@ export async function PythonHub({
             </p>
           )}
           <p>
-            {statusLabel(selected.status)} · Original activity revision{" "}
+            {pythonRunStatusLabel(selected)} · Original activity revision{" "}
             {selected.activity_snapshot.revision}.{" "}
             {selected.result.elapsed_ms !== undefined
               ? `Active execution: ${(selected.result.elapsed_ms / 1000).toFixed(2)} seconds (excludes waiting for input).`

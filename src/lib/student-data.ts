@@ -1,7 +1,7 @@
 import { allRows } from "@/lib/query-pages";
 import { cache } from "react";
 import { isGameLevelAvailable } from "@/lib/game-build";
-import { lessonCompletion } from "@/lib/lesson-completion";
+import { lessonCompletion, summarizeCompletion } from "@/lib/lesson-completion";
 import { getPythonCompletion } from "@/lib/python-data";
 import { createClient } from "@/lib/supabase/server";
 import { rankForLevel } from "@/lib/format";
@@ -146,12 +146,10 @@ export const getStudentLearningData = cache(async (studentId: string) => {
 });
 
 export const getStudentStats = cache(async (student: Profile) => {
-  const { lessons, levels, progress, completion } = await getStudentLearningData(
+  const { lessons, progress, completion } = await getStudentLearningData(
     student.id,
   );
-  const completed = new Set(
-    progress.filter((row) => row.completed).map((row) => row.level_id),
-  );
+  const work = summarizeCompletion([...completion.values()]);
   const lessonsCompleted = [...completion.values()].filter(c => c.complete).length;
   const xp =
     student.total_xp ?? progress.reduce((sum, row) => sum + row.xp_earned, 0);
@@ -163,19 +161,18 @@ export const getStudentStats = cache(async (student: Profile) => {
     rank: rankForLevel(level),
     xpPct: Math.min(100, Math.round(levelXp / 5)),
     streak: student.current_streak ?? 0,
-    challengesDone: completed.size,
+    ...work,
+    challengesDone: work.gamesDone,
     lessonsCompleted,
     totalLessons: lessons.length,
-    totalLevels: levels.length,
+    totalLevels: work.gamesTotal,
     attempts: progress.reduce((sum, row) => sum + row.attempts, 0),
     mistakes: progress.reduce((sum, row) => sum + row.mistakes, 0),
     playTimeSeconds: progress.reduce(
       (sum, row) => sum + row.play_time_seconds,
       0,
     ),
-    overallPct: levels.length
-      ? Math.round((completed.size / levels.length) * 100)
-      : 0,
+
   };
 });
 

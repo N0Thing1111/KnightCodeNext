@@ -47,6 +47,7 @@ export interface Level {
 }
 
 export interface LevelProgress {
+  history_unsuccessful_attempts?: number | null;
   student_id: string;
   level_id: number;
   completed: boolean;

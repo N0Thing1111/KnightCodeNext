@@ -1,3 +1,4 @@
+import { allRows } from "@/lib/query-pages";
 ﻿import "server-only";
 import { cache } from "react";
 import type { CompletionActivity, CompletionSubmission } from "@/lib/lesson-completion";
@@ -113,12 +114,6 @@ export const getPythonCompletion = cache(async () => {
  const db = await createClient();
  const result = await db.from("python_activities").select("id,lesson_id,published");
  if (result.error) throw Error(result.error.message);
- const submissions: CompletionSubmission[] = [];
- for (let from=0;;from+=500) {
-  const page=await db.from("python_submissions").select("student_id,activity_id").order("id").range(from,from+499);
-  if(page.error) throw Error(page.error.message);
-  submissions.push(...(page.data || []));
-  if(!page.data || page.data.length < 500) break;
- }
+ const submissions = await allRows(() => db.rpc("python_completion_pairs").order("student_id").order("activity_id")) as CompletionSubmission[];
  return { activities: (result.data || []) as CompletionActivity[], submissions };
 });

@@ -1,7 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from "next/link";
-import { getAdminContext } from "@/lib/admin-data";
 import { clearAdminData } from "@/app/actions/admin-data";
 import { AdminHero, Alerts } from "@/components/admin-ui";
 import { requireAdmin } from "@/lib/auth";
@@ -37,8 +35,7 @@ export default async function Page({
       />
     </>;
   }
-  const ctx = await getAdminContext(),
-    scope = q.scope === "school" ? "school" : "learning",
+  const scope = q.scope === "school" ? "school" : "learning",
     tables =
       scope === "learning"
         ? [
@@ -76,11 +73,12 @@ export default async function Page({
             "classes",
             "profiles",
           ];
-  const additional = tables.filter(t => !(t in ctx));
-  const extraCounts = Object.fromEntries(await Promise.all(additional.map(async t => {
-    const { count, error } = await createAdminClient().from(t).select("*", { count: "exact", head: true });
-    if (error) throw Error("Could not count records affected by reset.");
-    return [t, count ?? 0];
+  const counts = Object.fromEntries(await Promise.all(tables.map(async table => {
+    let query = createAdminClient().from(table).select("*", { count: "exact", head: true });
+    if (table === "profiles") query = query.neq("role", "admin");
+    const result = await query;
+    if (result.error) throw Error("Could not count records affected by reset.");
+    return [table, result.count || 0];
   })));
   return (
     <>
@@ -136,9 +134,7 @@ export default async function Page({
                 <tr key={t}>
                   <td>{t.replaceAll("_", " ")}</td>
                   <td>
-                    {t === "profiles"
-                      ? ctx.profiles.filter((p) => p.role !== "admin").length
-                      : (extraCounts[t] ?? (ctx as any)[t]?.length ?? 0)}
+                    {counts[t]}
                   </td>
                 </tr>
               ))}

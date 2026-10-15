@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+export async function checkHistorySummaries(db,{teacher,student,as}) {
+ await db.exec('reset role');
+ await db.exec(readFileSync(new URL('../migrations/202610150003_history_read_summaries.sql',import.meta.url),'utf8'));
+ await db.query("insert into student_activity(student_id,action_type,created_at) select $1,'lesson_viewed',now()-i*interval '1 minute' from generate_series(1,1200) i",[student]);
+ await db.query("insert into student_level_sessions(student_id,level_id,run_id,session_number,attempts,completed) select $1,20,'summary_test_'||i,1,3,true from generate_series(1,500) i",[student]);
+ const other='30000000-0000-0000-0000-000000000001';
+ await db.query("insert into student_activity(student_id,action_type) values($1,'lesson_viewed')",[other]);
+ const result=(await db.query('select teacher_history_summary($1) data',[teacher])).rows[0].data;
+ assert.equal(result.recent.length,8,'Recent list remains bounded with >1000 events');
+ assert.ok(result.recent.every(a=>a.student_id!==other),'Roster scope excludes outside student');
+ assert.equal(result.latest.length,1,'Latest activity scales by roster, not event count');
+ const expected=Number((await db.query('select sum(greatest(attempts-1,0)) n from student_level_sessions where student_id=$1 and level_id=20',[student])).rows[0].n);
+ assert.equal(Number(result.sessions.find(s=>s.student_id===student&&s.level_id===20).unsuccessful),expected,'Every retained failure is counted');
+ const today=(await db.query("select (now() at time zone 'Asia/Manila')::date::text as day")).rows[0].day;
+ const todayCount=Number((await db.query("select count(*) n from student_activity where student_id=$1 and (created_at at time zone 'Asia/Manila')::date::text=$2",[student,today])).rows[0].n);
+ assert.equal(Number(result.days.find(d=>d.day===today)?.count||0),todayCount,'Calendar counts are complete despite bounded recent list');
+ await as(student);
+ await assert.rejects(()=>db.query('select teacher_history_summary($1)',[teacher]),/permission denied/);
+ const own=(await db.query('select * from python_completion_pairs()')).rows;
+ assert.ok(own.every(s=>s.student_id===student));
+ const raw=(await db.query('select distinct student_id,activity_id from python_submissions')).rows;
+ assert.deepEqual(own.sort((a,b)=>a.activity_id.localeCompare(b.activity_id)),raw.sort((a,b)=>a.activity_id.localeCompare(b.activity_id)));
+ await as(other);assert.equal((await db.query('select * from python_completion_pairs()')).rows.length,0,'Invoker RLS prevents reading another student completion');
+ await as(teacher);assert.deepEqual((await db.query('select * from python_completion_pairs()')).rows,own,'Teacher sees own roster completion');
+ await db.exec('reset role');
+ const empty=(await db.query('select teacher_history_summary($1) data',['00000000-0000-0000-0000-000000000099'])).rows[0].data;
+ assert.equal(empty.recent.length,0);assert.equal(empty.sessions.length,0);
+ console.log('PASS read summaries: >1000 events, bounded recent list, complete assessments/daily counts, roster isolation, service-only summary and submission RLS.');
+}

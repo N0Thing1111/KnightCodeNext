@@ -10,12 +10,12 @@ const payload = z
     run_id: z.string().regex(/^[A-Za-z0-9_-]{16,64}$/),
     sequence: z.number().int().min(1),
     scene_name: z.string().regex(/^\d+$/),
-    attempts: z.number().int().min(1).max(100),
-    mistakes: z.number().int().min(0).max(1000),
-    play_time_seconds: z.number().int().min(0).max(86400),
-    total_play_time_seconds: z.number().int().min(0).max(86400),
-    lines_used: z.number().int().min(0).max(10000),
-    completed_lines: z.number().int().min(0).max(10000),
+    attempts: z.number().int().min(1).max(1000000),
+    mistakes: z.number().int().min(0).max(1000000),
+    play_time_seconds: z.number().int().min(0).max(31536000),
+    total_play_time_seconds: z.number().int().min(0).max(31536000),
+    lines_used: z.number().int().min(0).max(100000000),
+    completed_lines: z.number().int().min(0).max(100000000),
     code_mode: z.enum(["guided", "hint", "free"]).optional().nullable(),
   })
   .refine(
@@ -48,15 +48,18 @@ export async function POST(request: Request) {
     p_level_id: parsed.data.level_id,
     p_payload: parsed.data,
   });
-  if (error)
+  if (error) {
+    const invalid = ["Invalid telemetry", "Cumulative telemetry decreased", "Level mismatch"].includes(error.message);
+    const denied = error.message.includes("not assigned") || error.message.includes("locked");
     return NextResponse.json(
       {
         ok: false,
-        message: error.message.includes("not assigned")
+        message: denied
           ? "This level is not assigned or is still locked."
-          : "Unable to save progress right now.",
+          : invalid ? "The game sent an invalid progress record." : "Unable to save progress right now.",
       },
-      { status: error.message.includes("not assigned") ? 403 : 500 },
+      { status: denied ? 403 : invalid ? 422 : 500 },
     );
+  }
   return NextResponse.json({ ok: true, ...data });
 }

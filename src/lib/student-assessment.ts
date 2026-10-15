@@ -1,9 +1,9 @@
-export function sessionAssessment(sessions: { attempts: number; completed: boolean }[]) {
+export function sessionAssessment(sessions: { attempts: number; completed: boolean }[], preservedUnsuccessful = 0) {
   // One completed session accounts for its final successful attempt. The last
   // attempt of an unfinished session is still in progress, not a known failure.
   return {
     successful: sessions.filter(s => s.completed).length,
-    unsuccessful: sessions.reduce((sum,s) => sum + Math.max(0, Number(s.attempts || 0) - 1), 0),
+    unsuccessful: Math.max(0, preservedUnsuccessful) + sessions.reduce((sum,s) => sum + Math.max(0, Number(s.attempts || 0) - 1), 0),
     unfinished: sessions.filter(s => !s.completed).length,
   };
 }

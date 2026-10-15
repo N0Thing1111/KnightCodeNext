@@ -37,7 +37,7 @@ export default async function Page({
           Search session results →
         </Link>
       </p>
-      <p className="teacher-note">Game progress covers available assigned games. Python Runs also update Last Activity. Whole-lesson assignment completion includes the Python submission. Status labels help you choose what to review; they are not grades.</p>
+      <p className="teacher-note">Assigned progress covers available assigned games plus Python activities attached to whole-lesson assignments. A Python submission counts as completion; teacher review is separate. Python Runs also update Last Activity. Status labels help you choose what to review; they are not grades.</p>
       <div className="monitor-legend">
         {[
           "Active",
@@ -99,7 +99,7 @@ export default async function Page({
             <thead>
               <tr>
                 <th>Student</th>
-                <th>Game progress</th>
+                <th>Assigned progress</th>
                 <th>Games completed</th>
                 <th>Attempts</th>
                 <th>Streak</th>

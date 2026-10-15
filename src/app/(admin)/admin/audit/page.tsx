@@ -1,14 +1,21 @@
-import { getAdminContext } from "@/lib/admin-data";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/auth";
 import { AdminHero } from "@/components/admin-ui";
 export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const [q, ctx] = await Promise.all([searchParams, getAdminContext()]),
-    page = Math.max(1, Number(q.page || 1)),
-    size = 50,
-    rows = ctx.admin_audit_log.slice((page - 1) * size, page * size);
+  await requireAdmin();
+  const q = await searchParams, db = createAdminClient();
+  const page = Math.max(1, Math.min(100000, Number.parseInt(q.page || "1", 10) || 1)), size = 50;
+  const result = await db.from("admin_audit_log").select("*", { count: "exact" })
+    .order("created_at", { ascending: false }).order("id", { ascending: false }).range((page - 1) * size, page * size - 1);
+  if (result.error) throw Error(result.error.message);
+  const rows = result.data || [], count = result.count || 0;
+  const ids = [...new Set(rows.map(row => row.admin_id).filter(Boolean))];
+  const admins = ids.length ? await db.from("profiles").select("id,name").in("id", ids) : { data: [], error: null };
+  if (admins.error) throw Error(admins.error.message);
   return (
     <>
       <AdminHero
@@ -30,7 +37,7 @@ export default async function Page({
             <tbody>
               {rows.length ? (
                 rows.map((r) => {
-                  const a = ctx.profiles.find((p) => p.id === r.admin_id);
+                  const a = admins.data?.find((p) => p.id === r.admin_id);
                   return (
                     <tr key={r.id}>
                       <td>{new Date(r.created_at).toLocaleString()}</td>
@@ -62,7 +69,7 @@ export default async function Page({
         </div>
         <div className="admin-actions">
           {page > 1 && <a href={"?page=" + (page - 1)}>Newer</a>}
-          {ctx.admin_audit_log.length > page * size && (
+          {count > page * size && (
             <a href={"?page=" + (page + 1)}>Older</a>
           )}
         </div>

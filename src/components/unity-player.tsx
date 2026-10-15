@@ -86,7 +86,7 @@ export function UnityPlayer({
     };
 
     const bridge = document.createElement("script");
-    bridge.src = "/assets/js/performance-bridge.js";
+    bridge.src = "/assets/js/performance-bridge.js?v=20261015-save-recovery";
     bridge.async = true;
     bridge.dataset.knightcodeRuntime = "bridge";
 
@@ -104,7 +104,7 @@ export function UnityPlayer({
         });
         const data = await response.json();
         if (!response.ok || !data.ok)
-          throw new Error(data.message || "Unable to save progress.");
+          throw Object.assign(new Error(data.message || "Unable to save progress."), { status: response.status });
         if (!disposed) {
           setLevelStats(data.level);
           setSession(data.session);
@@ -129,7 +129,7 @@ export function UnityPlayer({
           });
           const data = await response.json();
           if (!response.ok || !data.ok)
-            throw new Error(data.message || "Unable to save Run history.");
+            throw Object.assign(new Error(data.message || "Unable to save Run history."), { status: response.status });
           return data;
         },
       );

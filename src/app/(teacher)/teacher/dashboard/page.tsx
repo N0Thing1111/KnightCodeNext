@@ -1,3 +1,4 @@
+import { activityWeek } from "@/lib/activity-week";
 import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
 import { requireTeacher } from "@/lib/auth";
@@ -34,18 +35,8 @@ export default async function Page() {
       };
     });
   const activity = ctx.activity.slice(0, 8);
-  const week = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date();
-      d.setHours(0, 0, 0, 0);
-      d.setDate(d.getDate() - (6 - i));
-      return {
-        label: d.toLocaleDateString("en-US", { weekday: "short" }),
-        count: ctx.activity.filter(
-          (a) => new Date(a.created_at).toDateString() === d.toDateString(),
-        ).length,
-      };
-    }),
-    max = Math.max(1, ...week.map((x) => x.count));
+  const week = activityWeek().map(day => ({ label: day.label, count: Number(ctx.activityDays.find(d => d.day === day.key)?.count || 0) }));
+  const max = Math.max(1, ...week.map(x => x.count));
   return (
     <>
       <section className="teacher-page-hero">

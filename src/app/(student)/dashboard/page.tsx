@@ -271,7 +271,7 @@ export default async function DashboardPage() {
             </div>
           </div>
           <div className="summary-footer">
-            <span>Overall progress</span>
+            <span>Assigned work progress (games + Python)</span>
             <strong>{stats.overallPct}%</strong>
           </div>
           <div className="progress-track">
@@ -333,8 +333,8 @@ export default async function DashboardPage() {
                 </b>
               </div>
               <div>
-                <span>Challenges</span>
-                <b>{stats.challengesDone}</b>
+                <span>Python submitted</span>
+                <b>{stats.pythonDone}/{stats.pythonTotal}</b>
               </div>
               <div>
                 <span>XP</span>

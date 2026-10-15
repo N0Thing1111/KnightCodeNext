@@ -71,6 +71,12 @@ export async function POST(request: NextRequest) {
         );
       break;
     }
+    case "heartbeat":
+      response = await db.rpc("python_touch_run", { p_run: p.id });
+      break;
+    case "abandon":
+      response = await db.rpc("python_abandon_run", { p_run: p.id });
+      break;
     case "draft":
       response = await db.rpc("python_save_draft", {
         p_activity: p.activity,

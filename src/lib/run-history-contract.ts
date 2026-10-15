@@ -1,5 +1,5 @@
 export const historyCategories = [
-  { value: "python_practice", label: "Python: old unsuccessful practice", description: "Deletes unsubmitted Runs that ended with an error, were stopped, or timed out. Finished and submitted Runs are protected." },
+  { value: "python_practice", label: "Python: old unsuccessful practice", description: "Deletes unsubmitted Runs that ended with an error, were stopped, timed out, or lost their connection for over 24 hours. Finished and submitted Runs are protected." },
   { value: "python_finished", label: "Python: finished, not submitted", description: "Deletes only finished Runs that were never submitted. Finished means execution ended normally; it does not mean the teacher passed the work." },
   { value: "python_submitted", label: "Python: clear submitted code/output", description: "Clears code, input answers, output, errors, and example-check details. Keeps the submission, execution status, teacher reviews, ratings, and assignment completion. Already-cleared Runs are skipped." },
   { value: "game_unfinished", label: "Game: unfinished sessions", description: "Deletes sessions without a recorded level completion, including their command history." },
