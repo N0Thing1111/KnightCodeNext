@@ -1,3 +1,4 @@
+import { PasswordInput } from "@/components/password-input";
 ﻿import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentTeacher } from "@/lib/auth";
@@ -91,9 +92,8 @@ export default async function Page({
             </label>
             <label htmlFor="teacher-password">
               Password
-              <input
+              <PasswordInput
                 id="teacher-password"
-                type="password"
                 name="password"
                 placeholder="Enter your password"
                 autoComplete="current-password"

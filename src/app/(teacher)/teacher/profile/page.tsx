@@ -1,3 +1,4 @@
+import { PasswordInput } from "@/components/password-input";
 import { requireTeacher } from "@/lib/auth";
 import { avatar, getTeacherContext, teacherStats } from "@/lib/teacher-data";
 import {
@@ -179,12 +180,11 @@ export default async function Page({
           <form action={changeTeacherPassword} className="teacher-form">
             <label>
               Current password
-              <input type="password" name="current_password" required />
+              <PasswordInput name="current_password" required />
             </label>
             <label>
               New password
-              <input
-                type="password"
+              <PasswordInput
                 name="new_password"
                 minLength={8}
                 required

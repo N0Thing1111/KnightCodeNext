@@ -1,3 +1,4 @@
+import { PasswordInput } from "@/components/password-input";
 import { requireAdmin } from "@/lib/auth";
 import { getAdminContext, setting } from "@/lib/admin-data";
 import { saveAdminSettings } from "@/app/actions/admin";
@@ -175,8 +176,7 @@ export default async function Page({
             </p>
             <label>
               Confirm with your password
-              <input
-                type="password"
+              <PasswordInput
                 name="admin_password"
                 autoComplete="current-password"
                 required
@@ -191,13 +191,12 @@ export default async function Page({
             <input type="hidden" name="settings_action" value="password" />
             <label>
               Current password
-              <input type="password" name="current_password" required />
+              <PasswordInput name="current_password" required />
             </label>
             <div className="teacher-form-grid">
               <label>
                 New password
-                <input
-                  type="password"
+                <PasswordInput
                   name="new_password"
                   minLength={12}
                   required
@@ -205,8 +204,7 @@ export default async function Page({
               </label>
               <label>
                 Confirm new password
-                <input
-                  type="password"
+                <PasswordInput
                   name="confirm_password"
                   minLength={12}
                   required

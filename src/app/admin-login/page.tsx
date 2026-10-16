@@ -1,3 +1,4 @@
+import { PasswordInput } from "@/components/password-input";
 import Link from "next/link";
 import "../teacher.css";
 export default async function Page({
@@ -64,8 +65,7 @@ export default async function Page({
             </label>
             <label>
               Password
-              <input
-                type="password"
+              <PasswordInput
                 name="password"
                 required
                 autoComplete="current-password"

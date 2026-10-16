@@ -1,4 +1,6 @@
 "use client";
+import { PasswordInput } from "@/components/password-input";
+
 import { useActionState } from "react";
 import { login, type LoginState } from "@/app/actions/auth";
 
@@ -25,9 +27,8 @@ export function LoginForm() {
       </label>
       <label htmlFor="password">
         Password
-        <input
+        <PasswordInput
           id="password"
-          type="password"
           name="password"
           placeholder="Enter your password"
           autoComplete="current-password"

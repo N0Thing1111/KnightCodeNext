@@ -1,4 +1,6 @@
 "use client";
+import { PasswordInput } from "@/components/password-input";
+
 
 import { useActionState, useState } from "react";
 import { updateProfile, type ProfileState } from "@/app/actions/profile";
@@ -299,16 +301,14 @@ export function ProfileForm({
           <div className="password-section">
             <label>
               Current Password
-              <input
-                type="password"
+              <PasswordInput
                 name="current_password"
                 autoComplete="current-password"
               />
             </label>
             <label>
               New Password
-              <input
-                type="password"
+              <PasswordInput
                 name="new_password"
                 minLength={8}
                 autoComplete="new-password"
