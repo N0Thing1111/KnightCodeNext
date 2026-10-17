@@ -345,8 +345,13 @@ summary:focus-visible {
 }
 .admin-settings-grid > section {
   min-width: 0;
+  height: auto;
   scroll-margin-top: 100px;
   margin: 0;
+}
+/* Admin settings cards should not inherit the teacher profile's two-row span. */
+.admin-settings-grid > .teacher-profile-card {
+  grid-row: auto;
 }
 .admin-settings-grid .teacher-profile-cover {
   background:
