@@ -201,7 +201,7 @@ export default async function Page({
           )}
         </form>
         <div className="teacher-table-wrap">
-          <table className="teacher-table">
+          <table className="teacher-table admin-record-table">
             <thead>
               <tr>
                 <th>Name / Title</th>
@@ -505,14 +505,21 @@ function RecordRow({
         <strong className="admin-record-name">{name}</strong>
         <small className="admin-record-id">{identifier}</small>
       </td>
-      <td>{detail}</td>
+      <td>
+        {entity === "lessons" && detail.length > 140 ? (
+          <details className="admin-record-description">
+            <summary>{detail.slice(0, 140).trimEnd()}... <span>Read more</span></summary>
+            <p>{detail}</p>
+          </details>
+        ) : detail}
+      </td>
       <td>
         <span className={"admin-status " + (archived ? "is-archived" : "")}>
           {status}
         </span>
       </td>
       <td>
-        <div className="admin-actions">
+        <div className="admin-actions admin-record-actions">
           <Link
             className="teacher-btn admin-edit"
             href={"/admin/manage/" + entity + "?edit=" + row.id}
@@ -536,42 +543,49 @@ function RecordRow({
               {archived ? "Restore" : "Archive"}
             </button>
           </form>
-          {["teachers", "students"].includes(entity) && (
-            <details>
-              <summary>Reset password</summary>
-              <form action={resetManagedPassword} className="admin-form">
-                <input type="hidden" name="entity" value={entity} />
-                <input type="hidden" name="id" value={row.id} />
-                <button className="teacher-btn">
-                  Generate temporary password
-                </button>
-              </form>
-            </details>
-          )}
           {["teachers", "students", "classes", "lessons"].includes(entity) && (
-            <details>
-              <summary>Delete permanently</summary>
-              <form
-                action={deleteAdminEntity}
-                className="admin-form admin-confirm"
-              >
-                <input type="hidden" name="entity" value={entity} />
-                <input type="hidden" name="id" value={row.id} />
-                <small>
-                  {entity === "lessons"
-                    ? "Only unused lessons can be deleted. Linked levels, assignments, Python activities, or recorded lesson visits block deletion. Archive the lesson to preserve these records."
-                    : "This also removes linked records."}
-                </small>
-                {entity === "lessons" && (
-                  <label className="admin-check">
-                    <input type="checkbox" name="confirm_delete" value="1" required />
-                    Permanently delete this unused lesson
-                  </label>
+            <details className="admin-row-more">
+              <summary aria-label={"More actions for " + name}>More</summary>
+              <div className="admin-row-secondary">
+                {["teachers", "students"].includes(entity) && (
+                  <details>
+                    <summary>Reset password</summary>
+                    <form action={resetManagedPassword} className="admin-form">
+                      <input type="hidden" name="entity" value={entity} />
+                      <input type="hidden" name="id" value={row.id} />
+                      <button className="teacher-btn">
+                        Generate temporary password
+                      </button>
+                    </form>
+                  </details>
                 )}
-                <button className="teacher-btn admin-delete">
-                  Confirm delete
-                </button>
-              </form>
+                {["teachers", "students", "classes", "lessons"].includes(entity) && (
+                  <details>
+                    <summary>Delete permanently</summary>
+                    <form
+                      action={deleteAdminEntity}
+                      className="admin-form admin-confirm"
+                    >
+                      <input type="hidden" name="entity" value={entity} />
+                      <input type="hidden" name="id" value={row.id} />
+                      <small>
+                        {entity === "lessons"
+                          ? "Only unused lessons can be deleted. Linked levels, assignments, Python activities, or recorded lesson visits block deletion. Archive the lesson to preserve these records."
+                          : "This also removes linked records."}
+                      </small>
+                      {entity === "lessons" && (
+                        <label className="admin-check">
+                          <input type="checkbox" name="confirm_delete" value="1" required />
+                          Permanently delete this unused lesson
+                        </label>
+                      )}
+                      <button className="teacher-btn admin-delete">
+                        Confirm delete
+                      </button>
+                    </form>
+                  </details>
+                )}
+              </div>
             </details>
           )}
         </div>
