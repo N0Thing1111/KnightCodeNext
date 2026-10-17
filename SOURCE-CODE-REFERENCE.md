@@ -527,16 +527,6 @@ HTTP route handler for `/api/teacher/notifications`.
 | ---: | -------- | ------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 |    4 | `POST`   | req    | Handles POST requests sent to `/api/teacher/notifications`. | `requireTeacher`, `req.json`, `createAdminClient() .from("teacher_notifications") .update`, `createAdminClient() .from`, `createAdminClient`, `new Date().toISOString`, `q.eq`, `Number`, `NextResponse.json` |
 
-## `src/app/api/teacher/register/route.ts`
-
-HTTP route handler for `/api/teacher/register`.
-
-| Line | Function        | Inputs           | What it does                                                                                                       | Main functions/methods it calls                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| ---: | --------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|    4 | `redirectError` | request, message | Local helper named `redirectError`; read the listed calls and the source lines around it to follow its exact rule. | `NextResponse.redirect`, `encodeURIComponent`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-|   13 | `schoolCode`    | value            | Cleans school text into a consistent uppercase code.                                                               | `value .toUpperCase() .replace(/[^A-Z0-9]+/g, "-") .replace`, `value .toUpperCase() .replace`, `value .toUpperCase`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-|   20 | `POST`          | request          | Handles POST requests sent to `/api/teacher/register`.                                                             | `request.formData`, `String(form.get("name") \|\| "").trim`, `String`, `form.get`, `String(form.get("email") \|\| "") .trim() .toLowerCase`, `String(form.get("email") \|\| "") .trim`, `schoolCode`, `createAdminClient`, `db .from("admin_settings") .select("setting_value") .eq`, `db .from("admin_settings") .select`, `db .from`, `redirectError`, `/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test`, `db .from("profiles") .select("id") .eq("email", email) .maybeSingle`, `db .from("profiles") .select("id") .eq`, `db .from("profiles") .select`, `new Date().getFullYear`, `crypto.randomUUID().replaceAll("-", "").slice(0, 10).toUpperCase` |
-
 ## `src/app/api/teacher/reports/route.ts`
 
 HTTP route handler for `/api/teacher/reports`.
@@ -611,14 +601,6 @@ HTTP route handler for `/teacher-logout`.
 | Line | Function | Inputs | What it does                                    | Main functions/methods it calls                           |
 | ---: | -------- | ------ | ----------------------------------------------- | --------------------------------------------------------- |
 |    3 | `GET`    | req    | Handles GET requests sent to `/teacher-logout`. | `createClient`, `s.auth.signOut`, `NextResponse.redirect` |
-
-## `src/app/teacher-register/page.tsx`
-
-Page component for `/teacher-register`.
-
-| Line | Function | Inputs            | What it does                                             | Main functions/methods it calls                                                                                                                         |
-| ---: | -------- | ----------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|    6 | `Page`   | { searchParams, } | Loads data and renders the page for `/teacher-register`. | `getCurrentTeacher`, `redirect`, `Promise.all`, `createAdminClient() .from("admin_settings") .select`, `createAdminClient() .from`, `createAdminClient` |
 
 ## `src/components/admin-importer.tsx`
 

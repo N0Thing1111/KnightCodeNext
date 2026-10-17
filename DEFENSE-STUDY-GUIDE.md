@@ -294,7 +294,7 @@ Important naming rules:
 
 - `login/page.tsx` and `login/login-form.tsx`: student login.
 - `teacher-login/page.tsx`: teacher login.
-- `teacher-register/page.tsx`: optional teacher registration.
+- Teacher accounts are created by the administrator; public teacher self-registration is not available.
 - `admin-login/page.tsx`: admin login.
 - `logout/route.ts`, `teacher-logout/route.ts`, `admin-logout/route.ts`: sign out and redirect.
 - `auth/callback/route.ts`: exchanges an authentication callback code for a Supabase session.
@@ -911,7 +911,6 @@ Use this appendix when someone opens a file and asks what it is for.
 | `api/preferences/route.ts`           | Saves a student’s light/dark theme.                     |
 | `api/notifications/route.ts`         | Marks one or all student notifications as read.         |
 | `api/teacher/login/route.ts`         | Teacher ID/email and password login.                    |
-| `api/teacher/register/route.ts`      | Optional production-controlled teacher signup.          |
 | `api/teacher/notifications/route.ts` | Marks teacher notifications as read.                    |
 | `api/teacher/import/route.ts`        | Reads and validates a CSV/XLSX upload.                  |
 | `api/teacher/reports/route.ts`       | Creates downloadable teacher reports.                   |

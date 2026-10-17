@@ -516,17 +516,6 @@ export async function saveAdminSettings(f: FormData) {
         .from("profiles")
         .update({ theme_preference: theme })
         .eq("id", admin.id);
-    } else if (action === "access") {
-      const s = await createClient(),
-        check = await s.auth.signInWithPassword({
-          email: admin.email,
-          password: str(f, "admin_password"),
-        });
-      if (check.error) throw Error("Administrator password is incorrect.");
-      await a.from("admin_settings").upsert({
-        setting_key: "teacher_registration",
-        setting_value: f.get("teacher_registration") === "1" ? "1" : "0",
-      });
     } else if (action === "password") {
       const current = str(f, "current_password"),
         next = str(f, "new_password"),

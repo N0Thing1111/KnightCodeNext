@@ -2,25 +2,13 @@ import { PasswordInput } from "@/components/password-input";
 ﻿import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentTeacher } from "@/lib/auth";
-import { createAdminClient } from "@/lib/supabase/admin";
 export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   if (await getCurrentTeacher()) redirect("/teacher/dashboard");
-  const [q, access] = await Promise.all([
-    searchParams,
-    createAdminClient()
-      .from("admin_settings")
-      .select("setting_value")
-      .eq("setting_key", "teacher_registration")
-      .maybeSingle(),
-  ]);
-  const registration =
-    access.data?.setting_value === "1" &&
-    (process.env.NODE_ENV !== "production" ||
-      process.env.KC_ALLOW_TEACHER_REGISTRATION === "1");
+  const q = await searchParams;
   return (
     <main className="auth-layout teacher-auth-layout">
       <section className="auth-visual">
@@ -114,14 +102,7 @@ export default async function Page({
             <span>✓ Teacher account</span>
           </div>
           <p className="auth-help">
-            {registration ? (
-              <>
-                New to KnightCode?{" "}
-                <Link href="/teacher-register">Create a teacher account</Link>
-              </>
-            ) : (
-              "Teacher access is restricted to authorized KnightCode accounts."
-            )}
+            Teacher accounts are created by your school administrator.
           </p>
           <p className="auth-help">
             <Link href="/login">← Student Login</Link>

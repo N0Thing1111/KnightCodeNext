@@ -26,7 +26,6 @@ export default async function Page({
         <a href="#profile">Your profile</a>
         <a href="#school">School details</a>
         <a href="#theme">Appearance</a>
-        <a href="#access">Teacher access</a>
         <a href="#password">Security</a>
       </nav>
       <div className="admin-settings-grid">
@@ -151,39 +150,6 @@ export default async function Page({
               </form>
             ))}
           </div>
-        </section>
-        <section className="teacher-card" id="access">
-          <h3>Welcome teachers your way</h3>
-          <form action={saveAdminSettings} className="teacher-form">
-            <input type="hidden" name="settings_action" value="access" />
-            <label className="admin-switch-row">
-              <span>
-                <strong>Allow teacher self-registration</strong>
-                <small>
-                  Teachers can create an account from the sign-in page.
-                </small>
-              </span>
-              <input
-                type="checkbox"
-                name="teacher_registration"
-                value="1"
-                defaultChecked={setting(ctx, "teacher_registration") === "1"}
-              />
-              <span className="admin-switch-track" />
-            </label>
-            <p className="teacher-note">
-              When off, teachers join through accounts you create or import.
-            </p>
-            <label>
-              Confirm with your password
-              <PasswordInput
-                name="admin_password"
-                autoComplete="current-password"
-                required
-              />
-            </label>
-            <button className="teacher-btn">Save access</button>
-          </form>
         </section>
         <section className="teacher-card admin-security-card" id="password">
           <h3>Keep your account protected</h3>
