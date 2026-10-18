@@ -46,6 +46,10 @@ const input = {title:'Example',order_number:8,content:'<h2>Safe</h2><script>aler
 assert.ok((await call('saveAdminEntity',input)).has('notice'));
 assert.equal(lesson.active,true,'New lesson is active');
 assert.equal(lesson.content,'<h2>Safe</h2>','Lesson HTML remains sanitized');
+// Visual authoring must preserve existing lesson structure without allowing arbitrary attributes.
+const formatted='<div class="lesson-block unsafe" onclick="alert(1)"><h3 class="lesson-block-heading">Example</h3><p class="code-label" style="color:red">Python</p><pre><code>if ready:\n    print(&quot;Go&quot;)</code></pre><script>alert(1)</script></div>';
+assert.ok((await call('saveAdminEntity',{...input,content:formatted})).has('notice'));
+assert.equal(lesson.content,'<div class="lesson-block"><h3 class="lesson-block-heading">Example</h3><p class="code-label">Python</p><pre><code>if ready:\n    print("Go")</code></pre></div>','Keep approved formatting and code whitespace; strip scripts and unsafe attributes');
 lesson.active=false;
 assert.ok((await call('saveAdminEntity',{...input,id:8,title:'Edited'})).has('notice'));
 assert.equal(lesson.active,false,'Editing must not silently restore an archived lesson');

@@ -1,0 +1,29 @@
+.root { min-width: 0; color: var(--t-text); }
+.header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.modes, .toolbar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.root .modes button, .root .toolbar button { padding: 7px 10px; min-height: 36px; border: 1px solid var(--t-border); border-radius: 6px; background: var(--t-surface2); color: var(--t-text); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: none; }
+.root button[aria-pressed="true"] { border-color: var(--t-accent, #3979d6); background: var(--t-surface); outline: 1px solid var(--t-accent, #3979d6); }
+.root button:disabled { opacity: .45; cursor: default; }
+.root button:focus-visible, .root select:focus-visible { outline: 2px solid var(--t-accent, #3979d6); outline-offset: 2px; }
+.help { color: var(--t-muted); font-size: 12px; line-height: 1.6; margin: 10px 0; }
+.toolbar { padding: 10px; border: 1px solid var(--t-border); border-radius: 10px 10px 0 0; background: var(--t-surface); }
+.root .blockLabel { gap: 3px; font-size: 11px; }
+.root select { width: auto; padding: 6px 8px; min-height: 36px; }
+.canvas { border: 1px solid var(--t-border); border-top: 0; border-radius: 0 0 10px 10px; background: var(--t-surface2); }
+.canvas :global(.tiptap) { min-height: 350px; max-height: 650px; overflow: auto; padding: 20px; line-height: 1.75; color: var(--t-text); outline: none; overflow-wrap: anywhere; }
+.canvas:focus-within { outline: 2px solid var(--t-accent, #3979d6); outline-offset: 1px; }
+.canvas p { margin: .65em 0; }
+.canvas :is(h2,h3,h4) { line-height: 1.4; margin: 1em 0 .5em; color: var(--t-text); }
+.canvas h2 { font-size: 24px; } .canvas h3 { font-size: 20px; } .canvas h4 { font-size: 17px; }
+.canvas :is(ul,ol) { padding-left: 26px; }
+.canvas blockquote { margin: 12px 0; border-left: 3px solid var(--t-accent, #3979d6); padding-left: 16px; }
+.canvas pre { font-family: Consolas, monospace; font-size: 14px; white-space: pre; overflow-x: auto; padding: 14px; border: 1px solid var(--t-border); border-radius: 8px; background: var(--t-surface); tab-size: 4; }
+.root .canvas code { font-family: Consolas, monospace; color: var(--t-text); }
+.canvas :global(.lesson-block) { padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid var(--t-border); }
+.canvas :global(.code-label) { font-size: 12px; color: var(--t-muted); }
+.canvas table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+.canvas :is(td,th) { border: 1px solid var(--t-border); padding: 8px; min-width: 60px; vertical-align: top; position: relative; }
+.canvas th { background: var(--t-surface); }
+.canvas :global(.selectedCell) { outline: 2px solid var(--t-accent, #3979d6); outline-offset: -2px; }
+.root .source { font-family: Consolas, monospace; font-size: 13px; }
+@media (max-width: 600px) { .canvas :global(.tiptap) { padding: 12px; min-height: 280px; } .header { align-items: flex-start; } }

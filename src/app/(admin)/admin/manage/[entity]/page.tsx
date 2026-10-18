@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from "next/link";
+import { LessonEditor } from "@/components/lesson-editor";
 import { getPythonActivities } from "@/lib/python-data";
 import { PythonActivitySettings } from "@/components/python-forms";
 import pythonStyles from "@/components/python.module.css";
@@ -427,6 +428,7 @@ function Field({
         Visible to learners
       </label>
     );
+  if (entity === "lessons" && field === "content") return <LessonEditor initialContent={String(value || "")} />;
   if (wide)
     return (
       <label className="wide">

@@ -268,7 +268,8 @@ export async function saveAdminEntity(f: FormData) {
             "div",
             "span",
           ],
-          allowedAttributes: {},
+          allowedAttributes: { "*": ["class"] },
+          allowedClasses: { "*": ["lesson-block", "lesson-block-heading", "code-label"] },
         }),
         order_number: num(f, "order_number"),
       };
