@@ -192,7 +192,7 @@ export default async function Page() {
                       {String(a.action_type).replaceAll("_", " ")}{" "}
                       {lv?.title ?? "KnightCode"}
                       <small>
-                        {new Date(a.created_at).toLocaleString()}{" "}
+                        {new Date(a.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}{" "}
                         {a.xp_earned ? "· +" + a.xp_earned + " XP" : ""}
                       </small>
                     </p>

@@ -2,26 +2,40 @@
 -- Safe to rerun: stable IDs are upserted.
 
 insert into public.lessons(id,title,description,learning_objective,content,order_number,active) values
-  (1,$kc$Movement & Sequence$kc$,$kc$Plan an ordered set of instructions, predict each step, and explain how a change in order can change the result.$kc$,$kc$Trace a short sequence from a stated starting position, write a plan that reaches a goal, and identify the first instruction that does not match the plan.$kc$,$kc$<div class="lesson-block">
-<h3 class="lesson-block-heading">1. Your goal is to think through the instructions</h3>
-<p>A program is a set of instructions. <strong>Programming logic</strong> is the reasoning used to decide which instructions are needed, what order they belong in, and why they should produce the result you want. In this lesson, the knight follows a simple sequence: one instruction after another.</p>
-<p>Your job is not to guess commands until the knight reaches the exit. Your job is to explain the route before running it, then compare that prediction with what happens. You can describe a correct plan in plain words before writing any code.</p>
+  (1,$kc$Movement & Sequence$kc$,$kc$Learn sequence through Python inputs, calculations and output, then apply the same ordered reasoning to the knight's route and a purchase activity.$kc$,$kc$Trace values and movements in order; read whole-number inputs, calculate with variables and print results in Python; explain why each step must follow the previous one.$kc$,$kc$<div class="lesson-block">
+<h3 class="lesson-block-heading">1. Programming logic: choose the steps and their order</h3>
+<p>Programming logic is the reasoning behind a solution: what information is needed, which steps change it, and why those steps reach the goal. An <strong>algorithm</strong> is that step-by-step plan. Python is the language we will use to express and test the plan. In the game, you apply the same reasoning to movement commands.</p><p>Start with the information given, write the steps in order, predict the result, then compare your prediction with a run. Correct spelling matters, but understanding why the steps work is the learning goal. You should be able to explain both a route and a calculation without guessing.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">2. Separate the goal, the starting situation, and the plan</h3>
-<p>A <strong>goal</strong> says what should be true at the end: the knight has reached the exit. The <strong>starting situation</strong> tells you where the knight is and what is around it. A <strong>plan</strong>, also called an algorithm, gives the ordered steps that connect that start to that goal.</p>
-<ul>
-<li>Goal: reach a point two movements to the right and one movement up.</li>
-<li>Starting situation: all three movements in that route are clear.</li>
-<li>Plan: move right, move right again, then move up.</li>
-</ul>
-<p>These are different pieces of information. A goal alone does not tell the knight which route to take. A plan that works from one starting position may fail from another. Always inspect the room before choosing the instructions.</p>
+<h3 class="lesson-block-heading">2. Variables remember the current values</h3>
+<p>A <strong>variable</strong> is a name that refers to a value. In <code>length = 8</code>, the equals sign assigns 8 to length. It does not ask whether two things are equal. Later lines can use that stored value. Names must be written consistently: <code>length</code> and <code>Length</code> are different names.</p><p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>length = 8
+pieces = 3
+used = length * pieces
+print(used)</code></pre><p class="code-label">Output</p><pre><code>24</code></pre><p>Trace the sequence: length becomes 8, pieces becomes 3, and used becomes 24. The <code>*</code> operator means multiplication. <code>print(used)</code> displays the value of used. <code>print("used")</code> would display the word used because quotation marks describe text, called a string.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">3. Read a movement as one precise action</h3>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<h3 class="lesson-block-heading">3. Read input, process it, then display output</h3>
+<p><code>input()</code> reads one answer as text. <code>int(input())</code> converts that text to a whole number so arithmetic can use it. Enter valid whole numbers such as 3, without currency signs or extra words. Each call reads the next answer, so input order is part of the plan.</p><p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>length = int(input())
+pieces = int(input())
+roll = 40
+used = length * pieces
+left = roll - used
+print(used)
+print(left)</code></pre><p class="code-label">Example inputs, in order (one answer per input request)</p><pre><code>8
+3</code></pre><p class="code-label">Output</p><pre><code>24
+16</code></pre><p>This example measures ribbon. Calculate how much ribbon the pieces use, then subtract it from the roll. The <code>-</code> operator means subtraction. Each <code>print()</code> starts a new output line: used ribbon first, then what remains. A line beginning with <code>#</code> is a comment for people; Python does not execute it.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. Trace and debug a sequence</h3>
+<p>Record the values after each step: length 8, pieces 3, roll 40, used 24, left 16. If <code>left = roll - used</code> came before used was first assigned, Python would report an error. If you wrote <code>used = length + pieces</code>, the program could run but calculate the wrong amount: a logic mistake.</p><p><strong>Predict:</strong> what should change when the inputs become 5 and 4?</p><blockquote><p>The used amount becomes 20 and the remainder becomes 20. The instructions stay the same; the inputs change. Do not replace the calculation with <code>print(24)</code>: that only imitates one example.</p></blockquote>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Connect sequence to the game</h3>
+<p>Python variables track quantities; the game tracks the knight's position. In both, a step starts from the result of earlier steps. Game commands such as <code>move(right)</code> belong in the game terminal. They are not built-in Python functions, and Python input/print examples do not control the knight.</p><p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
 <pre><code>move(right)
 move(right)
 move(up)</code></pre>
@@ -31,67 +45,14 @@ move(up)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">4. Trace the program one instruction at a time</h3>
-<p>To <strong>trace</strong> means to follow the program slowly and record what changes. For this paper example, count successful movement actions from the start. This is a reasoning model, not a claim that every drawn floor tile equals one game movement.</p>
-<ol>
-<li>Before running: the knight has made no movements.</li>
-<li>After line 1: it is one movement to the right of the start.</li>
-<li>After line 2: it is two movements to the right of the start.</li>
-<li>After line 3: it is two movements right and one movement up from the start.</li>
-</ol>
-<p>Notice that line 2 starts from the result of line 1. Instructions do not each start again from the original position. In the actual game, watch the distance of a movement and use the room layout to check your plan.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">5. Order can change the route</h3>
+<h3 class="lesson-block-heading">6. Order can change the route</h3>
 <p>Compare right, right, up with up, right, right. On an empty practice area, these can finish at the same position. That does <strong>not</strong> mean they are always interchangeable. They visit different positions on the way.</p>
 <p>Suppose the space directly above the start is blocked, but the route right, right, up is clear. Starting with up now attempts a blocked movement. The same directions and the same number of instructions can produce a different journey because the order changed.</p>
 <p>When comparing two plans, ask both questions: Do they finish in the same place? Can every intermediate step actually happen?</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">6. Read and predict</h3>
-<p>Assume an open practice area, with no exit reached during these four moves. Predict the final position relative to the start before reading the explanation.</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>move(right)
-move(up)
-move(left)
-move(up)</code></pre>
-<blockquote><p><strong>Check your reasoning:</strong> Right and left cancel their horizontal change, but they still happened at different times. The two up moves remain, so the finish is two successful movements above the start. The full route matters if obstacles are added.</p></blockquote>
-<p>Now change only the third line to <code>move(right)</code>. Describe each position again. Do not reuse the first answer without checking what changed.</p>
-<blockquote><p><strong>Check your reasoning:</strong> The revised program finishes two movements right and two up from the start. Only one instruction changed, but the final position changed too.</p></blockquote>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">7. Find and fix a reasoning mistake</h3>
-<p>The planned route is right, right, up. A student writes the following in an open practice area. Which is the first line that disagrees with the plan?</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>move(right)
-move(up)
-move(up)</code></pre>
-<blockquote><p><strong>Check your reasoning:</strong> Line 1 matches the plan. Line 2 is the first mismatch: it goes up when the plan requires another right move. Replace that line with move(right), then trace all three lines again. Changing the last line alone would not fix the first wrong step.</p></blockquote>
-<p>This is a <strong>logic mistake</strong>: the instructions may be understood by the game, but they describe the wrong plan. A spelling mistake is different: the game may not understand the instruction at all.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">8. Plan and write your own sequence</h3>
-<p>For a clear practice route, write instructions for one up movement, two right movements, and one down movement, in that order. First say the plan aloud. Then write it. Finally, explain the expected position after each line.</p>
-<blockquote><p><strong>Check your reasoning:</strong> Use move(up), move(right), move(right), then move(down), with each command on its own line. In this open-area example the finish is two movements right of the start. There are four actions even though two vertical movements cancel in the final position.</p></blockquote>
-<p>Before trying a real level, check every part of that route against the actual walls. A correct answer to this small exercise is not automatically a solution to the room.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">9. A small connection to real code</h3>
-<p class="code-label">Real Python example - read only; not a KnightCode command</p>
-<pre><code>points = 0
-points = points + 1
-print(points)</code></pre>
-<p>In Python, <code>points</code> is a name holding a value. The first line stores 0. The second reads the current value, adds 1, and stores the result. The third displays that value, so it displays 1. If the display line came before the addition, it would display 0 instead.</p>
-<p><strong>The idea to carry over is sequence:</strong> a later instruction sees the result of earlier instructions. You do not need to memorize Python or type this example into the game.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">10. Use the idea in your levels</h3>
+<h3 class="lesson-block-heading">7. Use the idea in your levels</h3>
 <ul>
 <li><strong>First Steps:</strong> inspect how far one move takes the knight and count the actions needed for the straight route.</li>
 <li><strong>Turn the Corner:</strong> mark the point where the direction changes. Explain why the turn belongs there.</li>
@@ -101,37 +62,49 @@ print(points)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">11. Explain it without looking at the example</h3>
-<ul>
-<li>Why does every instruction need to start from the result of the previous one?</li>
-<li>Can two sequences finish in the same place but behave differently around walls?</li>
-<li>What is the difference between describing the goal and giving the instructions?</li>
-</ul>
-<blockquote><p><strong>Check your reasoning:</strong> The position changes as the sequence runs. Different intermediate positions can meet different obstacles. A goal describes the desired result; a plan supplies the steps that make that result happen. You understand this lesson when you can explain those steps, not just copy them.</p></blockquote>
+<h3 class="lesson-block-heading">8. Prepare for the Python activity</h3>
+<p>In <strong>Plan a purchase</strong>, replace the ribbon situation with a notebook purchase. Identify the quantity, amount paid, fixed price, total cost, and change. Write the calculation plan before filling in the starter code. The price is 35 pesos and the task assumes enough money; no decision is needed yet.</p><p>A later step uses the result of an earlier step. You cannot calculate the change correctly until you know the total, just as you cannot plan a turn without knowing the position reached before it.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. Activity inputs and expected output</h3>
+<p><strong>Plan a purchase:</strong> A notebook costs 35 pesos. Read the quantity and then the money paid, each as a whole number. Calculate the total before calculating the change. Print the total on the first line and the change on the second line. Assume there is enough money. Use calculations, not answers typed directly into print().</p><p>These are the required results, not a full code solution. Calculate or decide from the input; the same program must work with other valid values.</p><p class="code-label">Sample inputs, in order</p><pre><code>3
+120</code></pre><p class="code-label">Output</p><pre><code>105
+15</code></pre><p>Match the required output wording, capitalization and line order. When only numbers are requested, print numbers without extra labels or success messages. A correct idea can still need an output-format correction; explain the reasoning as well as checking the display.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. Practise, submit, and explain your reasoning</h3>
+<p>Complete the available assigned game levels, then open this lesson's Python activity when it becomes available. Levels marked Coming Soon do not need to be completed first. Use the game to trace the concept visually and the activity to apply it to a different problem.</p><p>Type Python in the code editor and select Run Python. When the program asks for input, enter the next answer in the input field below the output; the output itself is not where you type code or answers. Each input call takes one answer. Practice checks try the supplied examples and are guidance, not the teacher's grade.</p><p>The worked examples above solve different problems from the assigned activity. Trace them on paper; if you try one in the activity editor, its output may not match that activity's checks. Return to the assigned task before submitting. Run records an attempt; Submit this Run sends the latest saved run for teacher review. Read teacher feedback in its run history.</p><p><strong>Explain:</strong> Explain why total cost must be calculated before change. Then explain why changing the order of movements can alter a route even when the final destination looks the same.</p>
 </div>
 $kc$,1,true),
-  (2,$kc$Making Decisions with If$kc$,$kc$Use a true-or-false check to decide whether an action should run, and trace what happens when the action is skipped.$kc$,$kc$Distinguish a condition from an action, trace both outcomes of an if statement, and place instructions inside or outside the decision deliberately.$kc$,$kc$<div class="lesson-block">
-<h3 class="lesson-block-heading">1. Move from a fixed plan to a checked action</h3>
-<p>A sequence tells the knight what to do in order. Sometimes one instruction should run only when something is true. For example, you may want the knight to move right only when movement to the right is possible.</p>
-<p>This is a <strong>decision</strong>. The program checks a question, then uses its answer to decide whether a particular action runs. You still design the plan. A condition gives the program information about the current situation; it does not work out the whole route.</p>
-<p>By the end of this lesson, explain both outcomes: what happens when the answer is true, and what happens when it is false.</p>
+  (2,$kc$Making Decisions with If$kc$,$kc$Use Python if statements to reason about optional actions, then connect true-or-false checks to guarded game movements and a fuel-warning activity.$kc$,$kc$Write and trace a Python if statement, distinguish conditional from unconditional instructions, test a boundary value, and connect the same decision to can() checks in the game.$kc$,$kc$<div class="lesson-block">
+<h3 class="lesson-block-heading">1. Programming logic: decide whether an action is needed</h3>
+<p>A <strong>condition</strong> is a question with a true-or-false answer. An <code>if</code> statement runs its body only when that answer is true; if false, execution continues after the body. Use the input and variables from Lesson 1 to represent the situation.</p><p>Before coding, state the rule in words: when is the action needed, and what should happen regardless of the answer? A condition asks a question; an action changes or displays something.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">2. A condition asks; an action changes something</h3>
-<p><code>can(right)</code> asks whether the knight can move right from its current position. The answer is <strong>true</strong> when that movement is possible and <strong>false</strong> when it is blocked. True and false are the two possible answers to this kind of condition.</p>
-<p><code>move(right)</code> is an action. It attempts movement and may change the knight's position. Checking <code>can(right)</code> does not itself move the knight.</p>
-<ul>
-<li>Question: can movement happen?</li>
-<li>Decision: should this group of instructions run?</li>
-<li>Action: perform the movement when the decision allows it.</li>
-</ul>
-<p>Keeping these separate prevents a common mistake: thinking that asking about a direction also sends the knight in that direction.</p>
+<h3 class="lesson-block-heading">2. Write the question precisely in Python</h3>
+<p>Comparison operators express questions: <code>&lt;</code> means less than, <code>&gt;</code> greater than, <code>&lt;=</code> less than or equal to, <code>&gt;=</code> greater than or equal to, <code>==</code> equal to, and <code>!=</code> not equal to. Assignment <code>=</code> stores a value; comparison <code>==</code> tests equality.</p><p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>temperature = int(input())
+if temperature &gt; 30:
+    print("Take a water break")
+print("Reading recorded")</code></pre><p class="code-label">Example inputs, in order (one answer per input request)</p><pre><code>32</code></pre><p class="code-label">Output</p><pre><code>Take a water break
+Reading recorded</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">3. Read a single decision</h3>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<h3 class="lesson-block-heading">3. Indentation shows what belongs to the decision</h3>
+<p>The colon <code>:</code> ends the if header. Indent its body by four spaces. The warning belongs to the decision; the final print aligns with if, so it runs afterward whether the condition was true or false. Python uses indentation to group instructions, not just to make code tidy.</p><p>If both prints were indented, a temperature of 20 would print nothing. If the warning had no indentation, the if statement would be incomplete and Python would report an indentation error. Valid indentation can also group the wrong actions: that is a logic problem.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. Trace true, false, and the boundary</h3>
+<ul><li>Input 32: 32 &gt; 30 is true. Print the warning, then Reading recorded.</li><li>Input 20: false. Skip the warning but still print Reading recorded.</li><li>Input 30: false because the rule says above 30, not at least 30.</li></ul><p>The <strong>boundary</strong> is where the decision changes. Testing 29, 30 and 31 checks both sides and the exact boundary. Predict each output first. One successful example does not establish that the rule is correct for all inputs.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Connect the Python decision to a game check</h3>
+<p>Python compares a value here; the game checks whether movement is possible. Both decide whether to execute an indented action. <code>can(right)</code> is game-specific, not a standard Python function. An open movement may still be the wrong route to the exit.</p><p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
 <pre><code>if can(right):
     move(right)</code></pre>
 <p>Read this as: <strong>If moving right is possible now, move right.</strong> The word <code>if</code> introduces the decision. The condition is <code>can(right)</code>. The colon begins the following group of instructions, and the spaces before the move show that it belongs to that group.</p>
@@ -140,17 +113,7 @@ $kc$,1,true),
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">4. Trace both possible answers</h3>
-<ol>
-<li>Right is open: check can(right), obtain true, run the indented move, then continue after the block.</li>
-<li>Right is blocked: check can(right), obtain false, skip the indented move, then continue after the block.</li>
-</ol>
-<p>In the second case, skipping the move is the correct behavior for these instructions. A skipped block does not mean the whole program has ended. It means that this particular action was not selected.</p>
-<p>An <code>if</code> makes one check each time execution reaches it. It does not keep rechecking until movement becomes possible. Rechecking through repetition comes in a later lesson.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">5. Decide what belongs inside the block</h3>
+<h3 class="lesson-block-heading">6. Decide what belongs inside the block</h3>
 <p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
 <pre><code>if can(right):
     move(right)
@@ -165,52 +128,7 @@ move(up)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">6. Read and predict two situations</h3>
-<p>Use the program below. In situation A, up is open and left is clear after moving up. In situation B, up is blocked but left is clear at the starting position. Predict the moves in each situation.</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>if can(up):
-    move(up)
-move(left)</code></pre>
-<blockquote><p><strong>Check your reasoning:</strong> A: the condition is true, so the knight moves up and then left. B: the condition is false, so the knight skips up and moves left from the start. The final left instruction runs in both cases, but it starts from a different position.</p></blockquote>
-<p>What would change if the left movement were inside the block?</p>
-<blockquote><p><strong>Check your reasoning:</strong> In B, neither movement would run. In A, both would still run. Trace the false case to see the difference; testing only the true case would miss it.</p></blockquote>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">7. Find the wrong question</h3>
-<p>A student wants to move up only when up is open. They write:</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>if can(right):
-    move(up)</code></pre>
-<p>Does an open path on the right prove that the upward path is open? Imagine right open and up blocked. Then imagine right blocked and up open.</p>
-<blockquote><p><strong>Check your reasoning:</strong> No. The question and the intended action do not match. In the first situation the program selects an upward move without checking up. In the second it skips a possible upward move. For the stated goal, change the condition to can(up).</p></blockquote>
-<p>A useful condition must answer a question that matters to the action or plan. Simply adding an if statement does not make a program correct.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">8. Plan and write a guarded step</h3>
-<p>Write a program that attempts one left move only when left is open, then attempts one down move outside that decision. Assume down is clear from either resulting position. Before writing code, say which action depends on the condition and which does not.</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>if can(left):
-    move(left)
-move(down)</code></pre>
-<p>Compare your answer with this example. Test it in your head with left open and with left blocked. Explain why down is outside the block. This explanation is more important than matching the example character for character.</p>
-<p>If down is not known to be safe in a real room, inspect that part of the route or add a suitable check. Do not carry the exercise's assumptions into every level.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">9. A small connection to real code</h3>
-<p class="code-label">Real Python example - read only; not a KnightCode command</p>
-<pre><code>lives = 2
-if lives &gt; 0:
-    print(&quot;Keep playing&quot;)
-print(&quot;Check finished&quot;)</code></pre>
-<p>Here, <code>lives &gt; 0</code> asks whether the stored number is greater than zero. With 2 lives, both messages appear. With 0 lives, the first message is skipped and only the final message appears. The number is example data, not a KnightCode command.</p>
-<p><strong>The shared logic is conditional execution:</strong> some instructions depend on an answer, while instructions outside the block continue afterwards. You are learning that relationship, not a Python spelling test.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">10. Apply it to the room, not just one move</h3>
+<h3 class="lesson-block-heading">7. Apply it to the room, not just one move</h3>
 <ul>
 <li><strong>Check Before Moving:</strong> choose a direction on your planned route and explain the question before the guarded move.</li>
 <li><strong>What If It Is Blocked?:</strong> predict a skipped move and describe how the later instructions continue around the obstacle.</li>
@@ -220,26 +138,51 @@ print(&quot;Check finished&quot;)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">11. Check your reasoning</h3>
-<ul>
-<li>Does can(up) move the knight?</li>
-<li>When an if condition is false, what happens to its block?</li>
-<li>Why should you test both true and false situations?</li>
-<li>Does checking one direction once guarantee that it stays open later?</li>
-</ul>
-<blockquote><p><strong>Check your reasoning:</strong> The check asks a question without moving. A false condition skips its block. Testing both answers reveals unwanted moves and unwanted skips. Later movement or changes in the room may change the answer, so a previous result is not a permanent promise.</p></blockquote>
-</div>
-$kc$,2,true),
-  (3,$kc$Choosing Between Two Actions$kc$,$kc$Plan both branches of a decision, distinguish can from blocked, and explain why a possible move may still be the wrong choice.$kc$,$kc$Trace one selected branch of if/else, choose a safe alternative, and explain how changing the condition changes which branch runs.$kc$,$kc$<div class="lesson-block">
-<h3 class="lesson-block-heading">1. Give the program two planned choices</h3>
-<p>An <code>if</code> statement can run a block or skip it. Sometimes you need a planned action for both answers. <strong>If/else</strong> selects the if block when the condition is true and the else block when it is false.</p>
-<p><code>else</code> means otherwise. It does not mean try every direction until one works. You write the alternative yourself. Your goal is to explain why each choice is appropriate for the situation that selects it.</p>
-<p>This lesson adds choice to a sequence. After the chosen block finishes, execution continues with the instructions after the whole decision.</p>
+<h3 class="lesson-block-heading">8. Prepare for the Python activity</h3>
+<p>In <strong>Check the fuel warning</strong>, plan a warning that depends on fuel and a completion message that always runs. Read fuel once. Decide which print belongs inside the conditional block and which belongs after it.</p><p>The activity uses <em>below 5</em>, while the temperature example uses <em>above 30</em>. Choose the comparison from the task rather than copying unchanged. Predict the exact boundary at fuel 5 before running.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">2. State the assumptions before choosing</h3>
-<p>Imagine a practice junction. Moving right is our preferred route when it is open. If right is blocked, we have already checked the map and know that up is an available alternative. These assumptions are part of the example.</p>
+<h3 class="lesson-block-heading">9. Activity inputs and expected output</h3>
+<p><strong>Check the fuel warning:</strong> Read a whole-number fuel amount. If fuel is below 5, print Low fuel. Always print Check complete afterward. When fuel is 5 or higher, the only output should be Check complete. Use an if condition so the warning is a decision, not a fixed message.</p><p>These are the required results, not a full code solution. Calculate or decide from the input; the same program must work with other valid values.</p><p class="code-label">Sample inputs, in order</p><pre><code>2</code></pre><p class="code-label">Output</p><pre><code>Low fuel
+Check complete</code></pre><p>Match the required output wording, capitalization and line order. When only numbers are requested, print numbers without extra labels or success messages. A correct idea can still need an output-format correction; explain the reasoning as well as checking the display.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. Practise, submit, and explain your reasoning</h3>
+<p>Complete the available assigned game levels, then open this lesson's Python activity when it becomes available. Levels marked Coming Soon do not need to be completed first. Use the game to trace the concept visually and the activity to apply it to a different problem.</p><p>Type Python in the code editor and select Run Python. When the program asks for input, enter the next answer in the input field below the output; the output itself is not where you type code or answers. Each input call takes one answer. Practice checks try the supplied examples and are guidance, not the teacher's grade.</p><p>The worked examples above solve different problems from the assigned activity. Trace them on paper; if you try one in the activity editor, its output may not match that activity's checks. Return to the assigned task before submitting. Run records an attempt; Submit this Run sends the latest saved run for teacher review. Read teacher feedback in its run history.</p><p><strong>Explain:</strong> For fuel 5, explain why the warning is skipped but the completion message still appears. In the game, explain what happens after an if block is skipped.</p>
+</div>
+$kc$,2,true),
+  (3,$kc$Choosing Between Two Actions$kc$,$kc$Express two alternative actions with Python if/else, test equality at a decision boundary, and apply the same branch reasoning to game routes and an affordability activity.$kc$,$kc$Trace exactly one branch of Python if/else, place calculations in the appropriate branch, handle equality deliberately, and justify both game-route alternatives.$kc$,$kc$<div class="lesson-block">
+<h3 class="lesson-block-heading">1. Programming logic: choose one of two alternatives</h3>
+<p>An if statement can perform an optional action. An <strong>if/else</strong> statement chooses between two alternatives. When the condition is true, the if body runs; otherwise, the else body runs. For a single if/else decision, the two bodies do not both run.</p><p>Plan the question, the action for true, and the action for false. Then identify any steps that belong after either outcome.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">2. Express the two branches in Python</h3>
+<p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>height = int(input())
+minimum = 120
+if height &gt;= minimum:
+    print("Ready")
+    print(height - minimum)
+else:
+    print("Too short")</code></pre><p class="code-label">Example inputs, in order (one answer per input request)</p><pre><code>130</code></pre><p class="code-label">Output</p><pre><code>Ready
+10</code></pre><p>This ride-height example prints Ready and the centimetres above the minimum when the requirement is met. Otherwise it prints Too short. <code>else:</code> aligns with if and has no additional condition. Its body is also indented four spaces. The two prints in the first body belong to the same branch.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">3. Equality is a decision you must make</h3>
+<p>At height 120, <code>height &gt;= minimum</code> is true. Output is Ready followed by 0. Changing <code>&gt;=</code> to <code>&gt;</code> would wrongly reject someone exactly at the minimum. The syntax could be valid while the rule was wrong.</p><p>Test 119, 120 and 121, explaining the branch for each. In an affordability problem, the boundary is exactly the price: enough money includes the exact amount, even if nothing remains afterward.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. Keep branch-specific work inside its branch</h3>
+<p>The difference calculation belongs with Ready. If its print moved below the whole if/else, it would also print a negative number after Too short. That would not match the stated output. Aligning a line with if means it runs after either branch; indenting it chooses which branch owns it.</p><p><strong>Predict:</strong> for input 119, which lines run?</p><blockquote><p>The comparison is false. Skip both prints under if, execute the print under else, and finish. Output only Too short.</p></blockquote>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Connect the two branches to a game route</h3>
+<p>Choosing numerical outcomes and choosing routes use the same structure. The game supplies <code>can()</code> and <code>blocked()</code>; those names are not built into the Python activity editor. <code>can(right)</code> asks whether movement right is possible; <code>blocked(right)</code> asks whether it is blocked. A true blocked check means you should consider a different route, not move into the obstacle.</p><p>Imagine a practice junction. Moving right is our preferred route when it is open. If right is blocked, we have already checked the map and know that up is an available alternative. These assumptions are part of the example.</p>
 <p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
 <pre><code>if can(right):
     move(right)
@@ -250,17 +193,7 @@ else:
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">3. Trace the two paths through the same program</h3>
-<ol>
-<li>Situation A: right is open. Check can(right), choose the if branch, move right, skip else, then continue.</li>
-<li>Situation B: right is blocked and up is open. Check can(right), choose the else branch, move up, then continue.</li>
-</ol>
-<p>The program is the same in both situations. Its behavior changes because the answer to the condition changes. This is how a program can respond to different starting situations without someone manually choosing a different line each time.</p>
-<p>If both directions are open, this program still chooses right. It does not choose randomly or compare which route is shorter. The preference is written into the condition and branches.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">4. Else is an alternative, not a safety check</h3>
+<h3 class="lesson-block-heading">6. Else is an alternative, not a safety check</h3>
 <p>Suppose both right and up are blocked. The condition is false, so the example selects <code>move(up)</code>. But choosing that line does not make the movement possible. The else branch does not secretly test up.</p>
 <p>For a real room, use a known-safe alternative or check the alternative too. One way to check it is a decision inside the else block:</p>
 <p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
@@ -274,70 +207,7 @@ else:
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">5. Ask the opposite question with blocked</h3>
-<p><code>blocked(right)</code> asks whether moving right is blocked now. In the same unchanged situation, it gives the opposite answer to <code>can(right)</code>. It checks movement rules, not just whether a tile looks like a wall.</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>if blocked(right):
-    move(up)
-else:
-    move(right)</code></pre>
-<p>Under our earlier assumption that up is a safe detour, this makes the same choice as the first example. When right is blocked, it chooses up. When right is open, it chooses right.</p>
-<p>Notice that we changed the question <strong>and swapped the branch actions</strong>. Changing can to blocked without changing the branches would reverse the intended choice. Always translate the whole decision into plain words.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">6. Read and predict the continuation</h3>
-<p>Assume the last left move is possible after either branch and no exit ends execution early. Predict the full sequence when up is open, then when up is blocked but right is open.</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>if can(up):
-    move(up)
-else:
-    move(right)
-move(left)</code></pre>
-<blockquote><p><strong>Check your reasoning:</strong> Up open: up, then left. Up blocked: right, then left. The final left move is outside both branches, so it is attempted after the selected branch. In an open practice area, the second route returns to its starting horizontal position.</p></blockquote>
-<p>Why does the knight not run the right move after the up move in the first situation?</p>
-<blockquote><p><strong>Check your reasoning:</strong> They belong to different branches of one if/else decision. Once the true branch is selected, the else branch is skipped.</p></blockquote>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">7. Find and fix reversed logic</h3>
-<p>The intention is: if right is blocked, take a known-open upward detour; otherwise go right. A student writes:</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>if blocked(right):
-    move(right)
-else:
-    move(up)</code></pre>
-<p>Trace the blocked case before changing anything. Which instruction does it select? Does that match the intention?</p>
-<blockquote><p><strong>Check your reasoning:</strong> When right is blocked, the condition is true and the program selects the right move. That contradicts the plan. Swap the branch actions: up belongs in the true branch and right belongs in else. Then check the open case too.</p></blockquote>
-<p>Do not judge a condition by whether it contains a familiar word. Judge it by which action its true answer selects.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">8. Plan your own preference</h3>
-<p>At a practice junction, prefer left if it is possible. Otherwise, use a known-clear downward path. Write the decision, then explain what happens when both paths are open and when only down is open.</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>if can(left):
-    move(left)
-else:
-    move(down)</code></pre>
-<blockquote><p><strong>Check your reasoning:</strong> Both open: left is selected because it is the written preference. Only down open: the condition is false, so down is selected. If neither is open, the assumption about a safe alternative fails; this version does not solve that situation.</p></blockquote>
-<p>A useful explanation includes the limits of the plan. Saying when a solution does not work is part of understanding it.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">9. A small connection to real code</h3>
-<p class="code-label">Real Python example - read only; not a KnightCode command</p>
-<pre><code>score = 6
-if score &gt;= 5:
-    print(&quot;Goal reached&quot;)
-else:
-    print(&quot;Keep practising&quot;)</code></pre>
-<p>The condition asks whether score is at least 5. With 6, only the first message appears. With 3, only the second appears. With exactly 5, the first appears because the check includes equality.</p>
-<p><strong>The shared idea is choosing one branch from two.</strong> The number check is different from a path check, but the decision structure is the same. You do not need Python syntax to explain the two possible outcomes.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">10. Practise decisions in your levels</h3>
+<h3 class="lesson-block-heading">7. Practise decisions in your levels</h3>
 <ul>
 <li><strong>Right or Up?:</strong> state which direction your decision prefers and why that helps the route.</li>
 <li><strong>When the Answer Is No:</strong> explain the alternative before running the false case.</li>
@@ -348,42 +218,57 @@ else:
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">11. Check your reasoning</h3>
-<ul>
-<li>Why does else not guarantee a safe movement?</li>
-<li>How can both paths be open while only one branch runs?</li>
-<li>What must change when you replace can with blocked but want the same choice?</li>
-</ul>
-<blockquote><p><strong>Check your reasoning:</strong> Else selects the action you supplied without another automatic check. The condition determines the chosen branch even when both paths are possible. Reversing the question requires reversing the branch actions if you want to preserve the same behavior.</p></blockquote>
+<h3 class="lesson-block-heading">8. Prepare for the Python activity</h3>
+<p>In <strong>Can I afford the notebook?</strong>, read the available money once and compare it with 35. Decide when change should be calculated and displayed. The insufficient-money branch does not ask for a change value.</p><p>Check less than the price, exactly the price, and more than the price. Explain why exactly enough selects the affordable branch. As in a game detour, the alternative needs to be planned; else does not invent the correct action.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. Activity inputs and expected output</h3>
+<p><strong>Can I afford the notebook?:</strong> A notebook costs 35 pesos. Read the money available as a whole number. If it is enough, print Buy and then the remaining money on the next line. Otherwise print Save more. Handle exactly 35 correctly. Use if and else to express the two choices.</p><p>These are the required results, not a full code solution. Calculate or decide from the input; the same program must work with other valid values.</p><p class="code-label">Sample inputs, in order</p><pre><code>50</code></pre><p class="code-label">Output</p><pre><code>Buy
+15</code></pre><p>Match the required output wording, capitalization and line order. When only numbers are requested, print numbers without extra labels or success messages. A correct idea can still need an output-format correction; explain the reasoning as well as checking the display.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. Practise, submit, and explain your reasoning</h3>
+<p>Complete the available assigned game levels, then open this lesson's Python activity when it becomes available. Levels marked Coming Soon do not need to be completed first. Use the game to trace the concept visually and the activity to apply it to a different problem.</p><p>Type Python in the code editor and select Run Python. When the program asks for input, enter the next answer in the input field below the output; the output itself is not where you type code or answers. Each input call takes one answer. Practice checks try the supplied examples and are guidance, not the teacher's grade.</p><p>The worked examples above solve different problems from the assigned activity. Trace them on paper; if you try one in the activity editor, its output may not match that activity's checks. Return to the assigned task before submitting. Run records an attempt; Submit this Run sends the latest saved run for teacher review. Read teacher feedback in its run history.</p><p><strong>Explain:</strong> Explain why only one branch runs, why exactly 35 counts as affordable, and why an else movement in the game still needs a safe route.</p>
 </div>
 $kc$,3,true),
-  (4,$kc$When Actions Change the Situation$kc$,$kc$Track how actions change the room, identify what must happen first, and keep required conditions true while completing the plan.$kc$,$kc$Explain a room state before and after an action, order dependent steps, and distinguish a lasting button effect from a pressure plate that must stay held.$kc$,$kc$<div class="lesson-block">
-<h3 class="lesson-block-heading">1. A correct route can depend on changing the room</h3>
-<p>So far, you have planned movements and checked paths. Some rooms need more: a passage is closed until a button is pressed, or a door stays open only while a plate is held. You must reason about how your actions change what can happen next.</p>
-<p>The programming idea is <strong>state</strong>: the facts that describe the situation at a particular moment. In KnightCode, these facts include the knight's position, the crate's position, whether a plate is held, and whether a door is open. State is a useful name for these facts, not a new command to type.</p>
+  (4,$kc$When Actions Change the Situation$kc$,$kc$Track changing values in Python and changing mechanisms in the game; use the updated situation to make a decision in the balance activity.$kc$,$kc$Trace a variable before and after an update, make a decision using the current value, and order game actions so the required door or plate state is maintained.$kc$,$kc$<div class="lesson-block">
+<h3 class="lesson-block-heading">1. Programming logic: later actions depend on the current state</h3>
+<p><strong>State</strong> means the facts describing a program or room at a particular moment. A Python variable might hold the battery charge. Game state includes the knight's position, crates, and whether a door is open. An action changes these facts, so a later decision must use the updated situation.</p><p>A <strong>dependency</strong> means one step needs another first. Charging before checking energy can change the answer, just as activating a button before crossing can make a route possible.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">2. Describe the before and after</h3>
-<p>Imagine an ordinary button that opens a door. Before the knight reaches it, the button has not been activated and the door is closed. After the knight activates it, the door is open. The action changed the state of the room.</p>
-<ol>
-<li>Before: door closed; the planned crossing is blocked.</li>
-<li>Action: reach and activate the button.</li>
-<li>After: door open; the crossing can now be considered.</li>
-</ol>
-<p>A <strong>condition</strong> reads something about the current state. An <strong>action</strong> may change that state. This means the same question can have a different answer before and after an action. Do not assume an earlier check is still true later.</p>
+<h3 class="lesson-block-heading">2. Read an update from right to left</h3>
+<p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>charge = 6
+recharge = 10
+charge = charge + recharge
+print(charge)</code></pre><p class="code-label">Output</p><pre><code>16</code></pre><p>For <code>charge = charge + recharge</code>, evaluate the right side using the old values: 6 + 10 is 16. Then assign 16 to charge. This is an update, not a mathematical claim that charge equals charge plus 10 forever. Later uses of charge see 16 until another assignment changes it.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">3. Work out what must happen first</h3>
-<p>A <strong>dependency</strong> means one step needs another step to happen first. If crossing a passage requires an open door, and opening the door requires pressing a button, pressing the button must come before crossing.</p>
-<p>Plan backwards from the goal: I need to reach the exit. What prevents that? A closed door. What opens it? The button. How do I reach the button? This gives you a useful order instead of a list of unrelated movements.</p>
-<p>Then trace forwards to test it. Working backwards helps discover the steps; working forwards checks that each step is possible from the situation left by the previous one.</p>
+<h3 class="lesson-block-heading">3. Update first, then decide</h3>
+<p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>charge = int(input())
+recharge = int(input())
+cost = 15
+charge = charge + recharge
+if charge &gt;= cost:
+    charge = charge - cost
+    print(charge)
+else:
+    print("Wait")
+    print(charge)</code></pre><p class="code-label">Example inputs, in order (one answer per input request)</p><pre><code>6
+10</code></pre><p class="code-label">Output</p><pre><code>1</code></pre><p>Trace: charge begins at 6, becomes 16 after recharging, passes the cost check, and becomes 1 after use. Checking the original 6 before recharging would reject an action the updated charge can support. The order is part of the solution.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">4. Trace an action followed by a check</h3>
-<p>For this small example only, suppose one right move activates an ordinary button. Once pressed, it opens the passage directly above the knight's new position. Both movements have been checked against this imagined layout.</p>
+<h3 class="lesson-block-heading">4. Trace both outcomes and preserve the right value</h3>
+<p>With inputs 2 and 3, the updated charge is 5. It cannot cover cost 15, so output Wait and 5. Do not subtract the cost in that branch. With inputs 5 and 10, all 15 units can be used and the result is 0. A zero final value is not itself a failure.</p><p>On paper, label the starting value, value after the update, condition result and final value. Find the first difference from that trace rather than adding extra operations at the end.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Connect value updates to room updates</h3>
+<p>The Python example changes numbers. In the game, movement may activate a mechanism and change a later path check. Python variables do not directly operate game doors; the shared skill is following state over time.</p><p>For this small example only, suppose one right move activates an ordinary button. Once pressed, it opens the passage directly above the knight's new position. Both movements have been checked against this imagined layout.</p>
 <p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
 <pre><code>move(right)
 if can(up):
@@ -397,7 +282,7 @@ if can(up):
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">5. Distinguish a lasting change from a held condition</h3>
+<h3 class="lesson-block-heading">6. Distinguish a lasting change from a held condition</h3>
 <ul>
 <li><strong>Ordinary button:</strong> once activated, its linked door stays open when the activating object leaves.</li>
 <li><strong>Pressure plate:</strong> its linked door stays open only while an allowed object remains on the plate. When nothing holds it, the door closes.</li>
@@ -407,7 +292,7 @@ if can(up):
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">6. Use a crate to keep a required fact true</h3>
+<h3 class="lesson-block-heading">7. Use a crate to keep a required fact true</h3>
 <p>The knight pushes a crate by moving toward it. There is no separate push command in these lessons. The crate needs space to move into; a crate blocked against a wall cannot simply be pushed through it.</p>
 <p>For a plate that accepts crates, leaving the crate on the plate can keep the door open while the knight leaves. Some switches have different activation rules, so inspect the level rather than assuming every object can activate every switch.</p>
 <ol>
@@ -419,40 +304,7 @@ if can(up):
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">7. Read and predict a state change</h3>
-<p>In this thought exercise, one pressure plate controls one door. The plate accepts the knight and crates. At first it is empty. Predict the door after each step: the knight steps onto it; the knight leaves with no crate there; a crate is placed on it; the knight walks away while the crate stays.</p>
-<blockquote><p><strong>Check your reasoning:</strong> The door opens when the knight holds the plate, closes when the empty plate is released, opens when the crate holds it, and stays open when the knight leaves but the crate remains. The important fact is occupancy of the plate, not how many times the knight visited it.</p></blockquote>
-<p>Change the assumption: the plate does not respond to crates. Would the last two outcomes still follow?</p>
-<blockquote><p><strong>Check your reasoning:</strong> No. The proposed support object must be one the switch accepts. A plan is only as good as the facts it assumes.</p></blockquote>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">8. Find and fix a dependency mistake</h3>
-<p>A student plans: stand on a pressure plate, walk away from it, then cross its linked door. Nothing else will hold the plate. Explain the first step that breaks the condition needed for crossing.</p>
-<blockquote><p><strong>Check your reasoning:</strong> Walking away releases the plate and closes the door. The later crossing fails because the earlier action removed the condition it needed. If a suitable crate and route are available, revise the plan so the crate holds the plate before the knight leaves.</p></blockquote>
-<p>Do not fix this by blindly adding extra movement near the door. The problem is the state of the mechanism, not necessarily the final direction. Trace the cause of the closed door.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">9. Plan and explain a multi-step solution</h3>
-<p>For a room with a crate-sensitive plate and an exit behind its door, write a plain-language plan before choosing movements. Include the side from which to push the crate and the path the knight will take after placing it.</p>
-<p>Beside each step, write two short notes: <strong>needs</strong> and <strong>changes</strong>. For example: pushing needs a clear destination; pushing changes the crate position. Crossing needs an open door; crossing changes the knight position.</p>
-<blockquote><p><strong>Check your reasoning:</strong> A sound plan checks that the crate can reach the plate, the knight can leave it there, and the exit route stays open. Exact movement commands depend on the room. There is no single direction sequence that solves every arrangement.</p></blockquote>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">10. A small connection to real code</h3>
-<p class="code-label">Real Python example - read only; not a KnightCode command</p>
-<pre><code>plate_held = True
-print(plate_held)
-plate_held = False
-print(plate_held)</code></pre>
-<p>This Python example stores a fact using the name <code>plate_held</code>. It first displays True, then changes the stored fact and displays False. This does not operate a real KnightCode door; it is a tiny model of changing information.</p>
-<p><strong>The shared logic is tracking state over time.</strong> A fact can change, and a later check must use the current situation. You do not need to create variables in the KnightCode terminal to practise that reasoning.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">11. Practise with your mechanisms</h3>
+<h3 class="lesson-block-heading">8. Practise with your mechanisms</h3>
 <ul>
 <li><strong>Open the Way:</strong> identify the button action that must happen before the crossing.</li>
 <li><strong>Keep It Open:</strong> explain what holds the plate after the knight moves away.</li>
@@ -462,25 +314,58 @@ print(plate_held)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">12. Check your reasoning</h3>
-<ul>
-<li>Why can a condition have a different answer after a movement?</li>
-<li>Why is a currently open door not always safe to plan around?</li>
-<li>What must remain true while crossing a pressure-plate-controlled route?</li>
-</ul>
-<blockquote><p><strong>Check your reasoning:</strong> Movement can change position and activate or release mechanisms. An action may close a route that was open a moment ago. The needed plate must remain held by an allowed object until the plan no longer depends on that door.</p></blockquote>
-</div>
-$kc$,4,true),
-  (5,$kc$Repeating Instructions$kc$,$kc$Identify a repeated group of actions, choose a fixed repetition count, and separate repeated steps from steps that happen once.$kc$,$kc$Expand a repeat loop into its full action sequence, count actions separately from repetitions, and correct misplaced instructions or an incorrect count.$kc$,$kc$<div class="lesson-block">
-<h3 class="lesson-block-heading">1. Find a pattern before choosing a loop</h3>
-<p>Some routes contain the same action or group of actions several times. A <strong>loop</strong> is a way to repeat a group without writing that group out each time. This lesson uses <code>repeat</code> when the number of repetitions is known.</p>
-<p>The goal is not to make every program as short as possible. The goal is to recognize a pattern, express it clearly, and keep the intended behavior. A shorter program that takes the wrong route is not an improvement.</p>
-<p>First describe the complete route. Then ask: which part is exactly repeated, and how many copies of that part are needed?</p>
+<h3 class="lesson-block-heading">9. Prepare for the Python activity</h3>
+<p>In <strong>Track a changing balance</strong>, read opening balance, deposit and withdrawal, in that order. The deposit changes the balance before the withdrawal decision. Draw the same before/update/decision/after trace used for battery charge.</p><p>The declined outcome keeps the balance <em>after the deposit</em>; it does not undo the deposit or subtract the failed withdrawal. Test a deposit that makes withdrawal possible, an insufficient updated balance, and a withdrawal using the full balance.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">2. Replace repeated instructions with a count</h3>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<h3 class="lesson-block-heading">10. Activity inputs and expected output</h3>
+<p><strong>Track a changing balance:</strong> Read an opening balance, a deposit, and a withdrawal, in that order. Add the deposit to the balance first. If the updated balance can cover the withdrawal, subtract it and print the final balance. Otherwise print Declined and then the unchanged updated balance on the next line. Assume nonnegative whole-number inputs.</p><p>These are the required results, not a full code solution. Calculate or decide from the input; the same program must work with other valid values.</p><p class="code-label">Sample inputs, in order</p><pre><code>10
+30
+35</code></pre><p class="code-label">Output</p><pre><code>5</code></pre><p>Match the required output wording, capitalization and line order. When only numbers are requested, print numbers without extra labels or success messages. A correct idea can still need an output-format correction; explain the reasoning as well as checking the display.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">11. Practise, submit, and explain your reasoning</h3>
+<p>Complete the available assigned game levels, then open this lesson's Python activity when it becomes available. Levels marked Coming Soon do not need to be completed first. Use the game to trace the concept visually and the activity to apply it to a different problem.</p><p>Type Python in the code editor and select Run Python. When the program asks for input, enter the next answer in the input field below the output; the output itself is not where you type code or answers. Each input call takes one answer. Practice checks try the supplied examples and are guidance, not the teacher's grade.</p><p>The worked examples above solve different problems from the assigned activity. Trace them on paper; if you try one in the activity editor, its output may not match that activity's checks. Return to the assigned task before submitting. Run records an attempt; Submit this Run sends the latest saved run for teacher review. Read teacher feedback in its run history.</p><p><strong>Explain:</strong> Explain which balance the condition checks and which balance a declined withdrawal preserves. In the game, explain why a pressure plate must remain held while its door is needed.</p>
+</div>
+$kc$,4,true),
+  (5,$kc$Repeating Instructions$kc$,$kc$Use Python for loops to repeat a known number of steps and accumulate a result, then connect the pattern to game repeat commands and totaling item prices.$kc$,$kc$Trace a Python for/range loop for zero, one and several repetitions, initialize and update a running total, and distinguish repeated actions from one-time steps in the game.$kc$,$kc$<div class="lesson-block">
+<h3 class="lesson-block-heading">1. Programming logic: repeat a known amount of work</h3>
+<p>A <strong>loop</strong> repeats a group of instructions. Use a fixed-count loop when you know how many times the group should run. First identify the repeated work and count; do not use a loop only to make code shorter.</p><p>An <strong>iteration</strong> is one pass through the body. Count iterations separately from instructions: three passes through a two-action body perform six actions. Instructions within each pass still run in order.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">2. Use for and range in Python</h3>
+<p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>for step in range(3):
+    print(step)
+print("Finished")</code></pre><p class="code-label">Output</p><pre><code>0
+1
+2
+Finished</code></pre><p><code>range(3)</code> supplies 0, 1 and 2: three values, with 3 excluded. On each pass, <code>step</code> receives the next value and the indented body runs. The name step is a variable you choose. The final print is outside the loop and runs once. With <code>range(0)</code>, the body runs zero times.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">3. Keep a running total</h3>
+<p>An <strong>accumulator</strong> stores a result built over repeated steps. Begin a sum at 0 before the loop. Each pass adds the next value to the existing total.</p><p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>count = int(input())
+distance = 0
+for segment in range(count):
+    length = int(input())
+    distance = distance + length
+print(distance)</code></pre><p class="code-label">Example inputs, in order (one answer per input request)</p><pre><code>3
+2
+4
+1</code></pre><p class="code-label">Output</p><pre><code>7</code></pre><p>This totals route-segment lengths. The first input counts segments; it is not a length to add. Remaining answers are read inside the loop, one per pass. For count 3, distance changes from 0 to 2 to 6 to 7.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. Decide what repeats and what happens once</h3>
+<ul><li>Before the loop: read the count and initialize the accumulated value.</li><li>Inside the loop: read the next measurement and update the total.</li><li>After the loop: print the final answer once.</li></ul><p>If distance were reset to 0 inside every pass, earlier measurements would be lost. If print were inside the loop, it would display partial totals 2, 6 and 7 instead of only 7. Reading a measurement only before the loop could reuse one value instead of reading the next.</p><p>Test zero, one and several segments. Zero tests initialization and skipped repetition; one tests a single pass; several reveal errors that overwrite earlier values.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Connect Python for to the game repeat command</h3>
+<p>Python uses <code>for step in range(count):</code> for known-count repetition. KnightCode uses its custom <code>repeat(count):</code>. They share the idea of repeating a body, but their spellings are not interchangeable. There is no built-in Python <code>repeat()</code> command for this activity.</p><p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
 <pre><code>move(right)
 move(right)
 move(right)</code></pre>
@@ -493,19 +378,7 @@ move(right)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">3. Expand the loop to check your reasoning</h3>
-<p>One pass through the body is called an <strong>iteration</strong>, or simply a repetition. Trace repeat(3) by numbering the passes:</p>
-<ol>
-<li>First repetition: run move(right).</li>
-<li>Second repetition: run move(right) again, from the new position.</li>
-<li>Third repetition: run move(right) again, then finish the loop.</li>
-</ol>
-<p>To check a loop, mentally replace it with the full sequence it represents. If that expanded sequence does not match the route, the loop does not match either. This is a useful way to test your logic without relying on how compact the code looks.</p>
-<p>In the game, a level finishing or a program being stopped can end execution early. The trace here describes normal completion of the example.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">4. A repeated group can contain more than one action</h3>
+<h3 class="lesson-block-heading">6. A repeated group can contain more than one action</h3>
 <p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
 <pre><code>repeat(2):
     move(right)
@@ -516,72 +389,7 @@ move(right)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">5. Place one-time actions outside the loop</h3>
-<p>Imagine a clear route requiring three right movements and then one up movement. The turn should happen once, after the repeated section.</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>repeat(3):
-    move(right)
-move(up)</code></pre>
-<p>Because up lines up with repeat, it is outside the loop. The route is right, right, right, up. If you indent up inside the body, the route becomes right, up, right, up, right, up. That describes a different pattern.</p>
-<p>Before writing a loop, label each part of your plan as <strong>repeated</strong> or <strong>once afterwards</strong>. Indentation should reflect that decision.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">6. Read and predict the full sequence</h3>
-<p>Assume every move is possible. Write the expanded sequence and count the movements before reading the answer.</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>repeat(2):
-    move(up)
-    move(right)
-move(down)</code></pre>
-<blockquote><p><strong>Check your reasoning:</strong> The sequence is up, right, up, right, down: five movement actions. The body contributes four actions across two repetitions. Down contributes one more after the loop. The final position is two movements right and one up from the start in this open-area example.</p></blockquote>
-<p>What changes if the count becomes 3?</p>
-<blockquote><p><strong>Check your reasoning:</strong> The pair runs three times, producing six body movements, then down runs once: seven movements in total. The change affects the whole repeated group, not just its first line.</p></blockquote>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">7. Find and fix a misplaced turn</h3>
-<p>The intention is right, right, right, then up once. A student writes:</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>repeat(3):
-    move(right)
-    move(up)</code></pre>
-<p>Which part of the written program makes the route disagree with the intention? Expand it rather than guessing a different count.</p>
-<blockquote><p><strong>Check your reasoning:</strong> The up move is inside the repeated body, so it happens three times. Move that line outside the block. Changing only the repetition count cannot produce three right moves and one up move from this two-action body.</p></blockquote>
-<p>This is a grouping mistake. Other loop mistakes involve the wrong count or the wrong action. Identify which kind of mismatch you have before editing.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">8. Plan and write a repeated pattern</h3>
-<p>For an open practice route, express left, down, left, down, left, down, then right once using a loop. Name the smallest repeated group before you write it.</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>repeat(3):
-    move(left)
-    move(down)
-move(right)</code></pre>
-<blockquote><p><strong>Check your reasoning:</strong> The repeated group is left followed by down. It occurs three times. Right is outside the loop because it happens once afterwards. There are seven movement actions in the expanded plan.</p></blockquote>
-<p>Now imagine an obstacle blocks the second downward move. The pattern is easy to describe, but it no longer gives a clear route. A repeat count is a plan, not proof that all its actions can succeed. Check each repetition at its new position.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">9. Decide whether a fixed count is appropriate</h3>
-<p>Use repeat when you know both the body and the required count. A measured three-step section is a good candidate. A route where you only know "keep going until movement is blocked" needs a different kind of reasoning, which the next lesson introduces.</p>
-<p>Two programs can also be equally clear without both using loops. A short sequence of unrelated turns may be easier to explain directly. Do not force different actions into a pattern that is not really there.</p>
-<p>When you claim that two versions are equivalent, explain that they perform the same ordered actions under the same starting conditions. Comparing line counts alone is not enough.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">10. A small connection to real code</h3>
-<p class="code-label">Real Python example - read only; not a KnightCode command</p>
-<pre><code>for step in range(3):
-    print(&quot;Check the next item&quot;)
-print(&quot;Finished&quot;)</code></pre>
-<p>This Python loop displays the first message three times, then displays Finished once. The name <code>step</code> is used by Python to track the repetitions; you do not need to use it inside this example.</p>
-<p><strong>The shared idea is a fixed number of passes through a block.</strong> Python writes that idea differently from KnightCode. Focus on what repeats, how often, and what happens afterwards, rather than memorizing the language form.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">11. Use repetition in your levels</h3>
+<h3 class="lesson-block-heading">7. Use repetition in your levels</h3>
 <ul>
 <li><strong>Do It Again:</strong> find the right-and-up pattern, count its repetitions, and trace the position after each pair.</li>
 <li><strong>Repeat, Then Turn:</strong> separate the repeated approach from the turn, button action and remaining route.</li>
@@ -590,25 +398,64 @@ print(&quot;Finished&quot;)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">12. Check your reasoning</h3>
-<ul>
-<li>What is the difference between a repetition and a movement action?</li>
-<li>Why does moving a line outside a loop change how often it runs?</li>
-<li>Does shorter code always mean fewer game movements?</li>
-</ul>
-<blockquote><p><strong>Check your reasoning:</strong> One repetition runs the entire body, which may contain several actions. An outside line runs after the loop rather than on each pass. A loop can shorten the written program while keeping exactly the same movement sequence.</p></blockquote>
-</div>
-$kc$,5,true),
-  (6,$kc$Repeating While Something Is True$kc$,$kc$Use a condition to decide whether to repeat, trace every new check, and explain what will eventually make the loop stop.$kc$,$kc$Trace zero, one and several while-loop repetitions; distinguish while from if and repeat; and identify a loop whose actions do not lead toward stopping.$kc$,$kc$<div class="lesson-block">
-<h3 class="lesson-block-heading">1. Let the situation decide whether to continue</h3>
-<p><code>repeat</code> uses a count you choose in advance. A <strong>while loop</strong> asks a condition before each pass through its body. If the answer is true, it runs the body and checks again. If the answer is false, it leaves the loop.</p>
-<p>This fits a plan such as "keep moving right while moving right is possible." You may not need to count the corridor first, but you still need to understand where the loop stops and what happens afterwards.</p>
-<p>Your learning goal is to explain the repeated decision. A while loop is not a command that automatically solves an unknown room.</p>
+<h3 class="lesson-block-heading">8. Prepare for the Python activity</h3>
+<p>In <strong>Total several items</strong>, the repeated value is a price rather than a route length. Read how many items there are, then exactly that many prices. Build the total across passes, and print only the final total.</p><p>Do not write three separate price inputs just because one example has three items. The count controls how many inputs are needed. With zero items, there are no price inputs and the initialized total is still a valid result.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">2. Read the check-action-check cycle</h3>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<h3 class="lesson-block-heading">9. Activity inputs and expected output</h3>
+<p><strong>Total several items:</strong> Read how many items there are. Then read one whole-number price for each item. Use a for loop to add all prices and print only the final total. Zero items must produce 0. Do not write one separate input line for every example item: the loop should work for any nonnegative count.</p><p>These are the required results, not a full code solution. Calculate or decide from the input; the same program must work with other valid values.</p><p class="code-label">Sample inputs, in order</p><pre><code>3
+10
+20
+5</code></pre><p class="code-label">Output</p><pre><code>35</code></pre><p>Match the required output wording, capitalization and line order. When only numbers are requested, print numbers without extra labels or success messages. A correct idea can still need an output-format correction; explain the reasoning as well as checking the display.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. Practise, submit, and explain your reasoning</h3>
+<p>Complete the available assigned game levels, then open this lesson's Python activity when it becomes available. Levels marked Coming Soon do not need to be completed first. Use the game to trace the concept visually and the activity to apply it to a different problem.</p><p>Type Python in the code editor and select Run Python. When the program asks for input, enter the next answer in the input field below the output; the output itself is not where you type code or answers. Each input call takes one answer. Practice checks try the supplied examples and are guidance, not the teacher's grade.</p><p>The worked examples above solve different problems from the assigned activity. Trace them on paper; if you try one in the activity editor, its output may not match that activity's checks. Return to the assigned task before submitting. Run records an attempt; Submit this Run sends the latest saved run for teacher review. Read teacher feedback in its run history.</p><p><strong>Explain:</strong> Explain why the total starts outside the loop, each price is read inside it, and the final print is outside it. Identify a game movement that should happen only after repetition ends.</p>
+</div>
+$kc$,5,true),
+  (6,$kc$Repeating While Something Is True$kc$,$kc$Use Python while loops to repeat until a changing condition becomes false, then connect stopping rules to game corridors and a savings-target activity.$kc$,$kc$Trace the check/body/update cycle of a Python while loop, justify its stopping condition, handle reaching or exceeding a target, and compare conditional loops with fixed-count game repetition.$kc$,$kc$<div class="lesson-block">
+<h3 class="lesson-block-heading">1. Programming logic: let the current situation decide</h3>
+<p>A for/range loop is useful when you know the number of repetitions. A <strong>while</strong> loop checks a condition before each pass and repeats while it remains true. You may know the goal without knowing how many passes will reach it.</p><p>Plan the starting state, the condition for continuing, and the action changing the state. If the body never makes progress toward a false condition, the loop may not stop.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">2. Trace a simple Python while loop</h3>
+<p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>remaining = 3
+while remaining &gt; 0:
+    print(remaining)
+    remaining = remaining - 1
+print("Finished")</code></pre><p class="code-label">Output</p><pre><code>3
+2
+1
+Finished</code></pre><p>Check 3 &gt; 0, print 3, update to 2, and return to the check. After printing 1, the update makes remaining 0. The next check is false, so skip the body and print Finished. Python does not keep the answer from the first check.</p><p>If remaining started at 0, the body would run zero times. An if checks once and runs its body at most once; while may run it many times.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">3. Repeat input until a goal is reached</h3>
+<p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>capacity = int(input())
+filled = 0
+pours = 0
+while filled &lt; capacity:
+    amount = int(input())
+    filled = filled + amount
+    pours = pours + 1
+print(filled)
+print(pours)</code></pre><p class="code-label">Example inputs, in order (one answer per input request)</p><pre><code>10
+6
+5</code></pre><p class="code-label">Output</p><pre><code>11
+2</code></pre><p>This records water poured toward a positive capacity, assuming positive whole-number pours and that going over is allowed. The amount accumulated and number of pours are different quantities. After 6 and 5, filled is 11 and pours is 2. The next check is false, so no third pour is requested.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. Choose a stopping rule that handles overshooting</h3>
+<p><code>filled &lt; capacity</code> continues only below the goal, so equality and overshooting both stop it. <code>filled != capacity</code> would remain true at 11 when capacity is 10. With positive pours, moving further upward cannot reach 10 again.</p><p>Positive inputs advance the total. Zero would not advance it; a negative value would move it backward. Follow the activity's stated valid inputs. If a program keeps requesting unexpected input, stop it and inspect the condition, update and indentation rather than supplying endless answers.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Connect the check-update cycle to the game</h3>
+<p>In Python, changing a value can make the condition false. In the game, moving changes the position from which the path is checked. <code>can(right)</code> is game-specific, not a built-in function in the Python editor.</p><p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
 <pre><code>while can(right):
     move(right)</code></pre>
 <ol>
@@ -619,36 +466,6 @@ $kc$,5,true),
 </ol>
 <p>The check happens before the movement, including before the first one. The program does not move once just to find out whether it can move. The action changes the position, so the next check can produce a different answer.</p>
 <p>The indented instructions are the body, just as with repeat. Every pass through the body follows its own sequence in order.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">3. Trace a short corridor</h3>
-<p>Imagine a clear straight corridor with exactly three successful right movements available before a wall blocks the next movement. Assume no exit or other event ends execution during this example.</p>
-<ol>
-<li>Check 1 is true. Move right for the first time.</li>
-<li>Check 2 is true from the new position. Move right for the second time.</li>
-<li>Check 3 is true. Move right for the third time.</li>
-<li>Check 4 is false at the blocked end. Do not move right again; leave the loop.</li>
-</ol>
-<p>There were <strong>three movements and four checks</strong>. The final false check is how the loop discovers that another pass should not happen. Count checks separately from actions when tracing a while loop.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">4. Include the case where the body never runs</h3>
-<p>Now put the knight where right is already blocked. The first check is false. The loop body runs zero times, and execution continues after the loop.</p>
-<p>This is not an error. It is the expected result of checking before acting. A useful test set includes zero repetitions, one repetition, and several repetitions. Each tells you something different about the plan.</p>
-<p>If the body contains an action that your later plan always requires, ask whether it is safe for that action to be skipped completely. Sometimes that action belongs before or after the loop instead.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">5. Compare if, repeat and while</h3>
-<ul>
-<li><strong>if can(right):</strong> checks once when reached and may perform its body once.</li>
-<li><strong>repeat(3):</strong> plans three passes through its body without using a path condition to choose the count.</li>
-<li><strong>while can(right):</strong> checks before every pass and keeps repeating only while its condition remains true.</li>
-</ul>
-<p>On a corridor with exactly three available moves, repeat(3) and the simple rightward while loop can produce the same movements. If the corridor length changes, the fixed count stays three while the condition-controlled loop may perform a different number.</p>
-<p>That does not make while always better. Choose according to the goal: "exactly three" and "as far as possible" are different requirements.</p>
 </div>
 
 <div class="lesson-block">
@@ -664,51 +481,7 @@ if can(up):
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">7. Read and predict different starting situations</h3>
-<p>Use the previous program. In A, two right moves lead to a wall and up is open there. In B, right is blocked immediately and up is open at the start. In C, right and up are both blocked at the start. Predict the actions.</p>
-<blockquote><p><strong>Check your reasoning:</strong> A: right, right, then up. B: the loop runs zero times, then the if selects up. C: the loop runs zero times and the if block is skipped, so neither movement runs. The same program responds differently because the checked facts differ.</p></blockquote>
-<p>In A, how many times is the rightward condition checked?</p>
-<blockquote><p><strong>Check your reasoning:</strong> Three times: two true answers allow the two moves, and a final false answer ends the loop. The upward condition is a separate check.</p></blockquote>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">8. Find a loop that cannot make progress</h3>
-<p>Imagine two adjacent open positions. The starting position has a clear path to its right. Both moves below succeed, and nothing else in the room changes:</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>while can(right):
-    move(right)
-    move(left)</code></pre>
-<p>Trace one full pass. Where does it finish? What answer will the next condition get?</p>
-<blockquote><p><strong>Check your reasoning:</strong> The body returns the knight to the starting position. Right is still open, so another pass repeats the same situation. The plan does not move toward making the condition false. The game may stop it with a safety limit, but that limit is not a correct solution.</p></blockquote>
-<p>If the intention was to reach the right-hand wall, remove the move that undoes the progress. Then explain why each successful right movement brings the knight closer to the blocked endpoint. Do not rely on a program being stopped for you.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">9. Plan and justify a stopping rule</h3>
-<p>Write a program that follows an upward corridor while movement is possible, then attempts one right move only if right is open. Assume following the whole corridor is the intended first part of the route.</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>while can(up):
-    move(up)
-if can(right):
-    move(right)</code></pre>
-<p>Explain three things before running: what is checked repeatedly, what changes inside the loop, and what makes it stop. Then trace the case where up is blocked at the start.</p>
-<blockquote><p><strong>Check your reasoning:</strong> The loop checks upward movement; its body changes the position upward; the blocked end eventually makes the condition false. If blocked initially, it performs no upward moves and immediately reaches the separate rightward check.</p></blockquote>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">10. A small connection to real code</h3>
-<p class="code-label">Real Python example - read only; not a KnightCode command</p>
-<pre><code>items_left = 3
-while items_left &gt; 0:
-    print(items_left)
-    items_left = items_left - 1
-print(&quot;Finished&quot;)</code></pre>
-<p>This Python program displays 3, 2, 1, then Finished. Each repetition reduces the stored count. Once the count reaches 0, the next condition is false. If the subtraction were removed, the value would stay 3 and the condition would stay true.</p>
-<p><strong>The shared reasoning is termination:</strong> explain how the body moves the situation toward stopping. The subtraction is Python example code, not a command to enter in KnightCode.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">11. Practise on your routes</h3>
+<h3 class="lesson-block-heading">7. Practise on your routes</h3>
 <ul>
 <li><strong>Keep Going:</strong> identify the corridor's stopping point and the remaining route after it.</li>
 <li><strong>Check Again:</strong> explain how each movement changes where the next check happens.</li>
@@ -718,61 +491,62 @@ print(&quot;Finished&quot;)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">12. Check your reasoning</h3>
-<ul>
-<li>Can a while body run zero times?</li>
-<li>Why can three successful moves need four checks?</li>
-<li>What is wrong with a loop that always returns to the same unchanged situation?</li>
-</ul>
-<blockquote><p><strong>Check your reasoning:</strong> Yes: its first condition can be false. The extra check discovers that a fourth move should not happen. An unchanged situation can keep the condition true forever, so the plan needs an action that genuinely leads toward its intended stopping condition.</p></blockquote>
+<h3 class="lesson-block-heading">8. Prepare for the Python activity</h3>
+<p>In <strong>Save until the target</strong>, apply accumulation and counting to deposits. Read the positive target once. Start savings and the deposit count at zero. Determine which steps repeat and which outputs belong after the loop.</p><p>Explain exact-target, above-target and one-deposit cases before running. The number of deposits is not the amount saved. Once the target is reached or exceeded, finish without asking for another deposit. Print final savings and deposit count on separate lines without extra messages.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. Activity inputs and expected output</h3>
+<p><strong>Save until the target:</strong> Read a positive whole-number target. Starting with savings of 0, repeatedly read a positive deposit while savings are below the target. Stop asking as soon as the target is reached or exceeded. Print the savings and then the number of deposits, on separate lines. Use a while loop with an update that makes the condition eventually false.</p><p>These are the required results, not a full code solution. Calculate or decide from the input; the same program must work with other valid values.</p><p class="code-label">Sample inputs, in order</p><pre><code>50
+20
+30</code></pre><p class="code-label">Output</p><pre><code>50
+2</code></pre><p>Match the required output wording, capitalization and line order. When only numbers are requested, print numbers without extra labels or success messages. A correct idea can still need an output-format correction; explain the reasoning as well as checking the display.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. Practise, submit, and explain your reasoning</h3>
+<p>Complete the available assigned game levels, then open this lesson's Python activity when it becomes available. Levels marked Coming Soon do not need to be completed first. Use the game to trace the concept visually and the activity to apply it to a different problem.</p><p>Type Python in the code editor and select Run Python. When the program asks for input, enter the next answer in the input field below the output; the output itself is not where you type code or answers. Each input call takes one answer. Practice checks try the supplied examples and are guidance, not the teacher's grade.</p><p>The worked examples above solve different problems from the assigned activity. Trace them on paper; if you try one in the activity editor, its output may not match that activity's checks. Return to the assigned task before submitting. Run records an attempt; Submit this Run sends the latest saved run for teacher review. Read teacher feedback in its run history.</p><p><strong>Explain:</strong> Explain what changes per pass, why positive deposits move toward stopping, and why comparing for inequality with the target fails above it. Describe the stopping reason in a game corridor.</p>
 </div>
 $kc$,6,true),
-  (7,$kc$Plan, Try, and Improve$kc$,$kc$Combine sequences, decisions, loops and changing room states into a reasoned solution, then test and improve it using evidence.$kc$,$kc$Break a puzzle into smaller goals, trace a combined plan, diagnose the first mismatch, and justify a correction without changing the intended result.$kc$,$kc$<div class="lesson-block">
-<h3 class="lesson-block-heading">1. Solve the problem before choosing commands</h3>
-<p>You now have several tools: sequences for order, conditions for decisions, loops for repetition, and state reasoning for changes in the room. This lesson is about choosing and combining them to solve a complete problem.</p>
-<p>The target is not a program containing every command. The target is a plan you can explain: what must happen, why the steps are possible, how the program chooses or repeats them, and how you know the goal is reached.</p>
-<p>A clear short sequence can be better than an unnecessary loop. A condition is useful when the plan needs a check, not simply because the command is available.</p>
+  (7,$kc$Plan, Try, and Improve$kc$,$kc$Combine Python sequences, decisions, updates and loops; use traces and boundary tests to debug both a game plan and the ticket-counter activity.$kc$,$kc$Decompose a problem, trace a decision inside a Python loop, diagnose initialization/count/boundary mistakes, and justify corrections using test evidence and game-state checkpoints.$kc$,$kc$<div class="lesson-block">
+<h3 class="lesson-block-heading">1. Programming logic: combine ideas into a justified plan</h3>
+<p>Solving a larger problem means selecting and combining sequences, conditions, updates and loops. <strong>Decomposition</strong> means breaking the goal into smaller tasks that you can explain and test separately.</p><p>Identify inputs, expected outputs and rules. Ask which work happens once, which repeats, and which depends on a condition. In the game, identify mechanisms that must change before a later route is possible.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">2. Understand the room as a set of facts</h3>
-<p>Before typing, identify the start, exit, blocked passages, mechanisms and movable objects. Separate what you know from what you still need to test. For example, a wall-looking panel may not behave like a solid wall.</p>
-<ul>
-<li><strong>Goal:</strong> what must be true when the solution finishes?</li>
-<li><strong>Available actions:</strong> what can the knight do with the commands taught so far?</li>
-<li><strong>Constraints:</strong> which passages are blocked, and which objects must remain in place?</li>
-<li><strong>Unknowns:</strong> which movement or mechanism behavior needs checking?</li>
-</ul>
-<p>An assumption is something the plan takes as true. State it explicitly. "The crate can be pushed onto the plate from this side" is an assumption you can inspect and test.</p>
+<h3 class="lesson-block-heading">2. Plan before writing the complete program</h3>
+<p>Consider a parcel counter. Read the parcel count and one whole-number weight per parcel. A weight of at least 10 earns 3 points; a lighter parcel earns 1 point. Print total points once. Assume nonnegative inputs.</p><ul><li>Start the points total at zero.</li><li>Repeat once per parcel: read its weight, choose the appropriate points, and add them.</li><li>After all parcels, print the total.</li></ul><p>A sequence handles setup and output, a loop handles the parcels, and a decision handles the rule for each parcel. The challenge is placing familiar features correctly.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">3. Break the goal into smaller goals</h3>
-<p>Dividing a problem into manageable parts is called <strong>decomposition</strong>. For an exit controlled by a crate-sensitive plate, the smaller goals might be:</p>
-<ol>
-<li>Reach the side of the crate needed for the push.</li>
-<li>Place the crate on the correct plate.</li>
-<li>Leave the crate there and reach the opened passage.</li>
-<li>Cross the passage and reach the exit.</li>
-</ol>
-<p>These parts are connected. The second needs a reachable pushing position. The third needs the plate held. The last needs the door open. Write these dependencies before translating the plan into directions.</p>
-<p>After each part, describe the expected state: knight position, crate position and door status. Those checkpoints help you locate a mistake later.</p>
+<h3 class="lesson-block-heading">3. Trace a decision inside a loop</h3>
+<p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>parcels = int(input())
+points = 0
+for parcel in range(parcels):
+    weight = int(input())
+    if weight &gt;= 10:
+        points = points + 3
+    else:
+        points = points + 1
+print(points)</code></pre><p class="code-label">Example inputs, in order (one answer per input request)</p><pre><code>3
+9
+10
+12</code></pre><p class="code-label">Output</p><pre><code>7</code></pre><p>The loop body is indented four spaces. The if/else bodies are indented eight spaces because they are inside a decision inside a loop. The final print returns to the left margin and runs after all passes.</p><ul><li>Weight 9: false branch, points becomes 1.</li><li>Weight 10: true branch, points becomes 4.</li><li>Weight 12: true branch, points becomes 7.</li></ul>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">4. Choose the structure that fits each part</h3>
-<ul>
-<li><strong>Sequence:</strong> several different actions must happen in a specific order.</li>
-<li><strong>If or if/else:</strong> the next action depends on a true-or-false answer.</li>
-<li><strong>Repeat:</strong> a known action group occurs a known number of times.</li>
-<li><strong>While:</strong> keep performing a group while a condition remains true.</li>
-</ul>
-<p>A complete room can use several of these, but it does not have to use all of them. Explain the reason for each structure you choose. "I used repeat because this same pair occurs twice" is a reason. "I used repeat because the lesson mentions it" is not enough.</p>
+<h3 class="lesson-block-heading">4. Debug the cause, not just the final number</h3>
+<p>Compare the intended trace with the actual result and find the first mismatch. Ask:</p><ul><li>Initialization: should any points exist before a parcel is read? Starting at 1 creates an extra point even for zero parcels.</li><li>Repetition count: does the program request exactly one weight per parcel? range(parcels + 1) requests an extra input.</li><li>Boundary: which category owns weight 10? Using &gt; instead of &gt;= puts it in the wrong category.</li></ul><p>Fix a cause, rerun the failing case, then test another case to check that the change did not break a correct result. A syntax error prevents execution; a logic error may produce readable but incorrect output. Matching output alone does not explain why the approach works.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">5. Trace a combined program</h3>
-<p>For this practice example, assume two right moves are clear. After them, up is open; right remains open after moving up. No goal ends the program early. Predict the full route:</p>
+<h3 class="lesson-block-heading">5. Choose tests that challenge your reasoning</h3>
+<p>Test zero parcels, one below the boundary, one at the boundary, and mixed weights. Predict the outputs before running. Zero checks setup and loop count; the boundary checks the comparison; mixed weights check accumulation across both branches.</p><p>If an activity reports that it requested more input than an example supplies, inspect input calls and loop passes. Do not add arbitrary answers just to finish. If the numbers are correct but a check differs, also compare required text and line breaks.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">6. Connect combined Python logic to a game plan</h3>
+<p>Choose the structure from the problem. Python variables track numerical state; game actions track position and mechanisms. Game commands are custom commands, so use them in the game terminal rather than pasting the Python parcel program there.</p><p>For this practice example, assume two right moves are clear. After them, up is open; right remains open after moving up. No goal ends the program early. Predict the full route:</p>
 <p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
 <pre><code>repeat(2):
     move(right)
@@ -791,63 +565,7 @@ move(right)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">6. Test a prediction, not just a final score</h3>
-<p>Before Run, write an expected result at each checkpoint. During the run, observe what actually happens. Afterwards, compare the two. A failed attempt is useful when it gives you evidence about which assumption or instruction was wrong.</p>
-<p>A simple test note can be: expected the crate to stay on the plate; observed it move off during the last push; therefore the door closed before the crossing. This explanation points to a specific correction.</p>
-<p>Also check starting conditions. A retry from a changed room may not be comparable to an earlier attempt. If you want to compare two program versions, make sure they start from the same intended setup.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">7. Find the first mismatch</h3>
-<p><strong>Debugging</strong> means locating and correcting the cause of unwanted behavior. Start with the earliest point where your prediction and the actual run differ, not merely the place where the knight finally gets stuck.</p>
-<ul>
-<li>Was the instruction understood? Check command spelling and grouping if execution cannot begin.</li>
-<li>Did the selected action match the plan? Check directions and branch choices.</li>
-<li>Did a repeated group run too often or include a one-time action?</li>
-<li>Did an earlier action remove a condition needed later, such as a held plate?</li>
-</ul>
-<p>Change one relevant part, predict its effect, and test again. Changing several unrelated things at once makes it harder to explain which change helped.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">8. Find and fix a combined logic mistake</h3>
-<p>The intended route is two right moves, then one upward move only if up is possible. A student writes:</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>repeat(2):
-    move(right)
-    if can(up):
-        move(up)</code></pre>
-<p>Assume up is open after each right move. Expand the program. Does it match the intention?</p>
-<blockquote><p><strong>Check your reasoning:</strong> It produces right, up, right, up. The decision belongs to the repeated body, so it is reached twice. Move the whole if block outside repeat, keeping its move indented under if. The corrected structure is shown below.</p></blockquote>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>repeat(2):
-    move(right)
-if can(up):
-    move(up)</code></pre>
-<p>The correction changes when the decision happens. Explain that relationship rather than saying only that some spaces were removed.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">9. Improve only after preserving correctness</h3>
-<p>Suppose a working sequence contains right, up, right, up. Replacing it with repeat(2) around right and up can make the repeated pattern clearer. Verify it by expanding the new version and comparing the ordered actions.</p>
-<p>Do not assume that fewer written lines always mean fewer attempts, less movement, or a better route. These are different measures. A useful improvement either makes the plan easier to understand or improves a chosen result while still reaching the goal correctly.</p>
-<p>For a mechanism puzzle, also compare state changes. A route that reaches the same position but releases a necessary plate is not equivalent to one that keeps it held.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">10. A small connection to real code</h3>
-<p class="code-label">Real Python example - read only; not a KnightCode command</p>
-<pre><code>total = 0
-for value in [2, 4, 1]:
-    if value &gt; 1:
-        total = total + value
-print(total)</code></pre>
-<p>This Python example visits three numbers in order. It adds a number only if it is greater than 1. Starting at 0, the total becomes 2, then 6, then stays 6 when 1 is skipped. The final display is 6.</p>
-<p>The names hold information, the loop repeats, the condition chooses, and the addition changes the state. <strong>The same tracing method works outside the game.</strong> You are not expected to learn Python lists here; follow the stated three values and explain each decision.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">11. Build and explain your own room solution</h3>
+<h3 class="lesson-block-heading">7. Build and explain your own room solution</h3>
 <ol>
 <li>State the goal and important starting facts.</li>
 <li>Write smaller goals and the order they depend on.</li>
@@ -860,15 +578,21 @@ print(total)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">12. Show that you understand the logic</h3>
-<p>After solving a room, explain your program to someone who cannot see your code. Include why each decision is needed, what each loop repeats, what stops it, and which facts must remain true.</p>
-<ul>
-<li>If a path became blocked, which part of your plan would need reconsidering?</li>
-<li>Which test showed you the first mistake?</li>
-<li>What did you change, and why did that change address the cause?</li>
-<li>Can you describe the same plan in plain words without the game command spelling?</li>
-</ul>
-<blockquote><p><strong>Check your reasoning:</strong> A strong explanation connects actions to results and evidence to corrections. Reaching the exit demonstrates one successful run. Explaining the plan, its assumptions and its limits shows the programming logic behind that run.</p></blockquote>
+<h3 class="lesson-block-heading">8. Prepare for the Python activity</h3>
+<p>In <strong>Repair the ticket counter</strong>, the starter code deliberately contains mistakes. The task uses visitors and ages rather than weights. Its rule is different: below age 12 costs 5; everyone else costs 10. Derive the condition from that rule instead of copying the parcel comparison.</p><p>Inspect the initial total, number of loop passes and age boundary. Trace zero visitors and age exactly 12, then a mixed group. Explain and repair the logic instead of hard-coding expected answers. Keep the final total print outside the loop.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. Activity inputs and expected output</h3>
+<p><strong>Repair the ticket counter:</strong> Read the number of visitors, then one whole-number age per visitor. Tickets cost 5 for ages below 12 and 10 for everyone else. Use repetition and a decision to compute the total and print it once. Repair the starter program: it contains mistakes in its starting total, loop count, and age boundary. Test zero visitors and age exactly 12 before submitting.</p><p>These are the required results, not a full code solution. Calculate or decide from the input; the same program must work with other valid values.</p><p class="code-label">Sample inputs, in order</p><pre><code>3
+8
+12
+20</code></pre><p class="code-label">Output</p><pre><code>25</code></pre><p>Match the required output wording, capitalization and line order. When only numbers are requested, print numbers without extra labels or success messages. A correct idea can still need an output-format correction; explain the reasoning as well as checking the display.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. Practise, submit, and explain your reasoning</h3>
+<p>Complete the available assigned game levels, then open this lesson's Python activity when it becomes available. Levels marked Coming Soon do not need to be completed first. Use the game to trace the concept visually and the activity to apply it to a different problem.</p><p>Type Python in the code editor and select Run Python. When the program asks for input, enter the next answer in the input field below the output; the output itself is not where you type code or answers. Each input call takes one answer. Practice checks try the supplied examples and are guidance, not the teacher's grade.</p><p>The worked examples above solve different problems from the assigned activity. Trace them on paper; if you try one in the activity editor, its output may not match that activity's checks. Return to the assigned task before submitting. Run records an attempt; Submit this Run sends the latest saved run for teacher review. Read teacher feedback in its run history.</p><p><strong>Explain:</strong> For each repair, explain the original mistake, a test that exposed it, and why the correction works. Make the same explanation for the first incorrect step in a game plan.</p>
 </div>
 $kc$,7,true)
 on conflict(id) do update set title=excluded.title,description=excluded.description,learning_objective=excluded.learning_objective,content=excluded.content,order_number=excluded.order_number,active=excluded.active;

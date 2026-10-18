@@ -69,6 +69,7 @@ export function AssignmentForm({
         <label>
           Due date
           <input type="datetime-local" name="due_date" />
+          <small>Philippine time (UTC+8)</small>
         </label>
         <label>
           Section

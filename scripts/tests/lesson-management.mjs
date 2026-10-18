@@ -91,7 +91,9 @@ const studentDb={from(table) {
   },range:async()=>({data:filtered}),then:resolve=>Promise.resolve({data:filtered}).then(resolve)};
   return q;
 }};
-const studentData=load('lib/student-data.ts',{
+const schoolTime=load('lib/school-time.ts',{});
+const streakHelper=load('lib/learning-streak.ts',{'./school-time':schoolTime});
+const studentData=load('lib/student-data.ts',{'./learning-streak':streakHelper,
   react:{cache:fn=>fn}, '@/lib/query-pages':{allRows:async factory=>(await factory().range()).data},
   '@/lib/supabase/server':{createClient:async()=>studentDb},
   '@/lib/python-data':{}, '@/lib/lesson-completion':{}, '@/lib/game-build':{}, '@/lib/format':{},

@@ -272,7 +272,7 @@ export function StudentShell({
                         <strong>{notice.title}</strong>
                         <small>{notice.message}</small>
                         <time>
-                          {new Date(notice.created_at).toLocaleString()}
+                          {new Date(notice.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}
                         </time>
                       </span>
                       {!notice.is_read && <em aria-label="Unread" />}

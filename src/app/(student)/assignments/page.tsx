@@ -120,7 +120,7 @@ export default async function AssignmentsPage() {
                     {contentLabel}{" "}
                     ·{" "}
                     {assignment.due_date
-                      ? `Due ${new Date(assignment.due_date).toLocaleString()}`
+                      ? `Due ${new Date(assignment.due_date).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}`
                       : "No due date"}
                   </small>
                 </div>

@@ -1,23 +1,37 @@
 <div class="lesson-block">
-<h3 class="lesson-block-heading">1. Your goal is to think through the instructions</h3>
-<p>A program is a set of instructions. <strong>Programming logic</strong> is the reasoning used to decide which instructions are needed, what order they belong in, and why they should produce the result you want. In this lesson, the knight follows a simple sequence: one instruction after another.</p>
-<p>Your job is not to guess commands until the knight reaches the exit. Your job is to explain the route before running it, then compare that prediction with what happens. You can describe a correct plan in plain words before writing any code.</p>
+<h3 class="lesson-block-heading">1. Programming logic: choose the steps and their order</h3>
+<p>Programming logic is the reasoning behind a solution: what information is needed, which steps change it, and why those steps reach the goal. An <strong>algorithm</strong> is that step-by-step plan. Python is the language we will use to express and test the plan. In the game, you apply the same reasoning to movement commands.</p><p>Start with the information given, write the steps in order, predict the result, then compare your prediction with a run. Correct spelling matters, but understanding why the steps work is the learning goal. You should be able to explain both a route and a calculation without guessing.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">2. Separate the goal, the starting situation, and the plan</h3>
-<p>A <strong>goal</strong> says what should be true at the end: the knight has reached the exit. The <strong>starting situation</strong> tells you where the knight is and what is around it. A <strong>plan</strong>, also called an algorithm, gives the ordered steps that connect that start to that goal.</p>
-<ul>
-<li>Goal: reach a point two movements to the right and one movement up.</li>
-<li>Starting situation: all three movements in that route are clear.</li>
-<li>Plan: move right, move right again, then move up.</li>
-</ul>
-<p>These are different pieces of information. A goal alone does not tell the knight which route to take. A plan that works from one starting position may fail from another. Always inspect the room before choosing the instructions.</p>
+<h3 class="lesson-block-heading">2. Variables remember the current values</h3>
+<p>A <strong>variable</strong> is a name that refers to a value. In <code>length = 8</code>, the equals sign assigns 8 to length. It does not ask whether two things are equal. Later lines can use that stored value. Names must be written consistently: <code>length</code> and <code>Length</code> are different names.</p><p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>length = 8
+pieces = 3
+used = length * pieces
+print(used)</code></pre><p class="code-label">Output</p><pre><code>24</code></pre><p>Trace the sequence: length becomes 8, pieces becomes 3, and used becomes 24. The <code>*</code> operator means multiplication. <code>print(used)</code> displays the value of used. <code>print("used")</code> would display the word used because quotation marks describe text, called a string.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">3. Read a movement as one precise action</h3>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<h3 class="lesson-block-heading">3. Read input, process it, then display output</h3>
+<p><code>input()</code> reads one answer as text. <code>int(input())</code> converts that text to a whole number so arithmetic can use it. Enter valid whole numbers such as 3, without currency signs or extra words. Each call reads the next answer, so input order is part of the plan.</p><p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>length = int(input())
+pieces = int(input())
+roll = 40
+used = length * pieces
+left = roll - used
+print(used)
+print(left)</code></pre><p class="code-label">Example inputs, in order (one answer per input request)</p><pre><code>8
+3</code></pre><p class="code-label">Output</p><pre><code>24
+16</code></pre><p>This example measures ribbon. Calculate how much ribbon the pieces use, then subtract it from the roll. The <code>-</code> operator means subtraction. Each <code>print()</code> starts a new output line: used ribbon first, then what remains. A line beginning with <code>#</code> is a comment for people; Python does not execute it.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. Trace and debug a sequence</h3>
+<p>Record the values after each step: length 8, pieces 3, roll 40, used 24, left 16. If <code>left = roll - used</code> came before used was first assigned, Python would report an error. If you wrote <code>used = length + pieces</code>, the program could run but calculate the wrong amount: a logic mistake.</p><p><strong>Predict:</strong> what should change when the inputs become 5 and 4?</p><blockquote><p>The used amount becomes 20 and the remainder becomes 20. The instructions stay the same; the inputs change. Do not replace the calculation with <code>print(24)</code>: that only imitates one example.</p></blockquote>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Connect sequence to the game</h3>
+<p>Python variables track quantities; the game tracks the knight's position. In both, a step starts from the result of earlier steps. Game commands such as <code>move(right)</code> belong in the game terminal. They are not built-in Python functions, and Python input/print examples do not control the knight.</p><p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
 <pre><code>move(right)
 move(right)
 move(up)</code></pre>
@@ -27,67 +41,14 @@ move(up)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">4. Trace the program one instruction at a time</h3>
-<p>To <strong>trace</strong> means to follow the program slowly and record what changes. For this paper example, count successful movement actions from the start. This is a reasoning model, not a claim that every drawn floor tile equals one game movement.</p>
-<ol>
-<li>Before running: the knight has made no movements.</li>
-<li>After line 1: it is one movement to the right of the start.</li>
-<li>After line 2: it is two movements to the right of the start.</li>
-<li>After line 3: it is two movements right and one movement up from the start.</li>
-</ol>
-<p>Notice that line 2 starts from the result of line 1. Instructions do not each start again from the original position. In the actual game, watch the distance of a movement and use the room layout to check your plan.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">5. Order can change the route</h3>
+<h3 class="lesson-block-heading">6. Order can change the route</h3>
 <p>Compare right, right, up with up, right, right. On an empty practice area, these can finish at the same position. That does <strong>not</strong> mean they are always interchangeable. They visit different positions on the way.</p>
 <p>Suppose the space directly above the start is blocked, but the route right, right, up is clear. Starting with up now attempts a blocked movement. The same directions and the same number of instructions can produce a different journey because the order changed.</p>
 <p>When comparing two plans, ask both questions: Do they finish in the same place? Can every intermediate step actually happen?</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">6. Read and predict</h3>
-<p>Assume an open practice area, with no exit reached during these four moves. Predict the final position relative to the start before reading the explanation.</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>move(right)
-move(up)
-move(left)
-move(up)</code></pre>
-<blockquote><p><strong>Check your reasoning:</strong> Right and left cancel their horizontal change, but they still happened at different times. The two up moves remain, so the finish is two successful movements above the start. The full route matters if obstacles are added.</p></blockquote>
-<p>Now change only the third line to <code>move(right)</code>. Describe each position again. Do not reuse the first answer without checking what changed.</p>
-<blockquote><p><strong>Check your reasoning:</strong> The revised program finishes two movements right and two up from the start. Only one instruction changed, but the final position changed too.</p></blockquote>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">7. Find and fix a reasoning mistake</h3>
-<p>The planned route is right, right, up. A student writes the following in an open practice area. Which is the first line that disagrees with the plan?</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>move(right)
-move(up)
-move(up)</code></pre>
-<blockquote><p><strong>Check your reasoning:</strong> Line 1 matches the plan. Line 2 is the first mismatch: it goes up when the plan requires another right move. Replace that line with move(right), then trace all three lines again. Changing the last line alone would not fix the first wrong step.</p></blockquote>
-<p>This is a <strong>logic mistake</strong>: the instructions may be understood by the game, but they describe the wrong plan. A spelling mistake is different: the game may not understand the instruction at all.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">8. Plan and write your own sequence</h3>
-<p>For a clear practice route, write instructions for one up movement, two right movements, and one down movement, in that order. First say the plan aloud. Then write it. Finally, explain the expected position after each line.</p>
-<blockquote><p><strong>Check your reasoning:</strong> Use move(up), move(right), move(right), then move(down), with each command on its own line. In this open-area example the finish is two movements right of the start. There are four actions even though two vertical movements cancel in the final position.</p></blockquote>
-<p>Before trying a real level, check every part of that route against the actual walls. A correct answer to this small exercise is not automatically a solution to the room.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">9. A small connection to real code</h3>
-<p class="code-label">Real Python example - read only; not a KnightCode command</p>
-<pre><code>points = 0
-points = points + 1
-print(points)</code></pre>
-<p>In Python, <code>points</code> is a name holding a value. The first line stores 0. The second reads the current value, adds 1, and stores the result. The third displays that value, so it displays 1. If the display line came before the addition, it would display 0 instead.</p>
-<p><strong>The idea to carry over is sequence:</strong> a later instruction sees the result of earlier instructions. You do not need to memorize Python or type this example into the game.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">10. Use the idea in your levels</h3>
+<h3 class="lesson-block-heading">7. Use the idea in your levels</h3>
 <ul>
 <li><strong>First Steps:</strong> inspect how far one move takes the knight and count the actions needed for the straight route.</li>
 <li><strong>Turn the Corner:</strong> mark the point where the direction changes. Explain why the turn belongs there.</li>
@@ -97,11 +58,18 @@ print(points)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">11. Explain it without looking at the example</h3>
-<ul>
-<li>Why does every instruction need to start from the result of the previous one?</li>
-<li>Can two sequences finish in the same place but behave differently around walls?</li>
-<li>What is the difference between describing the goal and giving the instructions?</li>
-</ul>
-<blockquote><p><strong>Check your reasoning:</strong> The position changes as the sequence runs. Different intermediate positions can meet different obstacles. A goal describes the desired result; a plan supplies the steps that make that result happen. You understand this lesson when you can explain those steps, not just copy them.</p></blockquote>
+<h3 class="lesson-block-heading">8. Prepare for the Python activity</h3>
+<p>In <strong>Plan a purchase</strong>, replace the ribbon situation with a notebook purchase. Identify the quantity, amount paid, fixed price, total cost, and change. Write the calculation plan before filling in the starter code. The price is 35 pesos and the task assumes enough money; no decision is needed yet.</p><p>A later step uses the result of an earlier step. You cannot calculate the change correctly until you know the total, just as you cannot plan a turn without knowing the position reached before it.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. Activity inputs and expected output</h3>
+<p><strong>Plan a purchase:</strong> A notebook costs 35 pesos. Read the quantity and then the money paid, each as a whole number. Calculate the total before calculating the change. Print the total on the first line and the change on the second line. Assume there is enough money. Use calculations, not answers typed directly into print().</p><p>These are the required results, not a full code solution. Calculate or decide from the input; the same program must work with other valid values.</p><p class="code-label">Sample inputs, in order</p><pre><code>3
+120</code></pre><p class="code-label">Output</p><pre><code>105
+15</code></pre><p>Match the required output wording, capitalization and line order. When only numbers are requested, print numbers without extra labels or success messages. A correct idea can still need an output-format correction; explain the reasoning as well as checking the display.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. Practise, submit, and explain your reasoning</h3>
+<p>Complete the available assigned game levels, then open this lesson's Python activity when it becomes available. Levels marked Coming Soon do not need to be completed first. Use the game to trace the concept visually and the activity to apply it to a different problem.</p><p>Type Python in the code editor and select Run Python. When the program asks for input, enter the next answer in the input field below the output; the output itself is not where you type code or answers. Each input call takes one answer. Practice checks try the supplied examples and are guidance, not the teacher's grade.</p><p>The worked examples above solve different problems from the assigned activity. Trace them on paper; if you try one in the activity editor, its output may not match that activity's checks. Return to the assigned task before submitting. Run records an attempt; Submit this Run sends the latest saved run for teacher review. Read teacher feedback in its run history.</p><p><strong>Explain:</strong> Explain why total cost must be calculated before change. Then explain why changing the order of movements can alter a route even when the final destination looks the same.</p>
 </div>

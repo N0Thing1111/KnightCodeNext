@@ -101,7 +101,7 @@ export default async function Page({
                     </div>
                     <h4>{a.title}</h4>
                     <p>{a.body}</p>
-                    <time>{new Date(a.created_at).toLocaleString()}</time>
+                    <time>{new Date(a.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}</time>
                   </div>
                   <form action={deleteAnnouncement}>
                     <input type="hidden" name="id" value={a.id} />

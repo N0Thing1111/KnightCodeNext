@@ -160,7 +160,7 @@ export default async function Page() {
                       {s.completed ? "completed" : "started"} Level{" "}
                       {l?.level_number}
                       <small>
-                        {new Date(s.started_at).toLocaleString()} ·{" "}
+                        {new Date(s.started_at).toLocaleString("en-PH", { timeZone: "Asia/Manila" })} ·{" "}
                         {s.completed
                           ? s.play_time_seconds + " seconds"
                           : "Session started"}

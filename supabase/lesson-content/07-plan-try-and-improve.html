@@ -1,49 +1,42 @@
 <div class="lesson-block">
-<h3 class="lesson-block-heading">1. Solve the problem before choosing commands</h3>
-<p>You now have several tools: sequences for order, conditions for decisions, loops for repetition, and state reasoning for changes in the room. This lesson is about choosing and combining them to solve a complete problem.</p>
-<p>The target is not a program containing every command. The target is a plan you can explain: what must happen, why the steps are possible, how the program chooses or repeats them, and how you know the goal is reached.</p>
-<p>A clear short sequence can be better than an unnecessary loop. A condition is useful when the plan needs a check, not simply because the command is available.</p>
+<h3 class="lesson-block-heading">1. Programming logic: combine ideas into a justified plan</h3>
+<p>Solving a larger problem means selecting and combining sequences, conditions, updates and loops. <strong>Decomposition</strong> means breaking the goal into smaller tasks that you can explain and test separately.</p><p>Identify inputs, expected outputs and rules. Ask which work happens once, which repeats, and which depends on a condition. In the game, identify mechanisms that must change before a later route is possible.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">2. Understand the room as a set of facts</h3>
-<p>Before typing, identify the start, exit, blocked passages, mechanisms and movable objects. Separate what you know from what you still need to test. For example, a wall-looking panel may not behave like a solid wall.</p>
-<ul>
-<li><strong>Goal:</strong> what must be true when the solution finishes?</li>
-<li><strong>Available actions:</strong> what can the knight do with the commands taught so far?</li>
-<li><strong>Constraints:</strong> which passages are blocked, and which objects must remain in place?</li>
-<li><strong>Unknowns:</strong> which movement or mechanism behavior needs checking?</li>
-</ul>
-<p>An assumption is something the plan takes as true. State it explicitly. "The crate can be pushed onto the plate from this side" is an assumption you can inspect and test.</p>
+<h3 class="lesson-block-heading">2. Plan before writing the complete program</h3>
+<p>Consider a parcel counter. Read the parcel count and one whole-number weight per parcel. A weight of at least 10 earns 3 points; a lighter parcel earns 1 point. Print total points once. Assume nonnegative inputs.</p><ul><li>Start the points total at zero.</li><li>Repeat once per parcel: read its weight, choose the appropriate points, and add them.</li><li>After all parcels, print the total.</li></ul><p>A sequence handles setup and output, a loop handles the parcels, and a decision handles the rule for each parcel. The challenge is placing familiar features correctly.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">3. Break the goal into smaller goals</h3>
-<p>Dividing a problem into manageable parts is called <strong>decomposition</strong>. For an exit controlled by a crate-sensitive plate, the smaller goals might be:</p>
-<ol>
-<li>Reach the side of the crate needed for the push.</li>
-<li>Place the crate on the correct plate.</li>
-<li>Leave the crate there and reach the opened passage.</li>
-<li>Cross the passage and reach the exit.</li>
-</ol>
-<p>These parts are connected. The second needs a reachable pushing position. The third needs the plate held. The last needs the door open. Write these dependencies before translating the plan into directions.</p>
-<p>After each part, describe the expected state: knight position, crate position and door status. Those checkpoints help you locate a mistake later.</p>
+<h3 class="lesson-block-heading">3. Trace a decision inside a loop</h3>
+<p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>parcels = int(input())
+points = 0
+for parcel in range(parcels):
+    weight = int(input())
+    if weight &gt;= 10:
+        points = points + 3
+    else:
+        points = points + 1
+print(points)</code></pre><p class="code-label">Example inputs, in order (one answer per input request)</p><pre><code>3
+9
+10
+12</code></pre><p class="code-label">Output</p><pre><code>7</code></pre><p>The loop body is indented four spaces. The if/else bodies are indented eight spaces because they are inside a decision inside a loop. The final print returns to the left margin and runs after all passes.</p><ul><li>Weight 9: false branch, points becomes 1.</li><li>Weight 10: true branch, points becomes 4.</li><li>Weight 12: true branch, points becomes 7.</li></ul>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">4. Choose the structure that fits each part</h3>
-<ul>
-<li><strong>Sequence:</strong> several different actions must happen in a specific order.</li>
-<li><strong>If or if/else:</strong> the next action depends on a true-or-false answer.</li>
-<li><strong>Repeat:</strong> a known action group occurs a known number of times.</li>
-<li><strong>While:</strong> keep performing a group while a condition remains true.</li>
-</ul>
-<p>A complete room can use several of these, but it does not have to use all of them. Explain the reason for each structure you choose. "I used repeat because this same pair occurs twice" is a reason. "I used repeat because the lesson mentions it" is not enough.</p>
+<h3 class="lesson-block-heading">4. Debug the cause, not just the final number</h3>
+<p>Compare the intended trace with the actual result and find the first mismatch. Ask:</p><ul><li>Initialization: should any points exist before a parcel is read? Starting at 1 creates an extra point even for zero parcels.</li><li>Repetition count: does the program request exactly one weight per parcel? range(parcels + 1) requests an extra input.</li><li>Boundary: which category owns weight 10? Using &gt; instead of &gt;= puts it in the wrong category.</li></ul><p>Fix a cause, rerun the failing case, then test another case to check that the change did not break a correct result. A syntax error prevents execution; a logic error may produce readable but incorrect output. Matching output alone does not explain why the approach works.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">5. Trace a combined program</h3>
-<p>For this practice example, assume two right moves are clear. After them, up is open; right remains open after moving up. No goal ends the program early. Predict the full route:</p>
+<h3 class="lesson-block-heading">5. Choose tests that challenge your reasoning</h3>
+<p>Test zero parcels, one below the boundary, one at the boundary, and mixed weights. Predict the outputs before running. Zero checks setup and loop count; the boundary checks the comparison; mixed weights check accumulation across both branches.</p><p>If an activity reports that it requested more input than an example supplies, inspect input calls and loop passes. Do not add arbitrary answers just to finish. If the numbers are correct but a check differs, also compare required text and line breaks.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">6. Connect combined Python logic to a game plan</h3>
+<p>Choose the structure from the problem. Python variables track numerical state; game actions track position and mechanisms. Game commands are custom commands, so use them in the game terminal rather than pasting the Python parcel program there.</p><p>For this practice example, assume two right moves are clear. After them, up is open; right remains open after moving up. No goal ends the program early. Predict the full route:</p>
 <p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
 <pre><code>repeat(2):
     move(right)
@@ -62,63 +55,7 @@ move(right)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">6. Test a prediction, not just a final score</h3>
-<p>Before Run, write an expected result at each checkpoint. During the run, observe what actually happens. Afterwards, compare the two. A failed attempt is useful when it gives you evidence about which assumption or instruction was wrong.</p>
-<p>A simple test note can be: expected the crate to stay on the plate; observed it move off during the last push; therefore the door closed before the crossing. This explanation points to a specific correction.</p>
-<p>Also check starting conditions. A retry from a changed room may not be comparable to an earlier attempt. If you want to compare two program versions, make sure they start from the same intended setup.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">7. Find the first mismatch</h3>
-<p><strong>Debugging</strong> means locating and correcting the cause of unwanted behavior. Start with the earliest point where your prediction and the actual run differ, not merely the place where the knight finally gets stuck.</p>
-<ul>
-<li>Was the instruction understood? Check command spelling and grouping if execution cannot begin.</li>
-<li>Did the selected action match the plan? Check directions and branch choices.</li>
-<li>Did a repeated group run too often or include a one-time action?</li>
-<li>Did an earlier action remove a condition needed later, such as a held plate?</li>
-</ul>
-<p>Change one relevant part, predict its effect, and test again. Changing several unrelated things at once makes it harder to explain which change helped.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">8. Find and fix a combined logic mistake</h3>
-<p>The intended route is two right moves, then one upward move only if up is possible. A student writes:</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>repeat(2):
-    move(right)
-    if can(up):
-        move(up)</code></pre>
-<p>Assume up is open after each right move. Expand the program. Does it match the intention?</p>
-<blockquote><p><strong>Check your reasoning:</strong> It produces right, up, right, up. The decision belongs to the repeated body, so it is reached twice. Move the whole if block outside repeat, keeping its move indented under if. The corrected structure is shown below.</p></blockquote>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>repeat(2):
-    move(right)
-if can(up):
-    move(up)</code></pre>
-<p>The correction changes when the decision happens. Explain that relationship rather than saying only that some spaces were removed.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">9. Improve only after preserving correctness</h3>
-<p>Suppose a working sequence contains right, up, right, up. Replacing it with repeat(2) around right and up can make the repeated pattern clearer. Verify it by expanding the new version and comparing the ordered actions.</p>
-<p>Do not assume that fewer written lines always mean fewer attempts, less movement, or a better route. These are different measures. A useful improvement either makes the plan easier to understand or improves a chosen result while still reaching the goal correctly.</p>
-<p>For a mechanism puzzle, also compare state changes. A route that reaches the same position but releases a necessary plate is not equivalent to one that keeps it held.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">10. A small connection to real code</h3>
-<p class="code-label">Real Python example - read only; not a KnightCode command</p>
-<pre><code>total = 0
-for value in [2, 4, 1]:
-    if value &gt; 1:
-        total = total + value
-print(total)</code></pre>
-<p>This Python example visits three numbers in order. It adds a number only if it is greater than 1. Starting at 0, the total becomes 2, then 6, then stays 6 when 1 is skipped. The final display is 6.</p>
-<p>The names hold information, the loop repeats, the condition chooses, and the addition changes the state. <strong>The same tracing method works outside the game.</strong> You are not expected to learn Python lists here; follow the stated three values and explain each decision.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">11. Build and explain your own room solution</h3>
+<h3 class="lesson-block-heading">7. Build and explain your own room solution</h3>
 <ol>
 <li>State the goal and important starting facts.</li>
 <li>Write smaller goals and the order they depend on.</li>
@@ -131,13 +68,19 @@ print(total)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">12. Show that you understand the logic</h3>
-<p>After solving a room, explain your program to someone who cannot see your code. Include why each decision is needed, what each loop repeats, what stops it, and which facts must remain true.</p>
-<ul>
-<li>If a path became blocked, which part of your plan would need reconsidering?</li>
-<li>Which test showed you the first mistake?</li>
-<li>What did you change, and why did that change address the cause?</li>
-<li>Can you describe the same plan in plain words without the game command spelling?</li>
-</ul>
-<blockquote><p><strong>Check your reasoning:</strong> A strong explanation connects actions to results and evidence to corrections. Reaching the exit demonstrates one successful run. Explaining the plan, its assumptions and its limits shows the programming logic behind that run.</p></blockquote>
+<h3 class="lesson-block-heading">8. Prepare for the Python activity</h3>
+<p>In <strong>Repair the ticket counter</strong>, the starter code deliberately contains mistakes. The task uses visitors and ages rather than weights. Its rule is different: below age 12 costs 5; everyone else costs 10. Derive the condition from that rule instead of copying the parcel comparison.</p><p>Inspect the initial total, number of loop passes and age boundary. Trace zero visitors and age exactly 12, then a mixed group. Explain and repair the logic instead of hard-coding expected answers. Keep the final total print outside the loop.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. Activity inputs and expected output</h3>
+<p><strong>Repair the ticket counter:</strong> Read the number of visitors, then one whole-number age per visitor. Tickets cost 5 for ages below 12 and 10 for everyone else. Use repetition and a decision to compute the total and print it once. Repair the starter program: it contains mistakes in its starting total, loop count, and age boundary. Test zero visitors and age exactly 12 before submitting.</p><p>These are the required results, not a full code solution. Calculate or decide from the input; the same program must work with other valid values.</p><p class="code-label">Sample inputs, in order</p><pre><code>3
+8
+12
+20</code></pre><p class="code-label">Output</p><pre><code>25</code></pre><p>Match the required output wording, capitalization and line order. When only numbers are requested, print numbers without extra labels or success messages. A correct idea can still need an output-format correction; explain the reasoning as well as checking the display.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. Practise, submit, and explain your reasoning</h3>
+<p>Complete the available assigned game levels, then open this lesson's Python activity when it becomes available. Levels marked Coming Soon do not need to be completed first. Use the game to trace the concept visually and the activity to apply it to a different problem.</p><p>Type Python in the code editor and select Run Python. When the program asks for input, enter the next answer in the input field below the output; the output itself is not where you type code or answers. Each input call takes one answer. Practice checks try the supplied examples and are guidance, not the teacher's grade.</p><p>The worked examples above solve different problems from the assigned activity. Trace them on paper; if you try one in the activity editor, its output may not match that activity's checks. Return to the assigned task before submitting. Run records an attempt; Submit this Run sends the latest saved run for teacher review. Read teacher feedback in its run history.</p><p><strong>Explain:</strong> For each repair, explain the original mistake, a test that exposed it, and why the correction works. Make the same explanation for the first incorrect step in a game plan.</p>
 </div>

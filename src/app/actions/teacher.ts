@@ -307,6 +307,8 @@ export async function createAssignment(f: FormData) {
     if (lessonError) throw Error(lessonError.message);
     if (!activeLesson) throw Error("This lesson is archived or no longer available. Choose an active lesson.");
     const due = str(f, "due_date");
+    if (due && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(due)) throw Error("Enter a valid due date and time.");
+    const dueAt = due ? new Date(due + "+08:00").toISOString() : null;
     const { data: assignment, error } = await admin()
       .from("assignments")
       .insert({
@@ -317,7 +319,7 @@ export async function createAssignment(f: FormData) {
         level_id: levelId || null,
         title,
         instructions: str(f, "instructions") || null,
-        due_date: due ? new Date(due).toISOString() : null,
+        due_date: dueAt,
       })
       .select()
       .single();
@@ -344,7 +346,8 @@ export async function createAssignment(f: FormData) {
               "A new KnightCode assignment has been posted" +
               (due
                 ? " for " +
-                  new Date(due).toLocaleDateString("en-US", {
+                  new Date(dueAt!).toLocaleDateString("en-US", {
+                    timeZone: "Asia/Manila",
                     month: "short",
                     day: "numeric",
                     year: "numeric",

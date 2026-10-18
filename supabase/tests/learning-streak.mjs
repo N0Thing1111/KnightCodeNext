@@ -1,0 +1,57 @@
+﻿import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+export async function checkLearningStreak(db,{admin,teacher,activity,as}) {
+ await db.exec('reset role; grant select on all tables in schema public to authenticated');
+ const student='71000000-0000-0000-0000-000000000001';
+ const legacy='71000000-0000-0000-0000-000000000002';
+ await db.query(`insert into auth.users(id,email,raw_user_meta_data,raw_app_meta_data) values($1,'streak@test.invalid','{}','{"role":"student"}')`,[student]);
+ await db.query(`update profiles set current_streak=2,longest_streak=9,last_activity_date=(now() at time zone 'Asia/Manila')::date-1 where id=$1`,[student]);
+ await db.query(`insert into python_runs(id,student_id,activity_id,source,activity_snapshot,status,result,finished_at)
+ values($1,$2,$3,'bad syntax','{}','error','{"output":"","error":"Syntax error","inputs":[],"checks":[],"elapsed_ms":1}',now())`,[legacy,student,activity]);
+ const migration=readFileSync(new URL('../migrations/202610180002_learning_streak.sql',import.meta.url),'utf8');
+ await db.exec(migration);
+ const stats=async()=>(await db.query('select current_streak,longest_streak,last_activity_date::text,learning_activity_dates::text[] from profiles where id=$1',[student])).rows[0];
+ const today=(await db.query("select (now() at time zone 'Asia/Manila')::date::text as activity_day")).rows[0].activity_day;
+ assert.equal((await stats()).current_streak,3,'Backfill combines legacy game days and Python error day');
+ assert.equal((await stats()).longest_streak,9,'Historical longest is preserved');
+ const initial=await stats();await db.exec(migration);assert.deepEqual(await stats(),initial,'Migration is repeat safe');
+ await as(student);await assert.rejects(()=>db.query('select record_learning_day($1)',[student]),/permission denied/);
+ await db.exec('reset role');
+ await db.query('insert into class_students(class_id,student_id) select id,$1 from classes where teacher_id=$2 order by id limit 1',[student,teacher]);
+ await db.query('insert into assignments(teacher_id,student_id,lesson_id,title) values($1,$2,10,\'Streak test\')',[teacher,student]);
+ await db.query('insert into student_level_progress(student_id,level_id,completed) values($1,20,true)',[student]);
+ await db.query('update python_activities set published=true where id=$1',[activity]);
+ await as(student);await db.query("select record_student_activity('lesson_viewed',10)");assert.deepEqual(await stats(),initial,'Reading does not count');
+ const payload={telemetry_version:2,run_id:'streak_test_run_0000001',sequence:1,scene_name:'1',completed:false,attempts:1,mistakes:0,play_time_seconds:1,total_play_time_seconds:1,lines_used:1,completed_lines:0,code_mode:'free'};
+ await db.query('select record_level_progress(20,$1)',[payload]);assert.equal((await stats()).current_streak,3,'Game on same day does not add another day');
+ await db.query('select record_level_progress(20,$1)',[payload]);assert.equal((await stats()).current_streak,3,'Duplicate telemetry is idempotent');
+ await db.exec('reset role');
+ await db.query("update profiles set current_streak=3,last_activity_date=(now() at time zone 'Asia/Manila')::date-1,learning_activity_dates=array[(now() at time zone 'Asia/Manila')::date-1] where id=$1",[student]);
+ await as(student);
+ await db.query('select record_level_progress(20,$1)',[{...payload,sequence:2,total_play_time_seconds:2,play_time_seconds:2}]);assert.equal((await stats()).last_activity_date,(await db.query("select ((now() at time zone 'Asia/Manila')::date-1)::text as activity_day")).rows[0].activity_day,'Idle telemetry cannot extend streak');
+ await db.query('select record_level_progress(20,$1)',[{...payload,sequence:3,attempts:2,total_play_time_seconds:3,play_time_seconds:3}]);assert.equal((await stats()).current_streak,4,'New attempt extends yesterday streak');
+ const result={output:'',error:'Example error',inputs:[],checks:[],elapsed_ms:1};
+ let n=10;
+ async function run(status){const id='71000000-0000-0000-0000-'+String(n++).padStart(12,'0');await db.query('select python_start_run($1,$2,$3)',[activity,id,'print(1)']);await db.query('select python_finish_run($1,$2,$3)',[id,status,result]);return id;}
+ await db.exec('reset role');await db.query("update profiles set current_streak=4,last_activity_date=(now() at time zone 'Asia/Manila')::date-1,learning_activity_dates='{}' where id=$1",[student]);await as(student);
+ await run('stopped');await run('timeout');assert.equal((await stats()).current_streak,4,'Stopped/timeout do not count');
+ const failed=await run('error');assert.equal((await stats()).current_streak,5,'Python error extends streak');
+ await db.query('select python_finish_run($1,$2,$3)',[failed,'error',result]);assert.equal((await stats()).current_streak,5,'Retry result does not double count');
+ await run('finished');assert.equal((await stats()).current_streak,5,'Finished Python on same day counts once');
+ await db.exec('reset role');await db.query("update profiles set last_activity_date=(now() at time zone 'Asia/Manila')::date-3 where id=$1",[student]);await as(student);
+ await run('finished');assert.equal((await stats()).current_streak,1,'Gap resets next qualifying run');
+ assert.ok((await stats()).learning_activity_dates.includes(today));
+ await db.exec('reset role');
+ await db.query("update python_runs set started_at=now()-interval '5 days',finished_at=now()-interval '5 days',last_seen_at=now()-interval '5 days' where id=$1",[failed]);
+ const beforeCleanup=await stats();const cutoff=new Date(Date.now()-2*86400000).toISOString();
+ const preview=(await db.query("select manage_run_history($1,'python_practice',$2,$3) data",[admin,cutoff,student])).rows[0].data;
+ assert.ok(preview.count>0);await db.query("select manage_run_history($1,'python_practice',$2,$3,null,true,$4)",[admin,cutoff,student,preview.fingerprint]);assert.deepEqual(await stats(),beforeCleanup,'Cleanup preserves streak and markers');
+ const save=(await db.query('select capture_school_backup($1) data',[admin])).rows[0].data;
+ const mapping=Object.fromEntries(save.tables.profiles.map(p=>[p.id,p.id]));
+ await db.query('select restore_school_backup($1,$2,$3)',[save,mapping,admin]);assert.deepEqual(await stats(),beforeCleanup,'Backup round trip preserves summary');
+ const oldSave=structuredClone(save);for(const p of oldSave.tables.profiles)delete p.learning_activity_dates;
+ await db.query("update profiles set learning_activity_dates=array[date '2000-01-01'] where id=$1",[student]);
+ await db.query('select restore_school_backup($1,$2,$3)',[oldSave,mapping,admin]);assert.deepEqual((await stats()).learning_activity_dates,[today],'Legacy save reconstructs its saved summary, never keeps current dates');
+ await db.query("select clear_school_data($1,'learning')",[admin]);assert.equal((await stats()).current_streak,0);assert.deepEqual((await stats()).learning_activity_dates,[]);
+ console.log('PASS learning streak: backfill, idempotency, permissions, game/Python rules, missed days, history cleanup, new/old backups and full clear.');
+}

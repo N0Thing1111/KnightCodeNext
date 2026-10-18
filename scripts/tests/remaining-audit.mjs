@@ -5,7 +5,9 @@ function load(file,mocks={}) {const exports={};vm.runInNewContext(ts.transpileMo
 const game={isGameLevelAvailable:l=>l.build_available};const completion=load('lib/lesson-completion.ts',{'@/lib/game-build':game});const assessment=load('lib/student-assessment.ts');
 const queries=[];const db={from:table=>{const record={table};queries.push(record);const q={select:(...args)=>{record.select=args;return q},eq:()=>q,order:()=>q,gte:(...v)=>{record.gte=v;return q},lt:(...v)=>{record.lt=v;return q},in:()=>q,limit:n=>{record.limit=n;return q},maybeSingle:async()=>({data:{setting_value:"Test"},error:null}),range:async()=>({data:[],error:null}),then:f=>Promise.resolve({data:[],count:7,error:null}).then(f)};return q;},rpc:async ()=>({data:{recent:[],latest:[],sessions:[],days:[]},error:null})};
 const pages=load('lib/query-pages.ts');const week=load('lib/activity-week.ts');
-const teacher=load('lib/teacher-data.ts',{'react':{cache:f=>f},'@/lib/query-pages':pages,'@/lib/student-assessment':assessment,'@/lib/section-label':{sectionLabel:c=>c.name},'@/lib/python-data':{getPythonCompletion:async()=>({activities:[],submissions:[]})},'@/lib/lesson-completion':completion,'@/lib/game-build':game,'@/lib/supabase/admin':{createAdminClient:()=>db},'@/lib/teacher-avatar':{}});
+const schoolTime=load('lib/school-time.ts',{});
+const streakHelper=load('lib/learning-streak.ts',{'./school-time':schoolTime});
+const teacher=load('lib/teacher-data.ts',{'./learning-streak':streakHelper,'react':{cache:f=>f},'@/lib/query-pages':pages,'@/lib/student-assessment':assessment,'@/lib/section-label':{sectionLabel:c=>c.name},'@/lib/python-data':{getPythonCompletion:async()=>({activities:[],submissions:[]})},'@/lib/lesson-completion':completion,'@/lib/game-build':game,'@/lib/supabase/admin':{createAdminClient:()=>db},'@/lib/teacher-avatar':{}});
 const ctx={classes:[{id:1}],memberships:[{class_id:1,student_id:'s'}],students:[{id:'s'}],lessons:[{id:1,active:true},{id:2,active:false}],levels:[{id:1,lesson_id:1,build_available:true},{id:2,lesson_id:1,build_available:false},{id:3,lesson_id:2,build_available:true}],assignments:[{student_id:'s',lesson_id:1},{student_id:'s',lesson_id:2}],progress:[{student_id:'s',level_id:1,completed:true,attempts:6,history_unsuccessful_attempts:4}],activity:[],pythonRuns:[],sessions:[{student_id:'s',level_id:1,attempts:3,completed:true}],python:{activities:[{id:'a',lesson_id:1,published:true}],submissions:[]}};
 assert.deepEqual([...teacher.assignedLevelIds(ctx,'s')],[1]);
 assert.equal(teacher.teacherStudents(ctx)[0].progress_pct,50,'Game complete plus Python pending = 50%');
@@ -41,3 +43,17 @@ assert.equal(shared.activity.length,1,'Activity report does not mutate cached da
 assert.equal(reportResult.report.activity.length,0,'Report uses explicit full-history query, not dashboard recent list');
 for(const table of ['student_activity','python_runs']){const q=queries.find(q=>q.table===table);assert.ok(q.gte&&q.lt);assert.equal(q.lt[1],'2026-10-15T16:00:00.000Z');}
 console.log('PASS activity export reads its own full scoped/date-filtered history without mutating cached summaries.');
+
+// Exercise the actual assignment action with host timezone changes.
+for(const timezone of ['UTC','Asia/Manila','America/Los_Angeles']) {
+ process.env.TZ=timezone;
+ let inserted=null;
+ const client={from:()=>{const q={select:()=>q,eq:()=>q,insert:row=>{inserted=row;return q},maybeSingle:async()=>({data:{id:1},error:null}),single:async()=>({data:{id:1},error:null}),then:resolve=>Promise.resolve({data:[],error:null}).then(resolve)};return q}};
+ const teacherActions=load('app/actions/teacher.ts',{'next/headers':{},'next/navigation':{redirect:url=>{throw new Redirect(url)}},'next/cache':{revalidatePath(){}},'@/lib/auth':{requireTeacher:async()=>({id:'teacher'})},'@/lib/supabase/admin':{createAdminClient:()=>client},'@/lib/supabase/server':{},'@/lib/mail':{},'@/lib/sections':{}});
+ for(const due of ['2026-10-18T13:42','2026-10-19T00:15','']) {
+  const form=new FormData();for(const [k,v] of Object.entries({class_id:'1',lesson_id:'1',title:'Timezone test',due_date:due}))form.set(k,v);
+  await assert.rejects(()=>teacherActions.createAssignment(form),e=>e instanceof Redirect && e.message.includes('notice='));
+  assert.equal(inserted.due_date,due==='2026-10-18T13:42'?'2026-10-18T05:42:00.000Z':due==='2026-10-19T00:15'?'2026-10-18T16:15:00.000Z':null);
+ }
+}
+console.log('PASS actual assignment action stores Philippine due dates consistently under three server timezones.');

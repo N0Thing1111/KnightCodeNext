@@ -529,4 +529,6 @@ console.log('PASS safe lesson deletion: unused only, role isolation, linked-leve
 
 await (await import("./priority-run-fixes.mjs")).checkPriorityRunFixes(db, { admin, teacher, student: newStudent, activity, as });
 await (await import("./history-read-summaries.mjs")).checkHistorySummaries(db, { teacher, student: newStudent, as });
+await (await import("./learning-streak.mjs")).checkLearningStreak(db, { admin, teacher, activity, as });
+await (await import("./streak-run-and-daily-time.mjs")).checkStreakRunAndDailyTime(db, { admin, activity, as });
 await db.close();

@@ -2,6 +2,8 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { requireStudent } from "@/lib/auth";
 import { formatDuration } from "@/lib/format";
+import { learningStreak } from "@/lib/learning-streak";
+import { dailyPractice } from "@/lib/daily-practice";
 import {
   getAchievements,
   getStudentLearningData,
@@ -59,25 +61,13 @@ export default async function DashboardPage() {
     .filter((row) => !row.level_id || levelMap.has(row.level_id))
     .slice(0, 5);
   const earned = achievements.filter((badge) => badge.earned_at).slice(0, 4);
-  const now = new Date();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-  monday.setHours(0, 0, 0, 0);
-  const activeDates = new Set(
-    (activityResult.data ?? []).map((row) =>
-      new Date(row.created_at).toISOString().slice(0, 10),
-    ),
-  );
-  const todayKey = new Date().toISOString().slice(0, 10);
-  const todayMinutes = Math.floor(
-    (activityResult.data ?? [])
-      .filter((row) => row.created_at.startsWith(todayKey))
-      .reduce((sum, row) => sum + row.duration_seconds, 0) / 60,
-  );
-  const goalPct = Math.min(100, Math.round((todayMinutes / 30) * 100));
+  const streak = learningStreak(student);
+  const practice = dailyPractice(student);
+  const todayMinutes = practice.minutes;
+  const goalPct = practice.percent;
   const xpInLevel = stats.xp % 500;
   const xpToNext = xpInLevel ? 500 - xpInLevel : 500;
-  const dayLabels = ["M", "T", "W", "T", "F", "S", "S"];
+
 
   return (
     <main className="page-container dashboard-page quest-dashboard">
@@ -281,34 +271,30 @@ export default async function DashboardPage() {
         <article className="panel streak-card">
           <div className="panel-title-row">
             <div>
-              <h2>Current Streak</h2>
+              <h2>Learning Streak</h2>
             </div>
             <span className="streak-flame">🔥</span>
           </div>
           <div className="streak-number">
-            <strong>{stats.streak}</strong>
-            <span>days</span>
+            <strong>{streak.count}</strong>
+            <span>{streak.count === 1 ? "day" : "days"}</span>
           </div>
-          <p>
-            {stats.streak > 0
-              ? "Great momentum. Complete another challenge today to keep your streak alive."
-              : "Complete a challenge today to start your learning streak."}
-          </p>
-          <div className="week-row" aria-label="This week's activity">
-            {dayLabels.map((label, index) => {
-              const date = new Date(monday);
-              date.setDate(monday.getDate() + index);
-              const done = activeDates.has(date.toISOString().slice(0, 10));
-              return (
-                <span key={index}>
-                  <small>{label}</small>
-                  <i className={`day-dot ${done ? "done" : ""}`}>
-                    {done ? "✓" : ""}
-                  </i>
-                </span>
-              );
-            })}
+          <p>{streak.message}</p>
+          <details>
+            <summary>What counts?</summary>
+            <p>Running nonblank code in the game or finishing a Python run, including errors, counts once per day. Reading lessons, opening or restarting a game, and stopped or timed-out Python runs do not count. Missing a day breaks the streak.</p>
+          </details>
+          <div className="week-row" aria-label="This week's learning streak, Philippine time">
+            {streak.week.map(day => (
+              <span key={day.date} title={day.date + (day.today ? " - Today" : "") + (day.done ? " - Counted" : day.future ? " - Upcoming" : " - Not counted")}
+                aria-label={day.label + ", " + day.date + (day.today ? ", today" : "") + (day.done ? ", counted" : day.future ? ", upcoming" : ", not counted")}
+                aria-current={day.today ? "date" : undefined}>
+                <small>{day.label}</small>
+                <i className={`day-dot ${day.done ? "done" : ""}`} aria-hidden="true">{day.done ? "\u2713" : ""}</i>
+              </span>
+            ))}
           </div>
+          <p>Days follow Philippine time (UTC+8).</p>
         </article>
         <article className="panel progress-overview-card">
           <div className="panel-title-row">
@@ -401,8 +387,9 @@ export default async function DashboardPage() {
           <div>
             <span className="goal-icon">⚡</span>
             <div>
-              <strong>Today&apos;s learning goal</strong>
-              <small>{todayMinutes} of 30 minutes logged today</small>
+              <strong>Today&apos;s saved practice time</strong>
+              <small>{todayMinutes} of 30 minutes saved today</small>
+              <small>Game time + Python run time. Typing time is not measured. Days use Philippine time.</small>
             </div>
           </div>
           <div className="goal-progress">
@@ -501,7 +488,7 @@ export default async function DashboardPage() {
                         ? `Level ${levelMap.get(item.level_id)?.level_number} · ${levelMap.get(item.level_id)?.title}`
                         : "Learning session"}
                     </b>
-                    <small>{new Date(item.created_at).toLocaleString()}</small>
+                    <small>{new Date(item.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}</small>
                   </div>
                   <strong>
                     {item.xp_earned ? `+${item.xp_earned} XP` : ""}

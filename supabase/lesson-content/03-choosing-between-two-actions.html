@@ -1,13 +1,33 @@
 <div class="lesson-block">
-<h3 class="lesson-block-heading">1. Give the program two planned choices</h3>
-<p>An <code>if</code> statement can run a block or skip it. Sometimes you need a planned action for both answers. <strong>If/else</strong> selects the if block when the condition is true and the else block when it is false.</p>
-<p><code>else</code> means otherwise. It does not mean try every direction until one works. You write the alternative yourself. Your goal is to explain why each choice is appropriate for the situation that selects it.</p>
-<p>This lesson adds choice to a sequence. After the chosen block finishes, execution continues with the instructions after the whole decision.</p>
+<h3 class="lesson-block-heading">1. Programming logic: choose one of two alternatives</h3>
+<p>An if statement can perform an optional action. An <strong>if/else</strong> statement chooses between two alternatives. When the condition is true, the if body runs; otherwise, the else body runs. For a single if/else decision, the two bodies do not both run.</p><p>Plan the question, the action for true, and the action for false. Then identify any steps that belong after either outcome.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">2. State the assumptions before choosing</h3>
-<p>Imagine a practice junction. Moving right is our preferred route when it is open. If right is blocked, we have already checked the map and know that up is an available alternative. These assumptions are part of the example.</p>
+<h3 class="lesson-block-heading">2. Express the two branches in Python</h3>
+<p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>height = int(input())
+minimum = 120
+if height &gt;= minimum:
+    print("Ready")
+    print(height - minimum)
+else:
+    print("Too short")</code></pre><p class="code-label">Example inputs, in order (one answer per input request)</p><pre><code>130</code></pre><p class="code-label">Output</p><pre><code>Ready
+10</code></pre><p>This ride-height example prints Ready and the centimetres above the minimum when the requirement is met. Otherwise it prints Too short. <code>else:</code> aligns with if and has no additional condition. Its body is also indented four spaces. The two prints in the first body belong to the same branch.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">3. Equality is a decision you must make</h3>
+<p>At height 120, <code>height &gt;= minimum</code> is true. Output is Ready followed by 0. Changing <code>&gt;=</code> to <code>&gt;</code> would wrongly reject someone exactly at the minimum. The syntax could be valid while the rule was wrong.</p><p>Test 119, 120 and 121, explaining the branch for each. In an affordability problem, the boundary is exactly the price: enough money includes the exact amount, even if nothing remains afterward.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. Keep branch-specific work inside its branch</h3>
+<p>The difference calculation belongs with Ready. If its print moved below the whole if/else, it would also print a negative number after Too short. That would not match the stated output. Aligning a line with if means it runs after either branch; indenting it chooses which branch owns it.</p><p><strong>Predict:</strong> for input 119, which lines run?</p><blockquote><p>The comparison is false. Skip both prints under if, execute the print under else, and finish. Output only Too short.</p></blockquote>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Connect the two branches to a game route</h3>
+<p>Choosing numerical outcomes and choosing routes use the same structure. The game supplies <code>can()</code> and <code>blocked()</code>; those names are not built into the Python activity editor. <code>can(right)</code> asks whether movement right is possible; <code>blocked(right)</code> asks whether it is blocked. A true blocked check means you should consider a different route, not move into the obstacle.</p><p>Imagine a practice junction. Moving right is our preferred route when it is open. If right is blocked, we have already checked the map and know that up is an available alternative. These assumptions are part of the example.</p>
 <p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
 <pre><code>if can(right):
     move(right)
@@ -18,17 +38,7 @@ else:
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">3. Trace the two paths through the same program</h3>
-<ol>
-<li>Situation A: right is open. Check can(right), choose the if branch, move right, skip else, then continue.</li>
-<li>Situation B: right is blocked and up is open. Check can(right), choose the else branch, move up, then continue.</li>
-</ol>
-<p>The program is the same in both situations. Its behavior changes because the answer to the condition changes. This is how a program can respond to different starting situations without someone manually choosing a different line each time.</p>
-<p>If both directions are open, this program still chooses right. It does not choose randomly or compare which route is shorter. The preference is written into the condition and branches.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">4. Else is an alternative, not a safety check</h3>
+<h3 class="lesson-block-heading">6. Else is an alternative, not a safety check</h3>
 <p>Suppose both right and up are blocked. The condition is false, so the example selects <code>move(up)</code>. But choosing that line does not make the movement possible. The else branch does not secretly test up.</p>
 <p>For a real room, use a known-safe alternative or check the alternative too. One way to check it is a decision inside the else block:</p>
 <p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
@@ -42,70 +52,7 @@ else:
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">5. Ask the opposite question with blocked</h3>
-<p><code>blocked(right)</code> asks whether moving right is blocked now. In the same unchanged situation, it gives the opposite answer to <code>can(right)</code>. It checks movement rules, not just whether a tile looks like a wall.</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>if blocked(right):
-    move(up)
-else:
-    move(right)</code></pre>
-<p>Under our earlier assumption that up is a safe detour, this makes the same choice as the first example. When right is blocked, it chooses up. When right is open, it chooses right.</p>
-<p>Notice that we changed the question <strong>and swapped the branch actions</strong>. Changing can to blocked without changing the branches would reverse the intended choice. Always translate the whole decision into plain words.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">6. Read and predict the continuation</h3>
-<p>Assume the last left move is possible after either branch and no exit ends execution early. Predict the full sequence when up is open, then when up is blocked but right is open.</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>if can(up):
-    move(up)
-else:
-    move(right)
-move(left)</code></pre>
-<blockquote><p><strong>Check your reasoning:</strong> Up open: up, then left. Up blocked: right, then left. The final left move is outside both branches, so it is attempted after the selected branch. In an open practice area, the second route returns to its starting horizontal position.</p></blockquote>
-<p>Why does the knight not run the right move after the up move in the first situation?</p>
-<blockquote><p><strong>Check your reasoning:</strong> They belong to different branches of one if/else decision. Once the true branch is selected, the else branch is skipped.</p></blockquote>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">7. Find and fix reversed logic</h3>
-<p>The intention is: if right is blocked, take a known-open upward detour; otherwise go right. A student writes:</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>if blocked(right):
-    move(right)
-else:
-    move(up)</code></pre>
-<p>Trace the blocked case before changing anything. Which instruction does it select? Does that match the intention?</p>
-<blockquote><p><strong>Check your reasoning:</strong> When right is blocked, the condition is true and the program selects the right move. That contradicts the plan. Swap the branch actions: up belongs in the true branch and right belongs in else. Then check the open case too.</p></blockquote>
-<p>Do not judge a condition by whether it contains a familiar word. Judge it by which action its true answer selects.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">8. Plan your own preference</h3>
-<p>At a practice junction, prefer left if it is possible. Otherwise, use a known-clear downward path. Write the decision, then explain what happens when both paths are open and when only down is open.</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>if can(left):
-    move(left)
-else:
-    move(down)</code></pre>
-<blockquote><p><strong>Check your reasoning:</strong> Both open: left is selected because it is the written preference. Only down open: the condition is false, so down is selected. If neither is open, the assumption about a safe alternative fails; this version does not solve that situation.</p></blockquote>
-<p>A useful explanation includes the limits of the plan. Saying when a solution does not work is part of understanding it.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">9. A small connection to real code</h3>
-<p class="code-label">Real Python example - read only; not a KnightCode command</p>
-<pre><code>score = 6
-if score &gt;= 5:
-    print(&quot;Goal reached&quot;)
-else:
-    print(&quot;Keep practising&quot;)</code></pre>
-<p>The condition asks whether score is at least 5. With 6, only the first message appears. With 3, only the second appears. With exactly 5, the first appears because the check includes equality.</p>
-<p><strong>The shared idea is choosing one branch from two.</strong> The number check is different from a path check, but the decision structure is the same. You do not need Python syntax to explain the two possible outcomes.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">10. Practise decisions in your levels</h3>
+<h3 class="lesson-block-heading">7. Practise decisions in your levels</h3>
 <ul>
 <li><strong>Right or Up?:</strong> state which direction your decision prefers and why that helps the route.</li>
 <li><strong>When the Answer Is No:</strong> explain the alternative before running the false case.</li>
@@ -116,11 +63,17 @@ else:
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">11. Check your reasoning</h3>
-<ul>
-<li>Why does else not guarantee a safe movement?</li>
-<li>How can both paths be open while only one branch runs?</li>
-<li>What must change when you replace can with blocked but want the same choice?</li>
-</ul>
-<blockquote><p><strong>Check your reasoning:</strong> Else selects the action you supplied without another automatic check. The condition determines the chosen branch even when both paths are possible. Reversing the question requires reversing the branch actions if you want to preserve the same behavior.</p></blockquote>
+<h3 class="lesson-block-heading">8. Prepare for the Python activity</h3>
+<p>In <strong>Can I afford the notebook?</strong>, read the available money once and compare it with 35. Decide when change should be calculated and displayed. The insufficient-money branch does not ask for a change value.</p><p>Check less than the price, exactly the price, and more than the price. Explain why exactly enough selects the affordable branch. As in a game detour, the alternative needs to be planned; else does not invent the correct action.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. Activity inputs and expected output</h3>
+<p><strong>Can I afford the notebook?:</strong> A notebook costs 35 pesos. Read the money available as a whole number. If it is enough, print Buy and then the remaining money on the next line. Otherwise print Save more. Handle exactly 35 correctly. Use if and else to express the two choices.</p><p>These are the required results, not a full code solution. Calculate or decide from the input; the same program must work with other valid values.</p><p class="code-label">Sample inputs, in order</p><pre><code>50</code></pre><p class="code-label">Output</p><pre><code>Buy
+15</code></pre><p>Match the required output wording, capitalization and line order. When only numbers are requested, print numbers without extra labels or success messages. A correct idea can still need an output-format correction; explain the reasoning as well as checking the display.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. Practise, submit, and explain your reasoning</h3>
+<p>Complete the available assigned game levels, then open this lesson's Python activity when it becomes available. Levels marked Coming Soon do not need to be completed first. Use the game to trace the concept visually and the activity to apply it to a different problem.</p><p>Type Python in the code editor and select Run Python. When the program asks for input, enter the next answer in the input field below the output; the output itself is not where you type code or answers. Each input call takes one answer. Practice checks try the supplied examples and are guidance, not the teacher's grade.</p><p>The worked examples above solve different problems from the assigned activity. Trace them on paper; if you try one in the activity editor, its output may not match that activity's checks. Return to the assigned task before submitting. Run records an attempt; Submit this Run sends the latest saved run for teacher review. Read teacher feedback in its run history.</p><p><strong>Explain:</strong> Explain why only one branch runs, why exactly 35 counts as affordable, and why an else movement in the game still needs a safe route.</p>
 </div>

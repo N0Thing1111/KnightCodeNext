@@ -13,6 +13,7 @@ export function formatLevelTime(seconds: number | null | undefined) {
 export function formatDate(value: string | null | undefined) {
   if (!value) return "—";
   return new Intl.DateTimeFormat("en", {
+    timeZone: "Asia/Manila",
     month: "short",
     day: "numeric",
     year: "numeric",

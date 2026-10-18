@@ -131,6 +131,7 @@ export default async function Page({
                         >
                           {a.due_date
                             ? new Date(a.due_date).toLocaleDateString("en-US", {
+                    timeZone: "Asia/Manila",
                                 month: "short",
                                 day: "numeric",
                                 year: "numeric",

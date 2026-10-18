@@ -1,30 +1,39 @@
 <div class="lesson-block">
-<h3 class="lesson-block-heading">1. A correct route can depend on changing the room</h3>
-<p>So far, you have planned movements and checked paths. Some rooms need more: a passage is closed until a button is pressed, or a door stays open only while a plate is held. You must reason about how your actions change what can happen next.</p>
-<p>The programming idea is <strong>state</strong>: the facts that describe the situation at a particular moment. In KnightCode, these facts include the knight's position, the crate's position, whether a plate is held, and whether a door is open. State is a useful name for these facts, not a new command to type.</p>
+<h3 class="lesson-block-heading">1. Programming logic: later actions depend on the current state</h3>
+<p><strong>State</strong> means the facts describing a program or room at a particular moment. A Python variable might hold the battery charge. Game state includes the knight's position, crates, and whether a door is open. An action changes these facts, so a later decision must use the updated situation.</p><p>A <strong>dependency</strong> means one step needs another first. Charging before checking energy can change the answer, just as activating a button before crossing can make a route possible.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">2. Describe the before and after</h3>
-<p>Imagine an ordinary button that opens a door. Before the knight reaches it, the button has not been activated and the door is closed. After the knight activates it, the door is open. The action changed the state of the room.</p>
-<ol>
-<li>Before: door closed; the planned crossing is blocked.</li>
-<li>Action: reach and activate the button.</li>
-<li>After: door open; the crossing can now be considered.</li>
-</ol>
-<p>A <strong>condition</strong> reads something about the current state. An <strong>action</strong> may change that state. This means the same question can have a different answer before and after an action. Do not assume an earlier check is still true later.</p>
+<h3 class="lesson-block-heading">2. Read an update from right to left</h3>
+<p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>charge = 6
+recharge = 10
+charge = charge + recharge
+print(charge)</code></pre><p class="code-label">Output</p><pre><code>16</code></pre><p>For <code>charge = charge + recharge</code>, evaluate the right side using the old values: 6 + 10 is 16. Then assign 16 to charge. This is an update, not a mathematical claim that charge equals charge plus 10 forever. Later uses of charge see 16 until another assignment changes it.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">3. Work out what must happen first</h3>
-<p>A <strong>dependency</strong> means one step needs another step to happen first. If crossing a passage requires an open door, and opening the door requires pressing a button, pressing the button must come before crossing.</p>
-<p>Plan backwards from the goal: I need to reach the exit. What prevents that? A closed door. What opens it? The button. How do I reach the button? This gives you a useful order instead of a list of unrelated movements.</p>
-<p>Then trace forwards to test it. Working backwards helps discover the steps; working forwards checks that each step is possible from the situation left by the previous one.</p>
+<h3 class="lesson-block-heading">3. Update first, then decide</h3>
+<p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>charge = int(input())
+recharge = int(input())
+cost = 15
+charge = charge + recharge
+if charge &gt;= cost:
+    charge = charge - cost
+    print(charge)
+else:
+    print("Wait")
+    print(charge)</code></pre><p class="code-label">Example inputs, in order (one answer per input request)</p><pre><code>6
+10</code></pre><p class="code-label">Output</p><pre><code>1</code></pre><p>Trace: charge begins at 6, becomes 16 after recharging, passes the cost check, and becomes 1 after use. Checking the original 6 before recharging would reject an action the updated charge can support. The order is part of the solution.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">4. Trace an action followed by a check</h3>
-<p>For this small example only, suppose one right move activates an ordinary button. Once pressed, it opens the passage directly above the knight's new position. Both movements have been checked against this imagined layout.</p>
+<h3 class="lesson-block-heading">4. Trace both outcomes and preserve the right value</h3>
+<p>With inputs 2 and 3, the updated charge is 5. It cannot cover cost 15, so output Wait and 5. Do not subtract the cost in that branch. With inputs 5 and 10, all 15 units can be used and the result is 0. A zero final value is not itself a failure.</p><p>On paper, label the starting value, value after the update, condition result and final value. Find the first difference from that trace rather than adding extra operations at the end.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Connect value updates to room updates</h3>
+<p>The Python example changes numbers. In the game, movement may activate a mechanism and change a later path check. Python variables do not directly operate game doors; the shared skill is following state over time.</p><p>For this small example only, suppose one right move activates an ordinary button. Once pressed, it opens the passage directly above the knight's new position. Both movements have been checked against this imagined layout.</p>
 <p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
 <pre><code>move(right)
 if can(up):
@@ -38,7 +47,7 @@ if can(up):
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">5. Distinguish a lasting change from a held condition</h3>
+<h3 class="lesson-block-heading">6. Distinguish a lasting change from a held condition</h3>
 <ul>
 <li><strong>Ordinary button:</strong> once activated, its linked door stays open when the activating object leaves.</li>
 <li><strong>Pressure plate:</strong> its linked door stays open only while an allowed object remains on the plate. When nothing holds it, the door closes.</li>
@@ -48,7 +57,7 @@ if can(up):
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">6. Use a crate to keep a required fact true</h3>
+<h3 class="lesson-block-heading">7. Use a crate to keep a required fact true</h3>
 <p>The knight pushes a crate by moving toward it. There is no separate push command in these lessons. The crate needs space to move into; a crate blocked against a wall cannot simply be pushed through it.</p>
 <p>For a plate that accepts crates, leaving the crate on the plate can keep the door open while the knight leaves. Some switches have different activation rules, so inspect the level rather than assuming every object can activate every switch.</p>
 <ol>
@@ -60,40 +69,7 @@ if can(up):
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">7. Read and predict a state change</h3>
-<p>In this thought exercise, one pressure plate controls one door. The plate accepts the knight and crates. At first it is empty. Predict the door after each step: the knight steps onto it; the knight leaves with no crate there; a crate is placed on it; the knight walks away while the crate stays.</p>
-<blockquote><p><strong>Check your reasoning:</strong> The door opens when the knight holds the plate, closes when the empty plate is released, opens when the crate holds it, and stays open when the knight leaves but the crate remains. The important fact is occupancy of the plate, not how many times the knight visited it.</p></blockquote>
-<p>Change the assumption: the plate does not respond to crates. Would the last two outcomes still follow?</p>
-<blockquote><p><strong>Check your reasoning:</strong> No. The proposed support object must be one the switch accepts. A plan is only as good as the facts it assumes.</p></blockquote>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">8. Find and fix a dependency mistake</h3>
-<p>A student plans: stand on a pressure plate, walk away from it, then cross its linked door. Nothing else will hold the plate. Explain the first step that breaks the condition needed for crossing.</p>
-<blockquote><p><strong>Check your reasoning:</strong> Walking away releases the plate and closes the door. The later crossing fails because the earlier action removed the condition it needed. If a suitable crate and route are available, revise the plan so the crate holds the plate before the knight leaves.</p></blockquote>
-<p>Do not fix this by blindly adding extra movement near the door. The problem is the state of the mechanism, not necessarily the final direction. Trace the cause of the closed door.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">9. Plan and explain a multi-step solution</h3>
-<p>For a room with a crate-sensitive plate and an exit behind its door, write a plain-language plan before choosing movements. Include the side from which to push the crate and the path the knight will take after placing it.</p>
-<p>Beside each step, write two short notes: <strong>needs</strong> and <strong>changes</strong>. For example: pushing needs a clear destination; pushing changes the crate position. Crossing needs an open door; crossing changes the knight position.</p>
-<blockquote><p><strong>Check your reasoning:</strong> A sound plan checks that the crate can reach the plate, the knight can leave it there, and the exit route stays open. Exact movement commands depend on the room. There is no single direction sequence that solves every arrangement.</p></blockquote>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">10. A small connection to real code</h3>
-<p class="code-label">Real Python example - read only; not a KnightCode command</p>
-<pre><code>plate_held = True
-print(plate_held)
-plate_held = False
-print(plate_held)</code></pre>
-<p>This Python example stores a fact using the name <code>plate_held</code>. It first displays True, then changes the stored fact and displays False. This does not operate a real KnightCode door; it is a tiny model of changing information.</p>
-<p><strong>The shared logic is tracking state over time.</strong> A fact can change, and a later check must use the current situation. You do not need to create variables in the KnightCode terminal to practise that reasoning.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">11. Practise with your mechanisms</h3>
+<h3 class="lesson-block-heading">8. Practise with your mechanisms</h3>
 <ul>
 <li><strong>Open the Way:</strong> identify the button action that must happen before the crossing.</li>
 <li><strong>Keep It Open:</strong> explain what holds the plate after the knight moves away.</li>
@@ -103,11 +79,18 @@ print(plate_held)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">12. Check your reasoning</h3>
-<ul>
-<li>Why can a condition have a different answer after a movement?</li>
-<li>Why is a currently open door not always safe to plan around?</li>
-<li>What must remain true while crossing a pressure-plate-controlled route?</li>
-</ul>
-<blockquote><p><strong>Check your reasoning:</strong> Movement can change position and activate or release mechanisms. An action may close a route that was open a moment ago. The needed plate must remain held by an allowed object until the plan no longer depends on that door.</p></blockquote>
+<h3 class="lesson-block-heading">9. Prepare for the Python activity</h3>
+<p>In <strong>Track a changing balance</strong>, read opening balance, deposit and withdrawal, in that order. The deposit changes the balance before the withdrawal decision. Draw the same before/update/decision/after trace used for battery charge.</p><p>The declined outcome keeps the balance <em>after the deposit</em>; it does not undo the deposit or subtract the failed withdrawal. Test a deposit that makes withdrawal possible, an insufficient updated balance, and a withdrawal using the full balance.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. Activity inputs and expected output</h3>
+<p><strong>Track a changing balance:</strong> Read an opening balance, a deposit, and a withdrawal, in that order. Add the deposit to the balance first. If the updated balance can cover the withdrawal, subtract it and print the final balance. Otherwise print Declined and then the unchanged updated balance on the next line. Assume nonnegative whole-number inputs.</p><p>These are the required results, not a full code solution. Calculate or decide from the input; the same program must work with other valid values.</p><p class="code-label">Sample inputs, in order</p><pre><code>10
+30
+35</code></pre><p class="code-label">Output</p><pre><code>5</code></pre><p>Match the required output wording, capitalization and line order. When only numbers are requested, print numbers without extra labels or success messages. A correct idea can still need an output-format correction; explain the reasoning as well as checking the display.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">11. Practise, submit, and explain your reasoning</h3>
+<p>Complete the available assigned game levels, then open this lesson's Python activity when it becomes available. Levels marked Coming Soon do not need to be completed first. Use the game to trace the concept visually and the activity to apply it to a different problem.</p><p>Type Python in the code editor and select Run Python. When the program asks for input, enter the next answer in the input field below the output; the output itself is not where you type code or answers. Each input call takes one answer. Practice checks try the supplied examples and are guidance, not the teacher's grade.</p><p>The worked examples above solve different problems from the assigned activity. Trace them on paper; if you try one in the activity editor, its output may not match that activity's checks. Return to the assigned task before submitting. Run records an attempt; Submit this Run sends the latest saved run for teacher review. Read teacher feedback in its run history.</p><p><strong>Explain:</strong> Explain which balance the condition checks and which balance a declined withdrawal preserves. In the game, explain why a pressure plate must remain held while its door is needed.</p>
 </div>

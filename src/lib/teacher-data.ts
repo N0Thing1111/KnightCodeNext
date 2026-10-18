@@ -3,6 +3,7 @@ import { allRows, rowsForIds } from "@/lib/query-pages";
 import { sessionAssessment, latestActivity } from "@/lib/student-assessment";
 import { sectionLabel } from "@/lib/section-label";
 import { cache } from "react";
+import { learningStreak } from "./learning-streak";
 import { getPythonCompletion } from "@/lib/python-data";
 import { lessonCompletion, summarizeCompletion } from "@/lib/lesson-completion";
 import { isGameLevelAvailable } from "@/lib/game-build";
@@ -135,7 +136,7 @@ export function teacherStudents(
       attempts,
       failed_attempts: failed,
       mistakes,
-      streak: Number(student.current_streak || 0),
+      streak: learningStreak(student).count,
       last_activity: last,
       status: work.tasksTotal ? statusFor(last, pct, failed) : (last && Date.now() - Date.parse(last) < 14 * 86400000 ? "Recently Active" : "Inactive"),
     } as TeacherStudent;

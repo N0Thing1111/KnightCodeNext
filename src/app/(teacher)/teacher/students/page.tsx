@@ -94,7 +94,7 @@ export default async function Page({
                     <td>🔥 {s.streak}</td>
                     <td>
                       {s.last_activity
-                        ? new Date(s.last_activity).toLocaleString()
+                        ? new Date(s.last_activity).toLocaleString("en-PH", { timeZone: "Asia/Manila" })
                         : "Never"}
                     </td>
                     <td>

@@ -40,7 +40,7 @@ export function reportQuery(filters: ReportFilters) {
 }
 export function reportDate(value: string | null | undefined) {
   if (!value || !Number.isFinite(Date.parse(value))) return "Never";
-  return new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Shanghai", year: "numeric", month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(value));
+  return new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Manila", year: "numeric", month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(value));
 }
 const ratio = (done: number, total: number) => total ? `${done} / ${total}` : "N/A";
 const percent = (done: number, total: number) => total ? `${Math.round(done / total * 1000) / 10}%` : "N/A";

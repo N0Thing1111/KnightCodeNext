@@ -1,5 +1,6 @@
 import { allRows } from "@/lib/query-pages";
 import { cache } from "react";
+import { learningStreak } from "./learning-streak";
 import { isGameLevelAvailable } from "@/lib/game-build";
 import { lessonCompletion, summarizeCompletion } from "@/lib/lesson-completion";
 import { getPythonCompletion } from "@/lib/python-data";
@@ -160,7 +161,7 @@ export const getStudentStats = cache(async (student: Profile) => {
     level,
     rank: rankForLevel(level),
     xpPct: Math.min(100, Math.round(levelXp / 5)),
-    streak: student.current_streak ?? 0,
+    streak: learningStreak(student).count,
     ...work,
     challengesDone: work.gamesDone,
     lessonsCompleted,

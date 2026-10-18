@@ -1,13 +1,39 @@
 <div class="lesson-block">
-<h3 class="lesson-block-heading">1. Find a pattern before choosing a loop</h3>
-<p>Some routes contain the same action or group of actions several times. A <strong>loop</strong> is a way to repeat a group without writing that group out each time. This lesson uses <code>repeat</code> when the number of repetitions is known.</p>
-<p>The goal is not to make every program as short as possible. The goal is to recognize a pattern, express it clearly, and keep the intended behavior. A shorter program that takes the wrong route is not an improvement.</p>
-<p>First describe the complete route. Then ask: which part is exactly repeated, and how many copies of that part are needed?</p>
+<h3 class="lesson-block-heading">1. Programming logic: repeat a known amount of work</h3>
+<p>A <strong>loop</strong> repeats a group of instructions. Use a fixed-count loop when you know how many times the group should run. First identify the repeated work and count; do not use a loop only to make code shorter.</p><p>An <strong>iteration</strong> is one pass through the body. Count iterations separately from instructions: three passes through a two-action body perform six actions. Instructions within each pass still run in order.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">2. Replace repeated instructions with a count</h3>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<h3 class="lesson-block-heading">2. Use for and range in Python</h3>
+<p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>for step in range(3):
+    print(step)
+print("Finished")</code></pre><p class="code-label">Output</p><pre><code>0
+1
+2
+Finished</code></pre><p><code>range(3)</code> supplies 0, 1 and 2: three values, with 3 excluded. On each pass, <code>step</code> receives the next value and the indented body runs. The name step is a variable you choose. The final print is outside the loop and runs once. With <code>range(0)</code>, the body runs zero times.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">3. Keep a running total</h3>
+<p>An <strong>accumulator</strong> stores a result built over repeated steps. Begin a sum at 0 before the loop. Each pass adds the next value to the existing total.</p><p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>count = int(input())
+distance = 0
+for segment in range(count):
+    length = int(input())
+    distance = distance + length
+print(distance)</code></pre><p class="code-label">Example inputs, in order (one answer per input request)</p><pre><code>3
+2
+4
+1</code></pre><p class="code-label">Output</p><pre><code>7</code></pre><p>This totals route-segment lengths. The first input counts segments; it is not a length to add. Remaining answers are read inside the loop, one per pass. For count 3, distance changes from 0 to 2 to 6 to 7.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. Decide what repeats and what happens once</h3>
+<ul><li>Before the loop: read the count and initialize the accumulated value.</li><li>Inside the loop: read the next measurement and update the total.</li><li>After the loop: print the final answer once.</li></ul><p>If distance were reset to 0 inside every pass, earlier measurements would be lost. If print were inside the loop, it would display partial totals 2, 6 and 7 instead of only 7. Reading a measurement only before the loop could reuse one value instead of reading the next.</p><p>Test zero, one and several segments. Zero tests initialization and skipped repetition; one tests a single pass; several reveal errors that overwrite earlier values.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Connect Python for to the game repeat command</h3>
+<p>Python uses <code>for step in range(count):</code> for known-count repetition. KnightCode uses its custom <code>repeat(count):</code>. They share the idea of repeating a body, but their spellings are not interchangeable. There is no built-in Python <code>repeat()</code> command for this activity.</p><p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
 <pre><code>move(right)
 move(right)
 move(right)</code></pre>
@@ -20,19 +46,7 @@ move(right)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">3. Expand the loop to check your reasoning</h3>
-<p>One pass through the body is called an <strong>iteration</strong>, or simply a repetition. Trace repeat(3) by numbering the passes:</p>
-<ol>
-<li>First repetition: run move(right).</li>
-<li>Second repetition: run move(right) again, from the new position.</li>
-<li>Third repetition: run move(right) again, then finish the loop.</li>
-</ol>
-<p>To check a loop, mentally replace it with the full sequence it represents. If that expanded sequence does not match the route, the loop does not match either. This is a useful way to test your logic without relying on how compact the code looks.</p>
-<p>In the game, a level finishing or a program being stopped can end execution early. The trace here describes normal completion of the example.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">4. A repeated group can contain more than one action</h3>
+<h3 class="lesson-block-heading">6. A repeated group can contain more than one action</h3>
 <p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
 <pre><code>repeat(2):
     move(right)
@@ -43,72 +57,7 @@ move(right)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">5. Place one-time actions outside the loop</h3>
-<p>Imagine a clear route requiring three right movements and then one up movement. The turn should happen once, after the repeated section.</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>repeat(3):
-    move(right)
-move(up)</code></pre>
-<p>Because up lines up with repeat, it is outside the loop. The route is right, right, right, up. If you indent up inside the body, the route becomes right, up, right, up, right, up. That describes a different pattern.</p>
-<p>Before writing a loop, label each part of your plan as <strong>repeated</strong> or <strong>once afterwards</strong>. Indentation should reflect that decision.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">6. Read and predict the full sequence</h3>
-<p>Assume every move is possible. Write the expanded sequence and count the movements before reading the answer.</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>repeat(2):
-    move(up)
-    move(right)
-move(down)</code></pre>
-<blockquote><p><strong>Check your reasoning:</strong> The sequence is up, right, up, right, down: five movement actions. The body contributes four actions across two repetitions. Down contributes one more after the loop. The final position is two movements right and one up from the start in this open-area example.</p></blockquote>
-<p>What changes if the count becomes 3?</p>
-<blockquote><p><strong>Check your reasoning:</strong> The pair runs three times, producing six body movements, then down runs once: seven movements in total. The change affects the whole repeated group, not just its first line.</p></blockquote>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">7. Find and fix a misplaced turn</h3>
-<p>The intention is right, right, right, then up once. A student writes:</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>repeat(3):
-    move(right)
-    move(up)</code></pre>
-<p>Which part of the written program makes the route disagree with the intention? Expand it rather than guessing a different count.</p>
-<blockquote><p><strong>Check your reasoning:</strong> The up move is inside the repeated body, so it happens three times. Move that line outside the block. Changing only the repetition count cannot produce three right moves and one up move from this two-action body.</p></blockquote>
-<p>This is a grouping mistake. Other loop mistakes involve the wrong count or the wrong action. Identify which kind of mismatch you have before editing.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">8. Plan and write a repeated pattern</h3>
-<p>For an open practice route, express left, down, left, down, left, down, then right once using a loop. Name the smallest repeated group before you write it.</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>repeat(3):
-    move(left)
-    move(down)
-move(right)</code></pre>
-<blockquote><p><strong>Check your reasoning:</strong> The repeated group is left followed by down. It occurs three times. Right is outside the loop because it happens once afterwards. There are seven movement actions in the expanded plan.</p></blockquote>
-<p>Now imagine an obstacle blocks the second downward move. The pattern is easy to describe, but it no longer gives a clear route. A repeat count is a plan, not proof that all its actions can succeed. Check each repetition at its new position.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">9. Decide whether a fixed count is appropriate</h3>
-<p>Use repeat when you know both the body and the required count. A measured three-step section is a good candidate. A route where you only know "keep going until movement is blocked" needs a different kind of reasoning, which the next lesson introduces.</p>
-<p>Two programs can also be equally clear without both using loops. A short sequence of unrelated turns may be easier to explain directly. Do not force different actions into a pattern that is not really there.</p>
-<p>When you claim that two versions are equivalent, explain that they perform the same ordered actions under the same starting conditions. Comparing line counts alone is not enough.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">10. A small connection to real code</h3>
-<p class="code-label">Real Python example - read only; not a KnightCode command</p>
-<pre><code>for step in range(3):
-    print(&quot;Check the next item&quot;)
-print(&quot;Finished&quot;)</code></pre>
-<p>This Python loop displays the first message three times, then displays Finished once. The name <code>step</code> is used by Python to track the repetitions; you do not need to use it inside this example.</p>
-<p><strong>The shared idea is a fixed number of passes through a block.</strong> Python writes that idea differently from KnightCode. Focus on what repeats, how often, and what happens afterwards, rather than memorizing the language form.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">11. Use repetition in your levels</h3>
+<h3 class="lesson-block-heading">7. Use repetition in your levels</h3>
 <ul>
 <li><strong>Do It Again:</strong> find the right-and-up pattern, count its repetitions, and trace the position after each pair.</li>
 <li><strong>Repeat, Then Turn:</strong> separate the repeated approach from the turn, button action and remaining route.</li>
@@ -117,11 +66,19 @@ print(&quot;Finished&quot;)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">12. Check your reasoning</h3>
-<ul>
-<li>What is the difference between a repetition and a movement action?</li>
-<li>Why does moving a line outside a loop change how often it runs?</li>
-<li>Does shorter code always mean fewer game movements?</li>
-</ul>
-<blockquote><p><strong>Check your reasoning:</strong> One repetition runs the entire body, which may contain several actions. An outside line runs after the loop rather than on each pass. A loop can shorten the written program while keeping exactly the same movement sequence.</p></blockquote>
+<h3 class="lesson-block-heading">8. Prepare for the Python activity</h3>
+<p>In <strong>Total several items</strong>, the repeated value is a price rather than a route length. Read how many items there are, then exactly that many prices. Build the total across passes, and print only the final total.</p><p>Do not write three separate price inputs just because one example has three items. The count controls how many inputs are needed. With zero items, there are no price inputs and the initialized total is still a valid result.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. Activity inputs and expected output</h3>
+<p><strong>Total several items:</strong> Read how many items there are. Then read one whole-number price for each item. Use a for loop to add all prices and print only the final total. Zero items must produce 0. Do not write one separate input line for every example item: the loop should work for any nonnegative count.</p><p>These are the required results, not a full code solution. Calculate or decide from the input; the same program must work with other valid values.</p><p class="code-label">Sample inputs, in order</p><pre><code>3
+10
+20
+5</code></pre><p class="code-label">Output</p><pre><code>35</code></pre><p>Match the required output wording, capitalization and line order. When only numbers are requested, print numbers without extra labels or success messages. A correct idea can still need an output-format correction; explain the reasoning as well as checking the display.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. Practise, submit, and explain your reasoning</h3>
+<p>Complete the available assigned game levels, then open this lesson's Python activity when it becomes available. Levels marked Coming Soon do not need to be completed first. Use the game to trace the concept visually and the activity to apply it to a different problem.</p><p>Type Python in the code editor and select Run Python. When the program asks for input, enter the next answer in the input field below the output; the output itself is not where you type code or answers. Each input call takes one answer. Practice checks try the supplied examples and are guidance, not the teacher's grade.</p><p>The worked examples above solve different problems from the assigned activity. Trace them on paper; if you try one in the activity editor, its output may not match that activity's checks. Return to the assigned task before submitting. Run records an attempt; Submit this Run sends the latest saved run for teacher review. Read teacher feedback in its run history.</p><p><strong>Explain:</strong> Explain why the total starts outside the loop, each price is read inside it, and the final print is outside it. Identify a game movement that should happen only after repetition ends.</p>
 </div>

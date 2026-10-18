@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth";
 import { AdminHero } from "@/components/admin-ui";
+import { formatSchoolDateTime } from "@/lib/school-time";
 export default async function Page({
   searchParams,
 }: {
@@ -20,7 +21,7 @@ export default async function Page({
     <>
       <AdminHero
         title="Audit History"
-        description="A chronological record of administrator sign-ins and changes to school data."
+        description="A chronological record of administrator sign-ins and changes to school data. Times are shown in Philippine time (UTC+8)."
       />
       <section className="teacher-card">
         <div className="teacher-table-wrap">
@@ -40,7 +41,7 @@ export default async function Page({
                   const a = admins.data?.find((p) => p.id === r.admin_id);
                   return (
                     <tr key={r.id}>
-                      <td>{new Date(r.created_at).toLocaleString()}</td>
+                      <td><time dateTime={r.created_at}>{formatSchoolDateTime(r.created_at)}</time></td>
                       <td>{a?.name || "Administrator"}</td>
                       <td>{String(r.action).replaceAll("_", " ")}</td>
                       <td>

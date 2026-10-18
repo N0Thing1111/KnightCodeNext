@@ -2,50 +2,50 @@
   {
     "id": 1,
     "title": "Movement & Sequence",
-    "description": "Plan an ordered set of instructions, predict each step, and explain how a change in order can change the result.",
-    "learning_objective": "Trace a short sequence from a stated starting position, write a plan that reaches a goal, and identify the first instruction that does not match the plan.",
+    "description": "Learn sequence through Python inputs, calculations and output, then apply the same ordered reasoning to the knight's route and a purchase activity.",
+    "learning_objective": "Trace values and movements in order; read whole-number inputs, calculate with variables and print results in Python; explain why each step must follow the previous one.",
     "file": "01-movement-and-sequence.html"
   },
   {
     "id": 2,
     "title": "Making Decisions with If",
-    "description": "Use a true-or-false check to decide whether an action should run, and trace what happens when the action is skipped.",
-    "learning_objective": "Distinguish a condition from an action, trace both outcomes of an if statement, and place instructions inside or outside the decision deliberately.",
+    "description": "Use Python if statements to reason about optional actions, then connect true-or-false checks to guarded game movements and a fuel-warning activity.",
+    "learning_objective": "Write and trace a Python if statement, distinguish conditional from unconditional instructions, test a boundary value, and connect the same decision to can() checks in the game.",
     "file": "02-making-decisions-with-if.html"
   },
   {
     "id": 3,
     "title": "Choosing Between Two Actions",
-    "description": "Plan both branches of a decision, distinguish can from blocked, and explain why a possible move may still be the wrong choice.",
-    "learning_objective": "Trace one selected branch of if/else, choose a safe alternative, and explain how changing the condition changes which branch runs.",
+    "description": "Express two alternative actions with Python if/else, test equality at a decision boundary, and apply the same branch reasoning to game routes and an affordability activity.",
+    "learning_objective": "Trace exactly one branch of Python if/else, place calculations in the appropriate branch, handle equality deliberately, and justify both game-route alternatives.",
     "file": "03-choosing-between-two-actions.html"
   },
   {
     "id": 4,
     "title": "When Actions Change the Situation",
-    "description": "Track how actions change the room, identify what must happen first, and keep required conditions true while completing the plan.",
-    "learning_objective": "Explain a room state before and after an action, order dependent steps, and distinguish a lasting button effect from a pressure plate that must stay held.",
+    "description": "Track changing values in Python and changing mechanisms in the game; use the updated situation to make a decision in the balance activity.",
+    "learning_objective": "Trace a variable before and after an update, make a decision using the current value, and order game actions so the required door or plate state is maintained.",
     "file": "04-when-actions-change-the-situation.html"
   },
   {
     "id": 5,
     "title": "Repeating Instructions",
-    "description": "Identify a repeated group of actions, choose a fixed repetition count, and separate repeated steps from steps that happen once.",
-    "learning_objective": "Expand a repeat loop into its full action sequence, count actions separately from repetitions, and correct misplaced instructions or an incorrect count.",
+    "description": "Use Python for loops to repeat a known number of steps and accumulate a result, then connect the pattern to game repeat commands and totaling item prices.",
+    "learning_objective": "Trace a Python for/range loop for zero, one and several repetitions, initialize and update a running total, and distinguish repeated actions from one-time steps in the game.",
     "file": "05-repeating-instructions.html"
   },
   {
     "id": 6,
     "title": "Repeating While Something Is True",
-    "description": "Use a condition to decide whether to repeat, trace every new check, and explain what will eventually make the loop stop.",
-    "learning_objective": "Trace zero, one and several while-loop repetitions; distinguish while from if and repeat; and identify a loop whose actions do not lead toward stopping.",
+    "description": "Use Python while loops to repeat until a changing condition becomes false, then connect stopping rules to game corridors and a savings-target activity.",
+    "learning_objective": "Trace the check/body/update cycle of a Python while loop, justify its stopping condition, handle reaching or exceeding a target, and compare conditional loops with fixed-count game repetition.",
     "file": "06-repeating-while-something-is-true.html"
   },
   {
     "id": 7,
     "title": "Plan, Try, and Improve",
-    "description": "Combine sequences, decisions, loops and changing room states into a reasoned solution, then test and improve it using evidence.",
-    "learning_objective": "Break a puzzle into smaller goals, trace a combined plan, diagnose the first mismatch, and justify a correction without changing the intended result.",
+    "description": "Combine Python sequences, decisions, updates and loops; use traces and boundary tests to debug both a game plan and the ticket-counter activity.",
+    "learning_objective": "Decompose a problem, trace a decision inside a Python loop, diagnose initialization/count/boundary mistakes, and justify corrections using test evidence and game-state checkpoints.",
     "file": "07-plan-try-and-improve.html"
   }
 ]

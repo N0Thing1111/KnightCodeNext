@@ -1,13 +1,44 @@
 <div class="lesson-block">
-<h3 class="lesson-block-heading">1. Let the situation decide whether to continue</h3>
-<p><code>repeat</code> uses a count you choose in advance. A <strong>while loop</strong> asks a condition before each pass through its body. If the answer is true, it runs the body and checks again. If the answer is false, it leaves the loop.</p>
-<p>This fits a plan such as "keep moving right while moving right is possible." You may not need to count the corridor first, but you still need to understand where the loop stops and what happens afterwards.</p>
-<p>Your learning goal is to explain the repeated decision. A while loop is not a command that automatically solves an unknown room.</p>
+<h3 class="lesson-block-heading">1. Programming logic: let the current situation decide</h3>
+<p>A for/range loop is useful when you know the number of repetitions. A <strong>while</strong> loop checks a condition before each pass and repeats while it remains true. You may know the goal without knowing how many passes will reach it.</p><p>Plan the starting state, the condition for continuing, and the action changing the state. If the body never makes progress toward a false condition, the loop may not stop.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">2. Read the check-action-check cycle</h3>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
+<h3 class="lesson-block-heading">2. Trace a simple Python while loop</h3>
+<p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>remaining = 3
+while remaining &gt; 0:
+    print(remaining)
+    remaining = remaining - 1
+print("Finished")</code></pre><p class="code-label">Output</p><pre><code>3
+2
+1
+Finished</code></pre><p>Check 3 &gt; 0, print 3, update to 2, and return to the check. After printing 1, the update makes remaining 0. The next check is false, so skip the body and print Finished. Python does not keep the answer from the first check.</p><p>If remaining started at 0, the body would run zero times. An if checks once and runs its body at most once; while may run it many times.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">3. Repeat input until a goal is reached</h3>
+<p class="code-label">Python example - use the Python editor, not the game terminal</p><pre><code>capacity = int(input())
+filled = 0
+pours = 0
+while filled &lt; capacity:
+    amount = int(input())
+    filled = filled + amount
+    pours = pours + 1
+print(filled)
+print(pours)</code></pre><p class="code-label">Example inputs, in order (one answer per input request)</p><pre><code>10
+6
+5</code></pre><p class="code-label">Output</p><pre><code>11
+2</code></pre><p>This records water poured toward a positive capacity, assuming positive whole-number pours and that going over is allowed. The amount accumulated and number of pours are different quantities. After 6 and 5, filled is 11 and pours is 2. The next check is false, so no third pour is requested.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">4. Choose a stopping rule that handles overshooting</h3>
+<p><code>filled &lt; capacity</code> continues only below the goal, so equality and overshooting both stop it. <code>filled != capacity</code> would remain true at 11 when capacity is 10. With positive pours, moving further upward cannot reach 10 again.</p><p>Positive inputs advance the total. Zero would not advance it; a negative value would move it backward. Follow the activity's stated valid inputs. If a program keeps requesting unexpected input, stop it and inspect the condition, update and indentation rather than supplying endless answers.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">5. Connect the check-update cycle to the game</h3>
+<p>In Python, changing a value can make the condition false. In the game, moving changes the position from which the path is checked. <code>can(right)</code> is game-specific, not a built-in function in the Python editor.</p><p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
 <pre><code>while can(right):
     move(right)</code></pre>
 <ol>
@@ -18,36 +49,6 @@
 </ol>
 <p>The check happens before the movement, including before the first one. The program does not move once just to find out whether it can move. The action changes the position, so the next check can produce a different answer.</p>
 <p>The indented instructions are the body, just as with repeat. Every pass through the body follows its own sequence in order.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">3. Trace a short corridor</h3>
-<p>Imagine a clear straight corridor with exactly three successful right movements available before a wall blocks the next movement. Assume no exit or other event ends execution during this example.</p>
-<ol>
-<li>Check 1 is true. Move right for the first time.</li>
-<li>Check 2 is true from the new position. Move right for the second time.</li>
-<li>Check 3 is true. Move right for the third time.</li>
-<li>Check 4 is false at the blocked end. Do not move right again; leave the loop.</li>
-</ol>
-<p>There were <strong>three movements and four checks</strong>. The final false check is how the loop discovers that another pass should not happen. Count checks separately from actions when tracing a while loop.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">4. Include the case where the body never runs</h3>
-<p>Now put the knight where right is already blocked. The first check is false. The loop body runs zero times, and execution continues after the loop.</p>
-<p>This is not an error. It is the expected result of checking before acting. A useful test set includes zero repetitions, one repetition, and several repetitions. Each tells you something different about the plan.</p>
-<p>If the body contains an action that your later plan always requires, ask whether it is safe for that action to be skipped completely. Sometimes that action belongs before or after the loop instead.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">5. Compare if, repeat and while</h3>
-<ul>
-<li><strong>if can(right):</strong> checks once when reached and may perform its body once.</li>
-<li><strong>repeat(3):</strong> plans three passes through its body without using a path condition to choose the count.</li>
-<li><strong>while can(right):</strong> checks before every pass and keeps repeating only while its condition remains true.</li>
-</ul>
-<p>On a corridor with exactly three available moves, repeat(3) and the simple rightward while loop can produce the same movements. If the corridor length changes, the fixed count stays three while the condition-controlled loop may perform a different number.</p>
-<p>That does not make while always better. Choose according to the goal: "exactly three" and "as far as possible" are different requirements.</p>
 </div>
 
 <div class="lesson-block">
@@ -63,51 +64,7 @@ if can(up):
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">7. Read and predict different starting situations</h3>
-<p>Use the previous program. In A, two right moves lead to a wall and up is open there. In B, right is blocked immediately and up is open at the start. In C, right and up are both blocked at the start. Predict the actions.</p>
-<blockquote><p><strong>Check your reasoning:</strong> A: right, right, then up. B: the loop runs zero times, then the if selects up. C: the loop runs zero times and the if block is skipped, so neither movement runs. The same program responds differently because the checked facts differ.</p></blockquote>
-<p>In A, how many times is the rightward condition checked?</p>
-<blockquote><p><strong>Check your reasoning:</strong> Three times: two true answers allow the two moves, and a final false answer ends the loop. The upward condition is a separate check.</p></blockquote>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">8. Find a loop that cannot make progress</h3>
-<p>Imagine two adjacent open positions. The starting position has a clear path to its right. Both moves below succeed, and nothing else in the room changes:</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>while can(right):
-    move(right)
-    move(left)</code></pre>
-<p>Trace one full pass. Where does it finish? What answer will the next condition get?</p>
-<blockquote><p><strong>Check your reasoning:</strong> The body returns the knight to the starting position. Right is still open, so another pass repeats the same situation. The plan does not move toward making the condition false. The game may stop it with a safety limit, but that limit is not a correct solution.</p></blockquote>
-<p>If the intention was to reach the right-hand wall, remove the move that undoes the progress. Then explain why each successful right movement brings the knight closer to the blocked endpoint. Do not rely on a program being stopped for you.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">9. Plan and justify a stopping rule</h3>
-<p>Write a program that follows an upward corridor while movement is possible, then attempts one right move only if right is open. Assume following the whole corridor is the intended first part of the route.</p>
-<p class="code-label">KnightCode example - a small practice situation, not a full level solution</p>
-<pre><code>while can(up):
-    move(up)
-if can(right):
-    move(right)</code></pre>
-<p>Explain three things before running: what is checked repeatedly, what changes inside the loop, and what makes it stop. Then trace the case where up is blocked at the start.</p>
-<blockquote><p><strong>Check your reasoning:</strong> The loop checks upward movement; its body changes the position upward; the blocked end eventually makes the condition false. If blocked initially, it performs no upward moves and immediately reaches the separate rightward check.</p></blockquote>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">10. A small connection to real code</h3>
-<p class="code-label">Real Python example - read only; not a KnightCode command</p>
-<pre><code>items_left = 3
-while items_left &gt; 0:
-    print(items_left)
-    items_left = items_left - 1
-print(&quot;Finished&quot;)</code></pre>
-<p>This Python program displays 3, 2, 1, then Finished. Each repetition reduces the stored count. Once the count reaches 0, the next condition is false. If the subtraction were removed, the value would stay 3 and the condition would stay true.</p>
-<p><strong>The shared reasoning is termination:</strong> explain how the body moves the situation toward stopping. The subtraction is Python example code, not a command to enter in KnightCode.</p>
-</div>
-
-<div class="lesson-block">
-<h3 class="lesson-block-heading">11. Practise on your routes</h3>
+<h3 class="lesson-block-heading">7. Practise on your routes</h3>
 <ul>
 <li><strong>Keep Going:</strong> identify the corridor's stopping point and the remaining route after it.</li>
 <li><strong>Check Again:</strong> explain how each movement changes where the next check happens.</li>
@@ -117,11 +74,19 @@ print(&quot;Finished&quot;)</code></pre>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">12. Check your reasoning</h3>
-<ul>
-<li>Can a while body run zero times?</li>
-<li>Why can three successful moves need four checks?</li>
-<li>What is wrong with a loop that always returns to the same unchanged situation?</li>
-</ul>
-<blockquote><p><strong>Check your reasoning:</strong> Yes: its first condition can be false. The extra check discovers that a fourth move should not happen. An unchanged situation can keep the condition true forever, so the plan needs an action that genuinely leads toward its intended stopping condition.</p></blockquote>
+<h3 class="lesson-block-heading">8. Prepare for the Python activity</h3>
+<p>In <strong>Save until the target</strong>, apply accumulation and counting to deposits. Read the positive target once. Start savings and the deposit count at zero. Determine which steps repeat and which outputs belong after the loop.</p><p>Explain exact-target, above-target and one-deposit cases before running. The number of deposits is not the amount saved. Once the target is reached or exceeded, finish without asking for another deposit. Print final savings and deposit count on separate lines without extra messages.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">9. Activity inputs and expected output</h3>
+<p><strong>Save until the target:</strong> Read a positive whole-number target. Starting with savings of 0, repeatedly read a positive deposit while savings are below the target. Stop asking as soon as the target is reached or exceeded. Print the savings and then the number of deposits, on separate lines. Use a while loop with an update that makes the condition eventually false.</p><p>These are the required results, not a full code solution. Calculate or decide from the input; the same program must work with other valid values.</p><p class="code-label">Sample inputs, in order</p><pre><code>50
+20
+30</code></pre><p class="code-label">Output</p><pre><code>50
+2</code></pre><p>Match the required output wording, capitalization and line order. When only numbers are requested, print numbers without extra labels or success messages. A correct idea can still need an output-format correction; explain the reasoning as well as checking the display.</p>
+</div>
+
+<div class="lesson-block">
+<h3 class="lesson-block-heading">10. Practise, submit, and explain your reasoning</h3>
+<p>Complete the available assigned game levels, then open this lesson's Python activity when it becomes available. Levels marked Coming Soon do not need to be completed first. Use the game to trace the concept visually and the activity to apply it to a different problem.</p><p>Type Python in the code editor and select Run Python. When the program asks for input, enter the next answer in the input field below the output; the output itself is not where you type code or answers. Each input call takes one answer. Practice checks try the supplied examples and are guidance, not the teacher's grade.</p><p>The worked examples above solve different problems from the assigned activity. Trace them on paper; if you try one in the activity editor, its output may not match that activity's checks. Return to the assigned task before submitting. Run records an attempt; Submit this Run sends the latest saved run for teacher review. Read teacher feedback in its run history.</p><p><strong>Explain:</strong> Explain what changes per pass, why positive deposits move toward stopping, and why comparing for inequality with the target fails above it. Describe the stopping reason in a game corridor.</p>
 </div>

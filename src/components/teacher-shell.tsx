@@ -165,7 +165,7 @@ export function TeacherShell({
                       <div>
                         <strong>{n.title}</strong>
                         <small>{n.message}</small>
-                        <time>{new Date(n.created_at).toLocaleString()}</time>
+                        <time>{new Date(n.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}</time>
                       </div>
                     </Link>
                   ))}

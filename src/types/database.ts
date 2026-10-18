@@ -16,6 +16,10 @@ export interface Profile {
   current_streak: number;
   longest_streak: number;
   last_activity_date: string | null;
+  learning_activity_dates?: string[] | null;
+  practice_time_date?: string | null;
+  practice_game_seconds?: number | null;
+  practice_python_ms?: number | null;
   active: boolean;
   created_at: string;
 }

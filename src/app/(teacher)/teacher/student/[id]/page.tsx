@@ -157,7 +157,7 @@ export default async function Page({
               a="Last activity"
               b={
                 summary.last_activity
-                  ? new Date(summary.last_activity).toLocaleString()
+                  ? new Date(summary.last_activity).toLocaleString("en-PH", { timeZone: "Asia/Manila" })
                   : "Never"
               }
             />
@@ -228,7 +228,7 @@ export default async function Page({
               return (
                 <div className="timeline-item" key={a.id}>
                   <span />
-                  <time>{new Date(a.created_at).toLocaleString()}</time>
+                  <time>{new Date(a.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}</time>
                   <div>
                     <strong>
                       {String(a.action_type).replaceAll("_", " ")}
@@ -305,7 +305,7 @@ export default async function Page({
                   <td>{p.xp_earned ?? 0}</td>
                   <td>
                     {p.completed_at
-                      ? new Date(p.completed_at).toLocaleDateString()
+                      ? new Date(p.completed_at).toLocaleDateString("en-PH", { timeZone: "Asia/Manila" })
                       : "—"}
                   </td>
                 </tr>
@@ -353,7 +353,7 @@ export default async function Page({
                       <td>{formatTime(s.play_time_seconds)}</td>
                       <td>{s.completed_lines ?? s.lines_used}</td>
                       <td>{s.code_mode ?? "—"}</td>
-                      <td>{new Date(s.started_at).toLocaleString()}</td>
+                      <td>{new Date(s.started_at).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}</td>
                       <td>
                         <Link
                           className="teacher-btn"

@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+export async function checkStreakRunAndDailyTime(db,{admin,activity,as}) {
+ const student='71000000-0000-0000-0000-000000000001';
+ await db.exec('reset role');
+ const migration=readFileSync(new URL('../migrations/202610180003_streak_run_and_daily_time.sql',import.meta.url),'utf8');
+ await db.exec(migration);
+ const stats=async()=>(await db.query('select current_streak,last_activity_date::text,practice_time_date::text,practice_game_seconds::int,practice_python_ms::int from profiles where id=$1',[student])).rows[0];
+ const today=(await db.query("select (now() at time zone 'Asia/Manila')::date::text as day")).rows[0].day;
+ const initial=await stats();await db.exec(migration);assert.deepEqual(await stats(),initial,'Migration repeat does not reset totals');
+ await as(student);await assert.rejects(()=>db.query('select record_practice_time($1,30,0)',[student]),/permission denied/);
+ const payload={telemetry_version:2,run_id:'actual_streak_run_000001',sequence:1,scene_name:'1',completed:false,attempts:1,mistakes:0,play_time_seconds:0,total_play_time_seconds:0,lines_used:0,completed_lines:0,code_mode:'free'};
+ await db.query('select record_level_progress(20,$1)',[payload]);assert.equal((await stats()).current_streak,0,'Opening game with attempts=1 does not count');
+ for(let i=1;i<=35;i++)await db.query('select record_level_progress(20,$1)',[{...payload,sequence:i+1,total_play_time_seconds:i*60,play_time_seconds:i*60}]);
+ assert.equal((await stats()).practice_game_seconds,2100,'All 35 idle time updates count without a 30-row cap');assert.equal((await stats()).current_streak,0,'Idle telemetry does not earn streak');
+ const last={...payload,sequence:36,total_play_time_seconds:2100,play_time_seconds:2100};await db.query('select record_level_progress(20,$1)',[last]);assert.equal((await stats()).practice_game_seconds,2100,'Duplicate telemetry does not add time');
+ const run={run_id:payload.run_id,scene_name:'1',execution_number:1,restart_number:0,source:'move(right)',source_truncated:false,status:'running',warning:'',code_mode:'free',start_x:0,start_y:0,end_x:1,end_y:0,elapsed_ms:100};
+ await db.query('select record_code_execution(20,$1)',[run]);assert.equal((await stats()).current_streak,1,'Actual code Run counts');
+ await db.query('select record_code_execution(20,$1)',[run]);assert.equal((await stats()).current_streak,1);
+ await db.exec('reset role');await db.query("update profiles set last_activity_date=(now() at time zone 'Asia/Manila')::date-1,practice_time_date=(now() at time zone 'Asia/Manila')::date-1 where id=$1",[student]);await as(student);
+ await db.query('select record_code_execution(20,$1)',[{...run,status:'finished'}]);assert.equal((await stats()).current_streak,1,'Finishing yesterday Run cannot claim another day');
+ await db.query('select record_code_execution(20,$1)',[{...run,execution_number:2,source:'   ',status:'rejected'}]);assert.equal((await stats()).current_streak,1,'Blank code does not count');
+ await db.query('select record_code_execution(20,$1)',[{...run,execution_number:3,status:'rejected'}]);assert.equal((await stats()).current_streak,2,'New rejected code on same session counts actual practice next day');
+ await db.query('select record_level_progress(20,$1)',[{...last,sequence:37,attempts:2,total_play_time_seconds:2105,play_time_seconds:2105}]);assert.equal((await stats()).current_streak,2,'Restart does not add a streak day');assert.equal((await stats()).practice_game_seconds,5,'First save on new day resets daily time');
+ await db.exec('reset role');await db.query('insert into student_level_progress(student_id,level_id,completed) values($1,20,true) on conflict(student_id,level_id) do update set completed=true',[student]);await as(student);
+ const id='72000000-0000-0000-0000-000000000001';const result={output:'',error:'Example',inputs:[],checks:[],elapsed_ms:60000};
+ await db.query('select python_start_run($1,$2,$3)',[activity,id,'print(1)']);await db.query("select python_finish_run($1,'error',$2)",[id,result]);await db.query("select python_finish_run($1,'error',$2)",[id,result]);
+ assert.equal((await stats()).practice_python_ms,60000,'Python time counts once');assert.equal((await stats()).practice_time_date,today);
+ const saveBefore=await stats();await db.exec('reset role');
+ const save=(await db.query('select capture_school_backup($1) data',[admin])).rows[0].data;const mapping=Object.fromEntries(save.tables.profiles.map(p=>[p.id,p.id]));
+ await db.query('select restore_school_backup($1,$2,$3)',[save,mapping,admin]);assert.deepEqual(await stats(),saveBefore,'Backup/restore retains daily totals');
+ const old=structuredClone(save);for(const p of old.tables.profiles){delete p.practice_time_date;delete p.practice_game_seconds;delete p.practice_python_ms;}
+ await db.query('select restore_school_backup($1,$2,$3)',[old,mapping,admin]);assert.equal((await stats()).practice_game_seconds,0);assert.equal((await stats()).practice_time_date,null,'Old backup cannot retain newer daily totals');
+ await db.query('select restore_school_backup($1,$2,$3)',[save,mapping,admin]);
+ await db.query("update python_runs set started_at=now()-interval '5 days',finished_at=now()-interval '5 days',last_seen_at=now()-interval '5 days' where id=$1",[id]);
+ const cutoff=new Date(Date.now()-2*86400000).toISOString();const preview=(await db.query("select manage_run_history($1,'python_practice',$2,$3) data",[admin,cutoff,student])).rows[0].data;
+ assert.ok(preview.count>0);await db.query("select manage_run_history($1,'python_practice',$2,$3,null,true,$4)",[admin,cutoff,student,preview.fingerprint]);assert.deepEqual(await stats(),saveBefore,'Normal cleanup retains daily summary');
+ await db.query("select clear_school_data($1,'learning')",[admin]);const cleared=await stats();assert.equal(cleared.practice_time_date,null);assert.equal(cleared.practice_game_seconds,0);assert.equal(cleared.practice_python_ms,0);
+ console.log('PASS actual game Run streak, opening/idle/restart/blank exclusion, duplicate and next-day events, 35 telemetry updates, Python time, permissions, migration rerun, cleanup, old/new backup and clear.');
+}
