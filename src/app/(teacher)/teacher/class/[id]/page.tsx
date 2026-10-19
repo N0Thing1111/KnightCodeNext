@@ -66,7 +66,7 @@ export default async function Page({
           cls.subject + " · " + (cls.school_year || "") + " · " + cls.status
         }
       >
-        <div className="hero-actions">
+        {cls.status !== "archived" && <div className="hero-actions">
           <Link
             prefetch={false}
             className="teacher-btn"
@@ -81,7 +81,7 @@ export default async function Page({
           >
             Assign Lesson
           </Link>
-        </div>
+        </div>}
       </Hero>
       <Alerts searchParams={q} />
       {flash && (
@@ -186,6 +186,7 @@ export default async function Page({
         </section>
         <section className="teacher-card">
           <Head eyebrow="ADD STUDENTS" title="Build this roster" />
+          {cls.status === "archived" ? <p className="teacher-note">This section is archived. Restore it before adding or importing students.</p> : <>
           <p className="teacher-note">
             Students belong to one section. Moving a student removes the
             previous membership but keeps their learning history. Transfers from
@@ -235,6 +236,7 @@ export default async function Page({
               Create / Link Student
             </button>
           </form>
+          </>}
         </section>
       </div>
       <div className="teacher-grid two">

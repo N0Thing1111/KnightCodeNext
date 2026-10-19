@@ -1,4 +1,6 @@
 "use server";
+import { findStudentAccount } from "@/lib/student-identity";
+import { getSchoolName } from "@/lib/school-name";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -24,16 +26,14 @@ export async function importAdminStudents(_previous: AdminStudentImportState, fo
   } catch (error) { return { error: error instanceof Error ? error.message : "Invalid import preview." }; }
   const db = createAdminClient();
   const result: NonNullable<AdminStudentImportState["result"]> = { created: [], existing: [], errors: [] };
-  let schoolCode: string | null = null;
   try {
     await requireSectionMembership();
     const section = await db.from("classes").select("id,name,section,teacher_id").eq("id", sectionId).eq("status", "active").maybeSingle();
     if (section.error) throw Error(section.error.message);
     if (!section.data) throw Error("The selected section is no longer active. Refresh and choose another section.");
-    const teacher = await db.from("profiles").select("id,school_code").eq("id", section.data.teacher_id).eq("role", "teacher").eq("active", true).maybeSingle();
+    const teacher = await db.from("profiles").select("id").eq("id", section.data.teacher_id).eq("role", "teacher").eq("active", true).maybeSingle();
     if (teacher.error) throw Error(teacher.error.message);
     if (!teacher.data) throw Error("The selected section needs an active teacher.");
-    schoolCode = teacher.data.school_code;
     const issues = studentImportIssues(rows, { name: section.data.name, label: sectionLabel(section.data) });
     if (issues.some(row => row.length)) return { error: "Correct the CSV before importing: " + issues.map((row, i) => row.length ? `row ${i + 2}: ${row.join("; ")}` : "").filter(Boolean).join(". ") };
   } catch (error) { return { error: error instanceof Error ? error.message : "Could not validate the section." }; }
@@ -42,13 +42,8 @@ export async function importAdminStudents(_previous: AdminStudentImportState, fo
   for (const row of rows) {
     let newUserId: string | null = null;
     try {
-      const byEmail = await db.from("profiles").select("id,role,active,student_id,email").ilike("email", literalPattern(row.email)).maybeSingle();
-      const byId = await db.from("profiles").select("id,role,active,student_id,email").eq("role", "student").ilike("student_id", literalPattern(row.student_id)).maybeSingle();
-      if (byEmail.error || byId.error) throw Error(byEmail.error?.message || byId.error?.message);
-      if (byEmail.data || byId.data) {
-        const existing = byEmail.data;
-        if (!existing || existing.role !== "student" || !existing.active || existing.id !== byId.data?.id)
-          throw Error("Email or student ID already belongs to a different or archived account. Correct the row or use Edit Student.");
+      const existing = await findStudentAccount(db, row.email, row.student_id);
+      if (existing) {
         // No password reset or transfer: the database enforces one section/teacher.
         await setStudentSection(existing.id, sectionId, actor.id, false);
         result.existing.push(row);
@@ -67,7 +62,7 @@ export async function importAdminStudents(_previous: AdminStudentImportState, fo
       });
       if (created.error || !created.data.user) throw Error(created.error?.message || "Could not create account.");
       newUserId = created.data.user.id;
-      const updated = await db.from("profiles").update({ student_id: row.student_id, name: row.name, username: row.username || null, school_code: schoolCode, active: true, must_change_password: true }).eq("id", newUserId).select("id").single();
+      const updated = await db.from("profiles").update({ student_id: row.student_id, name: row.name, username: row.username || null, active: true, must_change_password: true }).eq("id", newUserId).select("id").single();
       if (updated.error) throw Error(updated.error.message);
       await setStudentSection(newUserId, sectionId, actor.id, false);
       result.created.push({ ...row, temp_password: password, email_sent: false });
@@ -84,7 +79,7 @@ export async function importAdminStudents(_previous: AdminStudentImportState, fo
   // Only fully enrolled new accounts receive welcome email. No passwords go into cookies or audit records.
   for (const row of result.created) {
     try {
-      row.email_sent = await sendStudentPasswordEmail({ email: row.email, name: row.name, studentId: row.student_id, username: row.username || null, temporaryPassword: row.temp_password, schoolLabel: schoolCode, reason: "welcome" });
+      row.email_sent = await sendStudentPasswordEmail({ email: row.email, name: row.name, studentId: row.student_id, username: row.username || null, temporaryPassword: row.temp_password, schoolLabel: await getSchoolName(db), reason: "welcome" });
     } catch { row.email_sent = false; }
   }
   const audit = await db.from("admin_audit_log").insert({ admin_id: actor.id, action: "import", entity: "students", details: { section_id: sectionId, created: result.created.length, existing: result.existing.length, errors: result.errors.length } });

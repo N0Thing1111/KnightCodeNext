@@ -12,7 +12,6 @@ import type { Profile } from "@/types/database";
 
 export type TeacherProfile = Profile & {
   teacher_id: string | null;
-  school_code: string | null;
 };
 export type TeacherStudent = Profile & {
   classes: string;

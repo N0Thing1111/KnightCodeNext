@@ -1,3 +1,4 @@
+import { getStudentSection } from "@/lib/student-section";
 import { notFound } from "next/navigation";
 import { requireStudent } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -19,6 +20,7 @@ export default async function Page({
     (a) => a.lesson_id === id,
   );
   if (!activity) notFound();
+  const section = await getStudentSection();
   const db = await createClient();
   const [access, draft, lesson, latest] = await Promise.all([
     db.rpc("python_can_start", { p_activity: activity.id }),
@@ -57,7 +59,7 @@ export default async function Page({
           <div className="detail-meta">
             <span>{activity.content.concept}</span>
             <span>
-              {access.data
+              {section.archived ? "Section archived - history only" : access.data
                 ? "Available game practice complete"
                 : activity.published ? "Complete the available game levels first" : "History and feedback only"}
             </span>
@@ -65,7 +67,7 @@ export default async function Page({
         </div>
       </section>
       <div className={styles.root}>
-        {access.data ? (
+        {section.archived ? (<section className={styles.card}><h2>Previous Python work</h2><p>This section is archived. New runs and submissions are closed. Your saved draft and teacher feedback remain available.</p><h3>Saved draft</h3><pre>{draft.data?.source || "No saved draft."}</pre></section>) : access.data ? (
           <>
             <section className={styles.card}>
               <span className={styles.kicker}>YOUR TASK</span>

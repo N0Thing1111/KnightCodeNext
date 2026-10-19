@@ -14,11 +14,12 @@ export async function POST(request: Request) {
       .select("id")
       .eq("id", classId)
       .eq("teacher_id", teacher.id)
+      .eq("status", "active")
       .maybeSingle();
   if (!cls)
     return NextResponse.redirect(
       new URL(
-        "/teacher/classes?error=" + encodeURIComponent("Section not found."),
+        "/teacher/classes?error=" + encodeURIComponent("Section not found or archived. Restore it before importing students."),
         request.url,
       ),
       303,

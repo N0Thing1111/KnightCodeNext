@@ -1,3 +1,5 @@
+import { getStudentSection } from "@/lib/student-section";
+import { SectionArchiveNotice } from "@/components/section-archive-notice";
 import { StudentShell } from "@/components/student-shell";
 import { requireStudent } from "@/lib/auth";
 import { getNotifications, getStudentStats } from "@/lib/student-data";
@@ -8,9 +10,10 @@ export default async function StudentLayout({
   children: React.ReactNode;
 }) {
   const student = await requireStudent();
-  const [stats, notifications] = await Promise.all([
+  const [stats, notifications, section] = await Promise.all([
     getStudentStats(student),
     getNotifications(student.id),
+    getStudentSection(),
   ]);
   return (
     <StudentShell
@@ -24,6 +27,7 @@ export default async function StudentLayout({
       }}
       notifications={notifications}
     >
+      {section.archived && <SectionArchiveNotice />}
       {children}
     </StudentShell>
   );

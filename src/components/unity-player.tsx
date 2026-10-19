@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useSectionArchive } from "@/lib/use-section-archive";
 import { attachUnityMobileKeyboard } from "@/lib/unity-mobile-keyboard";
 import styles from "@/components/unity-player.module.css";
 import type { Level, LevelProgress } from "@/types/database";
@@ -13,6 +14,10 @@ export function UnityPlayer({
   initial: LevelProgress | null;
 }) {
   const shell = useRef<HTMLElement>(null);
+  const archived = useSectionArchive();
+  const closeForArchive = useRef<(() => Promise<void>) | null>(null);
+  const archiveRejected = useRef(false);
+  useEffect(() => { if (archived) void closeForArchive.current?.(); }, [archived]);
   const [fullscreen, setFullscreen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -86,7 +91,7 @@ export function UnityPlayer({
     };
 
     const bridge = document.createElement("script");
-    bridge.src = "/assets/js/performance-bridge.js?v=20261015-save-recovery";
+    bridge.src = "/assets/js/performance-bridge.js?v=20261019-section-archive";
     bridge.async = true;
     bridge.dataset.knightcodeRuntime = "bridge";
 
@@ -103,8 +108,9 @@ export function UnityPlayer({
           keepalive: true,
         });
         const data = await response.json();
+        if (data.code === "SECTION_ARCHIVED") { archiveRejected.current = true; window.dispatchEvent(new Event("knightcode:section-archived")); }
         if (!response.ok || !data.ok)
-          throw Object.assign(new Error(data.message || "Unable to save progress."), { status: response.status });
+          throw Object.assign(new Error(data.message || "Unable to save progress."), { status: response.status, code: data.code });
         if (!disposed) {
           setLevelStats(data.level);
           setSession(data.session);
@@ -128,8 +134,9 @@ export function UnityPlayer({
             keepalive: new TextEncoder().encode(body).byteLength < 60000,
           });
           const data = await response.json();
+        if (data.code === "SECTION_ARCHIVED") { archiveRejected.current = true; window.dispatchEvent(new Event("knightcode:section-archived")); }
           if (!response.ok || !data.ok)
-            throw Object.assign(new Error(data.message || "Unable to save Run history."), { status: response.status });
+            throw Object.assign(new Error(data.message || "Unable to save Run history."), { status: response.status, code: data.code });
           return data;
         },
       );
@@ -216,6 +223,14 @@ export function UnityPlayer({
       return shutdownPromise;
     };
 
+    closeForArchive.current = async () => {
+      if (document.activeElement instanceof HTMLElement && shell.current?.contains(document.activeElement)) document.activeElement.blur();
+      setStatus("Section archived. Saving existing progress before closing the game...");
+      const saved = await Promise.race([window.KnightCodeGame?.flush() ?? Promise.resolve(true), new Promise<boolean>(resolve => setTimeout(() => resolve(false), 10000))]);
+      if (!saved) { setStatus("Section archived. Some progress is still waiting to save. Use Retry saving; existing work has a 15-minute save window."); return; }
+      await shutdown();
+      setStatus(archiveRejected.current ? "Section archived. New or late records were rejected; previously saved progress is preserved." : "Section archived. Pending progress saved. Return to your lesson to view your records.");
+    };
     const leaveGamePage = (event: MouseEvent) => {
       if (
         event.defaultPrevented ||
@@ -269,6 +284,7 @@ export function UnityPlayer({
     document.addEventListener("click", leaveGamePage, true);
     window.addEventListener("beforeunload", beforeUnload);
     return () => {
+      closeForArchive.current = null;
       void shutdown();
     };
   }, [level]);
@@ -294,7 +310,8 @@ export function UnityPlayer({
           </div>
         </div>
         {viewMessage && <p className={styles.viewMessage} role="status">{viewMessage}</p>}
-        <div className={styles.viewport}>
+        {archived && <p className={styles.viewMessage} role="status">This section is archived. New attempts are closed. Return to your lesson after saving; reload after the section is restored.</p>}
+        <div className={styles.viewport} style={archived ? { pointerEvents: "none", visibility: "hidden" } : undefined}>
         <div className={"game-stage " + styles.stage} id="unity-container">
           <canvas
             id="unity-canvas"
@@ -318,7 +335,7 @@ export function UnityPlayer({
           <span role="status">{status}</span>
           <button
             type="button"
-            onClick={() => window.KnightCodeGame?.retryPending()}
+            onClick={() => archived ? void closeForArchive.current?.() : window.KnightCodeGame?.retryPending()}
           >
             Retry saving
           </button>

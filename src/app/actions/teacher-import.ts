@@ -1,5 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, prefer-const */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
+import { findStudentAccount } from "@/lib/student-identity";
+import { getSchoolName } from "@/lib/school-name";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireTeacher } from "@/lib/auth";
@@ -64,21 +66,9 @@ export async function confirmImport(_previous: StudentImportState, form: FormDat
       continue;
     }
     seen.add(key);
-    let { data: profile } = await admin
-      .from("profiles")
-      .select("*")
-      .eq("role", "student")
-      .or(
-        "email.eq." +
-          row.email +
-          ",and(student_id.ilike." +
-          row.student_id +
-          ",school_code.eq." +
-          (teacher.school_code || "") +
-          ")",
-      )
-      .limit(1)
-      .maybeSingle();
+    let profile;
+    try { profile = await findStudentAccount(admin, row.email, row.student_id); }
+    catch (error) { errors.push({ ...row, issue: error instanceof Error ? error.message : "Could not verify student identity." }); continue; }
     if (profile) {
       try {
         await setStudentSection(profile.id, batch.class_id, teacher.id);
@@ -132,7 +122,6 @@ export async function confirmImport(_previous: StudentImportState, form: FormDat
         student_id: row.student_id,
         username: row.username || null,
         name: row.name,
-        school_code: teacher.school_code,
       })
       .eq("id", result.data.user.id);
     if (update) {
@@ -162,7 +151,7 @@ export async function confirmImport(_previous: StudentImportState, form: FormDat
         studentId: row.student_id,
         username: row.username || null,
         temporaryPassword: row.temp_password,
-        schoolLabel: teacher.school_code,
+        schoolLabel: await getSchoolName(admin),
         reason: "welcome",
       }),
     })),

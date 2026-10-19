@@ -6,7 +6,7 @@ import { rowsForIds } from "@/lib/query-pages";
 import { buildTeacherReport, type ReportFilters } from "@/lib/report-model";
 export { reportTypes, reportLabels } from "@/lib/report-model";
 
-export async function getTeacherReport(teacher: { id: string; name: string; school_code?: string | null }, filters: ReportFilters) {
+export async function getTeacherReport(teacher: { id: string; name: string }, filters: ReportFilters) {
   const ctx = { ...await getTeacherContext(teacher.id) };
   if (filters.section !== null && !ctx.classes.some(c => c.id === filters.section))
     throw Error("This section is not assigned to your teacher account.");
@@ -31,7 +31,7 @@ export async function getTeacherReport(teacher: { id: string; name: string; scho
   ]);
   if (school.error) throw Error(school.error.message);
   return {
-    report: buildTeacherReport(ctx, filters, { teacher: teacher.name, school: school.data?.setting_value || teacher.school_code || "KnightCode" }, submissions, reviews),
+    report: buildTeacherReport(ctx, filters, { teacher: teacher.name, school: school.data?.setting_value || "KnightCode" }, submissions, reviews),
     sections: ctx.classes.map(c => ({ id: c.id, name: c.name, section: c.section })),
   };
 }

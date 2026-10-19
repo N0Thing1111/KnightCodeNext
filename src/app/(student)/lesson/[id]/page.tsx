@@ -1,3 +1,4 @@
+import { getStudentSection } from "@/lib/student-section";
 import Link from "next/link";
 import { getPythonActivities } from "@/lib/python-data";
 import { createClient } from "@/lib/supabase/server";
@@ -30,6 +31,7 @@ export default async function LessonPage({
         data.playable.has(level.id) &&
         isGameLevelAvailable(level),
     );
+  const section = await getStudentSection();
   const activity = (await getPythonActivities())?.find(
     (a) => a.lesson_id === id && a.published,
   );
@@ -67,7 +69,7 @@ export default async function LessonPage({
           <small>
             {completion.gamesDone} of {completion.gamesTotal} playable game levels complete{completion.pythonRequired ? (completion.pythonDone ? "; Python submitted" : "; Python submission pending") : ""}
           </small>
-          {nextLevel && (
+          {nextLevel && !section.archived && (
             <Link
               className="btn btn-primary btn-block"
               href={`/play/${nextLevel.id}`}
@@ -132,10 +134,12 @@ export default async function LessonPage({
           {levels.map((level) => {
             const row = progress.get(level.id),
               buildAvailable = isGameLevelAvailable(level),
-              canPlay = data.playable.has(level.id) && buildAvailable,
+              canPlay = !section.archived && data.playable.has(level.id) && buildAvailable,
               status = row?.completed
                 ? "Completed"
-                : !buildAvailable
+                : section.archived
+                  ? "Archived"
+                  : !buildAvailable
                   ? "Coming Soon"
                   : !canPlay
                     ? "Locked"
@@ -169,7 +173,7 @@ export default async function LessonPage({
                   </Link>
                 ) : (
                   <span className="btn btn-locked">
-                    {buildAvailable ? "Locked" : "Coming Soon"} <span>🔒</span>
+                    {section.archived ? "Section archived" : buildAvailable ? "Locked" : "Coming Soon"} <span>🔒</span>
                   </span>
                 )}
               </article>
@@ -212,9 +216,9 @@ export default async function LessonPage({
               }
             >
               <i />
-              {completion.pythonDone ? "Submitted" : access?.data ? "Ready to code" : "Locked"}
+              {completion.pythonDone ? "Submitted" : section.archived ? "Section archived" : access?.data ? "Ready to code" : "Locked"}
             </div>
-            {access?.data ? (
+            {section.archived ? (<a className="btn btn-secondary" href={"/lesson/" + id + "/python"}>View previous work</a>) : access?.data ? (
               <a className="btn btn-primary" href={"/lesson/" + id + "/python"}>
                 {completion.pythonDone ? "Open Python" : "Start Python"} <span>→</span>
               </a>

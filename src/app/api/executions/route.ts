@@ -48,6 +48,7 @@ export async function POST(request: Request) {
     p_level_id: parsed.data.level_id,
     p_payload: parsed.data,
   });
+  if (error?.message.startsWith("SECTION_ARCHIVED:")) return NextResponse.json({ code: "SECTION_ARCHIVED", message: error.message.slice(17).trim() }, { status: 403 });
   if (error) {
     const invalid = ["Invalid Run history", "Invalid Run position", "Run source cannot be replaced", "Save level progress before Run history"].includes(error.message);
     const denied = error.message.includes("not assigned") || error.message.includes("authentication required");

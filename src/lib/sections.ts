@@ -25,3 +25,8 @@ export async function setStudentSection(
   });
   if (error) throw Error(error.message);
 }
+
+export async function requireSectionArchive() {
+ const { data, error } = await createAdminClient().rpc("section_archive_version");
+ if (error || data !== 1) throw Error("Install the section archive database update before changing section status.");
+}

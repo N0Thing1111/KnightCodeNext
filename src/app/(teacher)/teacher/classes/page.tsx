@@ -1,3 +1,4 @@
+import { SectionArchiveButton } from "@/components/section-archive-button";
 import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
 import { requireTeacher } from "@/lib/auth";
@@ -140,13 +141,13 @@ export default async function Page({
                     >
                       Edit
                     </Link>
-                    <Link
+                    {c.status === "active" && <Link
                       prefetch={false}
                       className="teacher-btn small"
                       href={"/teacher/classes?import=" + c.id}
                     >
                       Import
-                    </Link>
+                    </Link>}
                     <form action={setClassStatus}>
                       <input type="hidden" name="id" value={c.id} />
                       <input
@@ -154,9 +155,7 @@ export default async function Page({
                         name="status"
                         value={c.status === "active" ? "archived" : "active"}
                       />
-                      <button className="teacher-btn small danger">
-                        {c.status === "active" ? "Archive" : "Restore"}
-                      </button>
+                      <SectionArchiveButton archived={c.status === "archived"} name={sectionLabel(c)} className="teacher-btn small danger" />
                     </form>
                   </div>
                 </article>
@@ -167,7 +166,7 @@ export default async function Page({
           )}
         </div>
       </section>
-      {q.import && <ImportBox classId={q.import} />}
+      {q.import && (ctx.classes.some(c => String(c.id) === q.import && c.status === "active") ? <ImportBox classId={q.import} /> : <p className="teacher-note">Restore the section before importing students.</p>)}
     </>
   );
 }

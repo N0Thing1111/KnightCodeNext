@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
+import { findStudentAccount } from "@/lib/student-identity";
+import { getSchoolName } from "@/lib/school-name";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -8,7 +10,7 @@ import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { sendStudentPasswordEmail, sendTeacherPasswordEmail } from "@/lib/mail";
-import { requireSectionMembership, setStudentSection } from "@/lib/sections";
+import { requireSectionArchive, requireSectionMembership, setStudentSection } from "@/lib/sections";
 const db = () => createAdminClient(),
   str = (f: FormData, k: string) => String(f.get(k) || "").trim(),
   num = (f: FormData, k: string) => Number(f.get(k) || 0);
@@ -64,13 +66,7 @@ async function undoNewAccount(client: ReturnType<typeof createAdminClient>, id: 
 function tempPassword() {
   return "KC-" + crypto.randomUUID().replaceAll("-", "").slice(0, 12) + "!";
 }
-function school(v: string) {
-  return v
-    .toUpperCase()
-    .replace(/[^A-Z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 40);
-}
+
 export async function saveAdminEntity(f: FormData) {
   const entity = str(f, "entity"),
     id = str(f, "id"),
@@ -85,13 +81,14 @@ export async function saveAdminEntity(f: FormData) {
       const role = entity === "teachers" ? "teacher" : "student",
         name = str(f, "name"),
         email = str(f, "email").toLowerCase(),
-        schoolCode = school(str(f, "school_code")),
         code = str(f, role === "teacher" ? "teacher_id" : "student_id"),
         username =
           role === "student" ? str(f, "username").toLowerCase() || null : null;
-      if (!name || !email.includes("@") || !schoolCode || !code)
+      if (!name || !email.includes("@") || !code)
         throw Error("Complete the required account fields.");
       if (role === "student") {
+        const existingStudent = await findStudentAccount(a, email, code, id || null);
+        if (existingStudent) throw Error("Email or student ID already belongs to an existing student. Edit that account instead of creating a duplicate.");
         await requireSectionMembership();
         const sectionId = num(f, "class_id");
         if (sectionId) {
@@ -159,7 +156,7 @@ export async function saveAdminEntity(f: FormData) {
           if (changed.error) throw Error(changed.error.message);
         }
       }
-      const patch: any = { name, email, school_code: schoolCode, active: true };
+      const patch: any = { name, email, active: true };
       if (role === "teacher") patch.teacher_id = code;
       else
         Object.assign(patch, {
@@ -185,7 +182,7 @@ export async function saveAdminEntity(f: FormData) {
             studentId: code,
             username,
             temporaryPassword: password,
-            schoolLabel: schoolCode,
+            schoolLabel: await getSchoolName(a),
             reason: "welcome",
           });
         else
@@ -194,7 +191,7 @@ export async function saveAdminEntity(f: FormData) {
             name,
             teacherId: code,
             temporaryPassword: password,
-            schoolLabel: schoolCode,
+            schoolLabel: await getSchoolName(a),
           });
         const jar = await cookies();
         jar.set(
@@ -344,6 +341,7 @@ export async function setAdminEntityStatus(f: FormData) {
       await audit(admin.id, restore ? "restore" : "archive", entity, id);
       return restore ? "Lesson restored." : "Lesson archived. Linked levels, assignments, and learning history are preserved.";
     }
+    if (entity === "classes") await requireSectionArchive();
     if (entity === "classes")
       q = a
         .from("classes")
@@ -374,7 +372,7 @@ export async function resetManagedPassword(f: FormData) {
       password = tempPassword(),
       { data: p } = await a
         .from("profiles")
-        .select("name,email,student_id,teacher_id,username,school_code")
+        .select("name,email,student_id,teacher_id,username")
         .eq("id", id)
         .eq("role", entity === "teachers" ? "teacher" : "student")
         .maybeSingle();
@@ -389,10 +387,10 @@ export async function resetManagedPassword(f: FormData) {
         studentId: p.student_id,
         username: p.username,
         temporaryPassword: password,
-        schoolLabel: p.school_code,
+        schoolLabel: await getSchoolName(a),
         reason: "reset",
       });
-    if (entity === "teachers") emailSent = await sendTeacherPasswordEmail({ email: p.email, name: p.name, teacherId: p.teacher_id || "", temporaryPassword: password, schoolLabel: p.school_code, reason: "reset" });
+    if (entity === "teachers") emailSent = await sendTeacherPasswordEmail({ email: p.email, name: p.name, teacherId: p.teacher_id || "", temporaryPassword: password, schoolLabel: await getSchoolName(a), reason: "reset" });
     await audit(admin.id, "reset_password", entity, id);
     const jar = await cookies();
     jar.set(
@@ -495,7 +493,6 @@ export async function saveAdminSettings(f: FormData) {
     } else if (action === "school") {
       for (const [key, value] of [
         ["school_name", str(f, "school_name")],
-        ["school_code", school(str(f, "school_code"))],
       ]) {
         if (!value) throw Error("Complete the school details.");
         await a

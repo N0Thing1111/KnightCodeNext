@@ -1,4 +1,5 @@
 "use server";
+import { getSchoolName } from "@/lib/school-name";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -64,12 +65,6 @@ export async function importTeachers(formData: FormData) {
   if (existing.error) fail(existing.error.message);
   if (existing.data?.length)
     fail("An account already uses: " + existing.data[0].email);
-  const settings = await db
-    .from("admin_settings")
-    .select("setting_value")
-    .eq("setting_key", "school_code")
-    .maybeSingle();
-  const schoolCode = settings.data?.setting_value || "KNIGHTCODE-DEMO";
   const credentials: Array<{
     name: string;
     email: string;
@@ -103,7 +98,6 @@ export async function importTeachers(formData: FormData) {
       .from("profiles")
       .update({
         teacher_id: code,
-        school_code: schoolCode,
         active: true,
         must_change_password: true,
       })
@@ -129,7 +123,7 @@ export async function importTeachers(formData: FormData) {
         name: row.name,
         teacherId: row.teacher_id,
         temporaryPassword: row.password,
-        schoolLabel: schoolCode,
+        schoolLabel: await getSchoolName(db),
       }),
     })),
   );

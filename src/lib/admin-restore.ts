@@ -1,3 +1,4 @@
+import { getSchoolName } from "@/lib/school-name";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import "server-only";
 import { randomBytes } from "node:crypto";
@@ -55,6 +56,7 @@ export function validateRestoreBackup(backup: SchoolBackup) {
     enrolled.add(String(row.student_id));
   }
   const emails = new Set<string>();
+  const studentIds = new Set<string>();
   for (const p of tables.profiles) {
     if (
       !["teacher", "student"].includes(p.role) ||
@@ -62,7 +64,13 @@ export function validateRestoreBackup(backup: SchoolBackup) {
       !p.email.includes("@")
     )
       throw Error("Invalid account in save file.");
-    const email = p.email.toLowerCase();
+    if (p.role === "student" && p.student_id != null) {
+      if (typeof p.student_id !== "string") throw Error("Invalid student ID in save file.");
+      const studentId = p.student_id.trim().toLowerCase();
+      if (studentId && studentIds.has(studentId)) throw Error("Duplicate student ID in save file. Student IDs must be unique across this deployment; nothing was changed.");
+      if (studentId) studentIds.add(studentId);
+    }
+    const email = p.email.trim().toLowerCase();
     if (emails.has(email)) throw Error("Duplicate account email in save file.");
     emails.add(email);
   }
@@ -199,7 +207,7 @@ export async function restoreSchoolBackup(
           email: credential.email,
           name: credential.name,
           temporaryPassword: credential.password,
-          schoolLabel: profile.school_code,
+          schoolLabel: await getSchoolName(db),
           reason: "restore" as const,
         };
         try {

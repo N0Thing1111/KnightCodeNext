@@ -87,7 +87,7 @@
               // Invalid records cannot be repaired by retrying the same bytes.
               // Keep auth/network/server errors queued; let later cumulative
               // snapshots recover progress after a permanently invalid record.
-              if ([400, 413, 422].includes(error.status)) {
+              if (error.code === "SECTION_ARCHIVED" || [400, 413, 422].includes(error.status)) {
                 pending.shift();
                 rejected++;
                 item.reject(error);

@@ -1,4 +1,6 @@
 "use server";
+import { findStudentAccount } from "@/lib/student-identity";
+import { getSchoolName } from "@/lib/school-name";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -7,7 +9,7 @@ import { requireTeacher } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { sendStudentPasswordEmail } from "@/lib/mail";
-import { requireSectionMembership, setStudentSection } from "@/lib/sections";
+import { requireSectionArchive, requireSectionMembership, setStudentSection } from "@/lib/sections";
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 const num = (f: FormData, k: string) => Number(f.get(k) || 0);
 const admin = () => createAdminClient();
@@ -84,6 +86,7 @@ export async function setClassStatus(f: FormData) {
   const id = num(f, "id"),
     status = str(f, "status") === "archived" ? "archived" : "active";
   await finish("/teacher/classes", async () => {
+    await requireSectionArchive();
     const { error } = await admin()
       .from("classes")
       .update({ status })
@@ -135,20 +138,15 @@ async function undoNewAccount(client: ReturnType<typeof createAdminClient>, id: 
 function temporaryPassword() {
   return "KC-" + crypto.randomUUID().replaceAll("-", "").slice(0, 8) + "!";
 }
-function normalizeSchoolCode(v: string) {
-  return v
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 40);
-}
+
 export async function manualAddStudent(f: FormData) {
   const teacher = await requireTeacher();
   const classId = num(f, "class_id");
   await finish("/teacher/class/" + classId, async () => {
     if (!(await ownsClass(teacher.id, classId)))
       throw Error("Unauthorized section.");
+    const targetSection = await admin().from("classes").select("status").eq("id", classId).single();
+    if (targetSection.error || targetSection.data?.status !== "active") throw Error("Restore this section before adding students.");
     const studentId = str(f, "student_id"),
       name = str(f, "name"),
       email = str(f, "email").toLowerCase(),
@@ -157,23 +155,7 @@ export async function manualAddStudent(f: FormData) {
       throw Error("Student ID, name, and a valid email are required.");
     await requireSectionMembership();
     const a = admin();
-    const lookup = await a
-      .from("profiles")
-      .select("*")
-      .eq("role", "student")
-      .or(
-        "email.eq." +
-          email +
-          ",and(student_id.ilike." +
-          studentId +
-          ",school_code.eq." +
-          (teacher.school_code || "") +
-          ")",
-      )
-      .limit(1)
-      .maybeSingle();
-    if (lookup.error) throw Error(lookup.error.message);
-    let profile = lookup.data;
+    let profile = await findStudentAccount(a, email, studentId);
     let password: string | null = null;
     if (!profile) {
       password = temporaryPassword();
@@ -201,7 +183,6 @@ export async function manualAddStudent(f: FormData) {
           username,
           name,
           email,
-          school_code: teacher.school_code,
         })
         .eq("id", created.data.user.id)
         .select()
@@ -220,6 +201,7 @@ export async function manualAddStudent(f: FormData) {
         .maybeSingle();
       if (used) throw Error("Username is already used by another student.");
     }
+    if (!profile) throw Error("Student profile could not be loaded.");
     try {
       await setStudentSection(profile.id, classId, teacher.id);
     } catch (error) {
@@ -233,7 +215,7 @@ export async function manualAddStudent(f: FormData) {
         studentId,
         username,
         temporaryPassword: password,
-        schoolLabel: teacher.school_code,
+        schoolLabel: await getSchoolName(a),
         reason: "welcome",
       });
       const jar = await cookies();
@@ -310,9 +292,7 @@ export async function createAssignment(f: FormData) {
     if (due && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(due)) throw Error("Enter a valid due date and time.");
     const dueAt = due ? new Date(due + "+08:00").toISOString() : null;
     const { data: assignment, error } = await admin()
-      .from("assignments")
-      .insert({
-        teacher_id: t.id,
+      .rpc("create_assignment_for_active_section", { p_teacher: t.id, p_assignment: {
         class_id: studentId ? null : classId || null,
         student_id: studentId || null,
         lesson_id: actualLesson || null,
@@ -320,9 +300,7 @@ export async function createAssignment(f: FormData) {
         title,
         instructions: str(f, "instructions") || null,
         due_date: dueAt,
-      })
-      .select()
-      .single();
+      } });
     if (error) throw Error(error.message);
     let recipients: string[] = [];
     if (studentId) recipients = [studentId];
@@ -451,7 +429,7 @@ export async function resetStudentPassword(f: FormData) {
     const a = admin();
     const { data: student, error: studentError } = await a
       .from("profiles")
-      .select("name,email,student_id,username,school_code")
+      .select("name,email,student_id,username")
       .eq("id", id)
       .eq("role", "student")
       .single();
@@ -466,7 +444,7 @@ export async function resetStudentPassword(f: FormData) {
       studentId: student.student_id,
       username: student.username,
       temporaryPassword: password,
-      schoolLabel: student.school_code || t.school_code,
+      schoolLabel: await getSchoolName(a),
       reason: "reset",
     });
     const jar = await cookies();
@@ -493,10 +471,9 @@ export async function saveTeacherProfile(f: FormData) {
   const t = await requireTeacher();
   await finish("/teacher/profile", async () => {
     const name = str(f, "name"),
-      email = str(f, "email").toLowerCase(),
-      school = normalizeSchoolCode(str(f, "school_code"));
-    if (!name || !school || !z.string().email().safeParse(email).success)
-      throw Error("Enter a valid name, email, and school/institution code.");
+      email = str(f, "email").toLowerCase();
+    if (!name || !z.string().email().safeParse(email).success)
+      throw Error("Enter a valid name and email.");
     const a = admin();
     const { error: authError } = await a.auth.admin.updateUserById(t.id, {
       email,
@@ -505,7 +482,7 @@ export async function saveTeacherProfile(f: FormData) {
     if (authError) throw Error(authError.message);
     const { error } = await a
       .from("profiles")
-      .update({ name, email, school_code: school })
+      .update({ name, email })
       .eq("id", t.id);
     if (error) throw Error(error.message);
     return "Profile updated.";

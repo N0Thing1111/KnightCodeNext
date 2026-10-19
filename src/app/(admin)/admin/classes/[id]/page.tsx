@@ -43,7 +43,7 @@ export default async function Page({
       <div className="teacher-grid two">
         <section className="teacher-card">
           <h3>Add or transfer a student</h3>
-          {available.length ? (
+          {cls.status === "archived" ? <p className="teacher-note">This section is archived. Restore it before adding students. Existing records remain available.</p> : available.length ? (
             <form action={saveRoster} className="teacher-form">
               <input type="hidden" name="class_id" value={cls.id} />
               <input type="hidden" name="roster_action" value="add" />

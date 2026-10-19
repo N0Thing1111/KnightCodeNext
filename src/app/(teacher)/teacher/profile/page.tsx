@@ -24,15 +24,6 @@ export default async function Page({
         t.profile_image
       : null,
     avatars = ["knight", "blue", "mage", "fox", "dragon", "robot"];
-  const { data: shared } = await (
-    await import("@/lib/supabase/admin")
-  )
-    .createAdminClient()
-    .from("profiles")
-    .select("id")
-    .eq("role", "teacher")
-    .eq("school_code", t.school_code)
-    .neq("id", t.id);
   return (
     <>
       <Hero
@@ -88,24 +79,7 @@ export default async function Page({
                   required
                 />
               </label>
-              <label>
-                School / Institution Code
-                <input
-                  name="school_code"
-                  defaultValue={t.school_code ?? ""}
-                  required
-                />
-              </label>
             </div>
-            <p className="teacher-note">
-              {shared?.length
-                ? "Shared with " +
-                  shared.length +
-                  " other teacher" +
-                  (shared.length === 1 ? "" : "s") +
-                  " — you all see a combined student roster namespace under this code."
-                : "No other teacher uses this code yet. Share it with colleagues at your school to pool your student roster."}
-            </p>
             <button className="teacher-btn primary">Save profile</button>
           </form>
         </section>

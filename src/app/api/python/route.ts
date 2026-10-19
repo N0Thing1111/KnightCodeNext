@@ -119,6 +119,7 @@ export async function POST(request: NextRequest) {
       });
       break;
   }
+  if (response.error?.message.startsWith("SECTION_ARCHIVED:")) return NextResponse.json({ code: "SECTION_ARCHIVED", error: response.error.message.slice(17).trim() }, { status: 403 });
   if (response.error)
     return NextResponse.json(
       { error: response.error.message },

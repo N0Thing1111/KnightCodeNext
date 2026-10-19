@@ -1,3 +1,4 @@
+import { getStudentSection } from "@/lib/student-section";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { UnityPlayer } from "@/components/unity-player";
@@ -13,6 +14,8 @@ export default async function PlayPage({
   const id = Number((await params).id);
   if (!Number.isInteger(id)) notFound();
   const student = await requireStudent();
+  const section = await getStudentSection();
+  if (section.archived) return <main className="page-container"><h1>Game attempts are closed</h1><p>Your section is archived. Your saved progress remains available.</p><Link href="/lessons">View lessons and progress</Link></main>;
   const data = await getStudentLearningData(student.id);
   const level = data.levels.find((row) => row.id === id);
   if (!level) redirect("/lessons?locked=1");

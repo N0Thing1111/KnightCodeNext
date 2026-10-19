@@ -92,14 +92,6 @@ export default async function Page({
                 required
               />
             </label>
-            <label>
-              School code
-              <input
-                name="school_code"
-                defaultValue={setting(ctx, "school_code", "KNIGHTCODE-DEMO")}
-                required
-              />
-            </label>
             <button className="teacher-btn primary">Save school details</button>
           </form>
         </section>

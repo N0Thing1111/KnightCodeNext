@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { useSectionArchive } from "@/lib/use-section-archive";
 import { useRouter } from "next/navigation";
 import { pythonRequestSchema, type PythonActivity, type PythonResult } from "@/lib/python-contract";
 import { PythonPracticeChecks } from "@/components/python-practice-checks";
@@ -14,6 +15,7 @@ async function api(body: unknown, keepalive = false) {
     keepalive,
   });
   const result = await response.json();
+  if (result.code === "SECTION_ARCHIVED") window.dispatchEvent(new Event("knightcode:section-archived"));
   if (!response.ok) throw Error(result.error || "Saving failed.");
   return result;
 }
@@ -35,6 +37,8 @@ export function PythonEditor({
   initialRun?: { id: string; source: string } | null;
 }) {
   const router = useRouter();
+  const archived = useSectionArchive();
+  const archiveSaved = useRef(false);
   const [code, setCode] = useState(initialSource);
   const [busy, setBusy] = useState(false);
   const [canStop, setCanStop] = useState(false);
@@ -50,6 +54,15 @@ export function PythonEditor({
     initialRun,
   );
   const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    if (!archived || archiveSaved.current) return;
+    archiveSaved.current = true;
+    // One final draft save for an editor that was already open. Never submit automatically.
+    void api({ op: "draft", activity: activity.id, source: code }).then(() => {
+      savedSource.current = code;
+      setMessage("Section archived. Your current draft was saved; new runs and submissions are closed.");
+    }).catch(() => setMessage("Section archived. Your draft could not be saved. Copy your code from the editor before leaving."));
+  }, [archived, activity.id, code]);
   const worker = useRef<Worker | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const buffer = useRef<SharedArrayBuffer | null>(null);
@@ -229,6 +242,7 @@ export function PythonEditor({
     await saveResult(payload);
   }
   async function run() {
+    if (archived) return;
     if (busy || saving || pending) return;
     if (
       !window.crossOriginIsolated ||
@@ -370,6 +384,7 @@ export function PythonEditor({
     }
   }
   async function submit() {
+    if (archived) return;
     if (!lastRun || lastRun.source !== code) return;
     setSaving(true);
     try {
@@ -386,6 +401,7 @@ export function PythonEditor({
   }
   return (
     <>
+    {archived && <section className={styles.card} role="status"><h2>This section is archived</h2><p>New runs and submissions are closed. An existing Run may finish saving. You can copy your code below and view your feedback. Reload this page after the section is restored.</p></section>}
     <section className={styles.card}>
       <span className={styles.kicker}>CODING WORKSPACE</span>
       <h2>Write, run, and improve</h2>
@@ -398,7 +414,7 @@ export function PythonEditor({
           <label className={styles.paneTitle} htmlFor="python-source">
             Your Python program
           </label>
-          <PythonCodeEditor value={code} onChange={setCode} readOnly={busy} />
+          <PythonCodeEditor value={code} onChange={setCode} readOnly={busy || archived} />
         </div>
         <div>
           <h3 className={styles.paneTitle}>Output & input</h3>
@@ -427,7 +443,7 @@ export function PythonEditor({
       <div className={styles.actions} aria-label="Python program actions">
         <button
           className={styles.primary}
-          disabled={busy || saving || !!pending}
+          disabled={archived || busy || saving || !!pending}
           onClick={run}
         >
           Run Python
@@ -444,7 +460,7 @@ export function PythonEditor({
         </button>
 
         <button
-          disabled={busy || saving || !!pending}
+          disabled={archived || busy || saving || !!pending}
           className={styles.quiet}
           onClick={() => {
             if (
@@ -482,7 +498,7 @@ export function PythonEditor({
       <div className={styles.actions}>
         <button
           disabled={
-            busy || saving || !!pending || !lastRun || lastRun.source !== code
+            archived || busy || saving || !!pending || !lastRun || lastRun.source !== code
           }
           className={styles.submit}
           onClick={submit}

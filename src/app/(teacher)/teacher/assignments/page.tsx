@@ -37,7 +37,7 @@ export default async function Page({
           classes={ctx.classes
             .filter((c) => c.status === "active")
             .map((c) => ({ id: c.id, name: c.name, section: c.section }))}
-          students={students.map((s) => ({
+          students={students.filter(s => ctx.memberships.some(m => m.student_id === s.id && ctx.classes.some(c => c.id === m.class_id && c.status === "active"))).map((s) => ({
             id: s.id,
             name: s.name,
             studentId: s.student_id ?? "",

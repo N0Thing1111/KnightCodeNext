@@ -1,3 +1,4 @@
+import { SectionArchiveButton } from "@/components/section-archive-button";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from "next/link";
 import { LessonEditor } from "@/components/lesson-editor";
@@ -20,7 +21,7 @@ const configs: any = {
     label: "Teachers",
     description:
       "Create accounts, edit details, or archive access while preserving history.",
-    fields: ["teacher_id", "name", "email", "school_code"],
+    fields: ["teacher_id", "name", "email"],
   },
   students: {
     label: "Students",
@@ -31,7 +32,6 @@ const configs: any = {
       "name",
       "email",
       "username",
-      "school_code",
       "class_id",
     ],
   },
@@ -457,7 +457,7 @@ function Field({
         type={field === "email" ? "email" : numeric ? "number" : "text"}
         min={numeric ? 1 : undefined}
         defaultValue={
-          value ?? (field === "school_code" ? "KNIGHTCODE-DEMO" : "")
+          value ?? ""
         }
         readOnly={field === "level_number" && editing}
         required={
@@ -541,9 +541,7 @@ function RecordRow({
               name="restore"
               value={archived ? "1" : "0"}
             />
-            <button className="teacher-btn">
-              {archived ? "Restore" : "Archive"}
-            </button>
+            {entity === "classes" ? <SectionArchiveButton archived={archived} name={String(name)} className="teacher-btn" /> : <button className="teacher-btn">{archived ? "Restore" : "Archive"}</button>}
           </form>
           {["teachers", "students", "classes", "lessons"].includes(entity) && (
             <details className="admin-row-more">
