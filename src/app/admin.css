@@ -41,6 +41,15 @@
 .admin-form button {
   justify-self: start;
 }
+
+.admin-form-section .admin-form > button.teacher-btn {
+  grid-column: 1 / -1;
+  align-self: start;
+  justify-self: start;
+  width: auto;
+  min-height: 40px;
+  padding: 10px 16px;
+}
 .admin-danger {
   border-color: var(--t-red);
 }
