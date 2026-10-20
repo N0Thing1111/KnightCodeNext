@@ -359,54 +359,61 @@ export async function saveAnnouncement(f: FormData) {
     const classId = num(f, "class_id"),
       title = str(f, "title"),
       body = str(f, "body"),
-      status = str(f, "status") === "published" ? "published" : "draft";
-    if (classId && !(await ownsClass(t.id, classId)))
-      throw Error("Invalid section.");
-    if (!title || !body) throw Error("Title and message are required.");
-    const { data: row, error } = await admin()
-      .from("announcements")
-      .insert({
-        teacher_id: t.id,
-        class_id: classId || null,
-        title,
-        body,
-        status,
-        published_at: status === "published" ? new Date().toISOString() : null,
-      })
-      .select()
-      .single();
-    if (error) throw Error(error.message);
-    if (status === "published") {
-      const { data: classes } = await admin()
-        .from("classes")
-        .select("id")
-        .eq("teacher_id", t.id);
-      const ids = classId ? [classId] : (classes ?? []).map((c) => c.id);
-      const { data: members } = ids.length
-        ? await admin()
-            .from("class_students")
-            .select("student_id")
-            .in("class_id", ids)
-        : { data: [] };
-      const recipients = [...new Set((members ?? []).map((m) => m.student_id))];
-      if (recipients.length)
-        await admin()
-          .from("student_notifications")
-          .upsert(
-            recipients.map((s) => ({
-              student_id: s,
-              notification_key: "announcement_" + row.id + "_" + s,
-              type: "announcement",
-              title,
-              message: body.slice(0, 220),
-              link: "/dashboard",
-            })),
-            { onConflict: "student_id,notification_key" },
-          );
+      draftId = num(f, "draft_id");
+    if (!str(f, "class_id")) throw Error("Choose an audience before publishing.");
+    if (!Number.isSafeInteger(classId) || classId < 0 ||
+        !Number.isSafeInteger(draftId) || draftId < 0)
+      throw Error("Invalid announcement or audience.");
+    if (classId) {
+      const { data: section, error } = await admin().from("classes")
+        .select("id").eq("id", classId).eq("teacher_id", t.id)
+        .eq("status", "active").maybeSingle();
+      if (error) throw Error(error.message);
+      if (!section) throw Error("Choose an active section you manage.");
     }
-    return status === "published"
-      ? "Announcement published and delivered to students."
-      : "Announcement saved as draft.";
+    if (!title || !body) throw Error("Title and message are required.");
+    if (title.length > 180) throw Error("Keep the title within 180 characters.");
+    const announcement = {
+      teacher_id: t.id,
+      class_id: classId || null,
+      title,
+      body,
+      status: "published",
+      published_at: new Date().toISOString(),
+    };
+    const query = draftId
+      ? admin().from("announcements").update(announcement)
+          .eq("id", draftId).eq("teacher_id", t.id).eq("status", "draft")
+      : admin().from("announcements").insert(announcement);
+    const { data: row, error } = await query.select().single();
+    if (error) throw Error(error.message);
+    const { data: classes } = await admin()
+      .from("classes")
+      .select("id")
+      .eq("teacher_id", t.id).eq("status", "active");
+    const ids = classId ? [classId] : (classes ?? []).map((c) => c.id);
+    const { data: members } = ids.length
+      ? await admin()
+          .from("class_students")
+          .select("student_id")
+          .in("class_id", ids)
+      : { data: [] };
+    const recipients = [...new Set((members ?? []).map((m) => m.student_id))];
+    if (recipients.length)
+      await admin()
+        .from("student_notifications")
+        .upsert(
+          recipients.map((s) => ({
+            student_id: s,
+            notification_key: "announcement_" + row.id + "_" + s,
+            type: "announcement",
+            title,
+            message: body.slice(0, 220),
+            link: "/dashboard",
+          })),
+          { onConflict: "student_id,notification_key" },
+        );
+    return "Announcement published and delivered to students.";
   });
 }
 export async function deleteAnnouncement(f: FormData) {

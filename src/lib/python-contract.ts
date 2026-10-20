@@ -102,7 +102,7 @@ export const pythonRequestSchema = z.discriminatedUnion("op", [
   z.object({
     op: z.literal("review"),
     submission: z.uuid(),
-    status: z.enum(["reviewed", "needs_revision", "passed"]),
+    status: z.enum(["needs_revision", "passed"], { error: "Choose Passed or Needs revision." }),
     logic: z.coerce.number().int().min(0).max(4),
     application: z.coerce.number().int().min(0).max(4),
     correctness: z.coerce.number().int().min(0).max(4),

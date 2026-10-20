@@ -56,7 +56,7 @@ const configs: any = {
   levels: {
     label: "Levels",
     description:
-      "Manage lesson placement, descriptions, difficulty, visibility, and starter code. Playable maps remain in Unity.",
+      "Manage lesson placement, descriptions, difficulty, visibility, and starter code. Delete unused levels or archive levels with history. Playable maps remain in Unity.",
     fields: [
       "lesson_id",
       "level_number",
@@ -655,7 +655,7 @@ function RecordRow({
             />
             {entity === "classes" ? <SectionArchiveButton archived={archived} name={String(name)} className="teacher-btn" /> : <button className="teacher-btn">{archived ? "Restore" : "Archive"}</button>}
           </form>
-          {["teachers", "students", "classes", "lessons"].includes(entity) && (
+          {["teachers", "students", "classes", "lessons", "levels"].includes(entity) && (
             <details className="admin-row-more">
               <summary aria-label={"More actions for " + name}>More</summary>
               <div className="admin-row-secondary">
@@ -671,7 +671,7 @@ function RecordRow({
                     </form>
                   </details>
                 )}
-                {["teachers", "students", "classes", "lessons"].includes(entity) && (
+                {["teachers", "students", "classes", "lessons", "levels"].includes(entity) && (
                   <details>
                     <summary>Delete permanently</summary>
                     <form
@@ -683,12 +683,14 @@ function RecordRow({
                       <small>
                         {entity === "lessons"
                           ? "Only unused lessons can be deleted. Linked levels, assignments, Python activities, or recorded lesson visits block deletion. Archive the lesson to preserve these records."
-                          : "This also removes linked records."}
+                          : entity === "levels"
+                            ? "Only unused levels can be deleted. Level or whole-lesson assignments and student history block deletion. Archive the level to preserve these records. Deleting this record does not remove its Unity scene."
+                            : "This also removes linked records."}
                       </small>
-                      {entity === "lessons" && (
+                      {["lessons", "levels"].includes(entity) && (
                         <label className="admin-check">
                           <input type="checkbox" name="confirm_delete" value="1" required />
-                          Permanently delete this unused lesson
+                          Permanently delete this unused {entity === "levels" ? "level" : "lesson"}
                         </label>
                       )}
                       <button className="teacher-btn admin-delete">

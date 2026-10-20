@@ -409,7 +409,7 @@ export async function PythonHub({
               <article className={styles.reviewCard} key={r.id}>
                 <div className={styles.reviewHeading}>
                   <h3>{index === 0 ? "Latest feedback" : "Earlier feedback"}</h3>
-                  <span className={styles.status}>{r.status === "passed" ? "Passed" : r.status === "needs_revision" ? "Needs revision" : "Reviewed"}</span>
+                  <span className={styles.status}>{r.status === "passed" ? "Passed" : r.status === "needs_revision" ? "Needs revision" : "No outcome recorded"}</span>
                 </div>
                 <p>Reviewed by <strong>{r.reviewer_name}</strong> · {when(r.created_at)}</p>
                 <div className={styles.ratings}>
@@ -434,7 +434,13 @@ export async function PythonHub({
                 <h3>Write a review</h3>
                 <PythonForm op="review" submitLabel="Save review and notify student">
                   <input type="hidden" name="submission" value={submission.id} />
-                  <label>Review outcome<select name="status"><option value="reviewed">Reviewed</option><option value="needs_revision">Needs revision</option><option value="passed">Passed</option></select></label>
+                  <label>Review outcome
+                    <select name="status" required defaultValue="">
+                      <option value="" disabled>Choose an outcome</option>
+                      <option value="passed">Passed</option>
+                      <option value="needs_revision">Needs revision</option>
+                    </select>
+                  </label>
                   <p>Rate each criterion from 1 to 5 using the descriptions below. Do not deduct points just for extra Runs or longer time. The total does not automatically set the review outcome.</p>
                   <div className={styles.ratings}>
                     {pythonRatingCriteria.map(({ key, label, description }) => (

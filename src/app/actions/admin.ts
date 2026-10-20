@@ -417,6 +417,17 @@ export async function deleteAdminEntity(f: FormData) {
     id = str(f, "id");
   await finish("/admin/manage/" + entity, async (admin) => {
     const a = db();
+    if (entity === "levels") {
+      const levelId = Number(id);
+      if (!Number.isSafeInteger(levelId) || levelId < 1) throw Error("Invalid level.");
+      if (str(f, "confirm_delete") !== "1") throw Error("Confirm that you want to permanently delete this unused level.");
+      const { error } = await a.rpc("delete_unused_level", { p_admin: admin.id, p_level: levelId });
+      if (error?.code === "PGRST202" || error?.code === "42883")
+        throw Error("Safe level deletion is not installed yet. Apply the safe-level-deletion database update first; you can still archive this level.");
+      if (error) throw Error(error.message);
+      // Deletion, dependency checks, and the audit entry are one transaction.
+      return "Unused level permanently deleted. The Unity build is unchanged.";
+    }
     if (entity === "lessons") {
       const lessonId = Number(id);
       if (!Number.isSafeInteger(lessonId) || lessonId < 1) throw Error("Invalid lesson.");
@@ -441,7 +452,7 @@ export async function deleteAdminEntity(f: FormData) {
         throw Error("Account not found.");
       const { error } = await a.auth.admin.deleteUser(id);
       if (error) throw Error(error.message);
-    } else throw Error("Curriculum is preserved. Hide a level instead.");
+    } else throw Error("This record cannot be deleted.");
     await audit(admin.id, "delete", entity, id);
     return "Record deleted.";
   });

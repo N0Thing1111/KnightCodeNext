@@ -88,7 +88,7 @@ export function buildTeacherReport(ctx: ReportContext, filters: ReportFilters, m
     const last = [ctx.latestActivity?.find(a => a.student_id === student.id)?.game_activity, ...ctx.activity.filter(a => a.student_id === student.id).map(a => a.created_at), ...ctx.pythonRuns.filter(r => r.student_id === student.id).map(r => r.started_at), ...ctx.progress.filter(p => p.student_id === student.id).map(p => p.updated_at)].filter(Boolean).sort().at(-1) || null;
     return { student, games, gamesDone, python, pythonDone, assigned, done: assigned.filter(a => completed(a, student.id)).length, last,
       section: memberships.filter(m => m.student_id === student.id).map(m => sectionLabel(classes.find(c => c.id === m.class_id)!)).join(", "),
-      review: [awaiting && `${awaiting} awaiting review`, passed && `${passed} passed`, revision && `${revision} needs revision`, reviewed && `${reviewed} reviewed`].filter(Boolean).join("; ") || "No submissions",
+      review: [awaiting && `${awaiting} awaiting review`, passed && `${passed} passed`, revision && `${revision} needs revision`, reviewed && `${reviewed} without a recorded outcome`].filter(Boolean).join("; ") || "No submissions",
     };
   });
   const total = detail.reduce((n, s) => n + s.assigned.length, 0), done = detail.reduce((n, s) => n + s.done, 0);
