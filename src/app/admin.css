@@ -101,7 +101,7 @@ summary:focus-visible {
   max-width: 1680px;
 }
 .admin-body .teacher-sidebar {
-  background: linear-gradient(170deg, var(--t-surface), var(--t-bg2) 65%);
+  background: var(--t-surface);
 }
 .admin-body .teacher-nav-link i {
   font-style: normal;
@@ -179,12 +179,7 @@ summary:focus-visible {
   overflow: hidden;
   min-height: 230px;
   background:
-    radial-gradient(
-      ellipse at 95% 25%,
-      rgba(128, 101, 255, 0.16),
-      transparent 50%
-    ),
-    linear-gradient(120deg, var(--t-surface), var(--t-bg2));
+    var(--t-surface);
   border: 1px solid var(--t-border);
   border-radius: 24px;
   padding: 32px !important;
@@ -218,8 +213,7 @@ summary:focus-visible {
   border: 1px solid rgba(49, 151, 255, 0.28);
   border-radius: 50%;
   box-shadow:
-    0 0 0 22px rgba(49, 151, 255, 0.035),
-    0 0 0 45px rgba(49, 151, 255, 0.025);
+    none;
 }
 .admin-art-code {
   position: absolute;
@@ -300,11 +294,6 @@ summary:focus-visible {
 }
 .admin-next-card {
   background:
-    radial-gradient(
-      ellipse at top right,
-      rgba(128, 101, 255, 0.055),
-      transparent 70%
-    ),
     var(--t-surface);
 }
 .admin-empty-icon {
@@ -355,12 +344,7 @@ summary:focus-visible {
 }
 .admin-settings-grid .teacher-profile-cover {
   background:
-    radial-gradient(
-      circle at 90% 0,
-      rgba(128, 101, 255, 0.13),
-      transparent 60%
-    ),
-    linear-gradient(120deg, rgba(49, 151, 255, 0.1), transparent);
+    var(--t-surface2);
   border-radius: 15px;
   padding: 24px;
   gap: 18px;
@@ -378,7 +362,7 @@ summary:focus-visible {
 }
 .admin-settings-grid .teacher-profile-avatar {
   border: 2px solid var(--t-border2);
-  box-shadow: 0 0 22px rgba(49, 151, 255, 0.12);
+  box-shadow: none;
 }
 .admin-settings-grid .teacher-form {
   margin-top: 20px;
@@ -470,7 +454,7 @@ summary:focus-visible {
   width: 100%;
   height: 24px;
   border-radius: 4px;
-  background: linear-gradient(110deg, #164e8c, #292455);
+  background: #164e8c;
 }
 .admin-theme-preview em {
   width: calc(50% - 4px);
@@ -485,7 +469,7 @@ summary:focus-visible {
   background: #fff;
 }
 .admin-theme-preview.light b {
-  background: linear-gradient(110deg, #c9e5ff, #e1dafa);
+  background: #c9e5ff;
 }
 .admin-theme-preview.light em {
   background: #fff;
@@ -631,7 +615,7 @@ summary:focus-visible {
   padding: 30px 32px;
   min-height: 138px;
   border-radius: 16px;
-  background: linear-gradient(115deg, var(--t-surface), var(--t-bg2));
+  background: var(--t-surface);
   border: 1px solid var(--t-border);
   box-shadow: none;
 }
@@ -645,8 +629,7 @@ summary:focus-visible {
   border: 1px solid rgba(128, 101, 255, 0.13);
   border-radius: 50%;
   box-shadow:
-    0 0 0 26px rgba(128, 101, 255, 0.025),
-    0 0 0 55px rgba(49, 151, 255, 0.02);
+    none;
   z-index: -1;
   pointer-events: none;
 }
@@ -667,7 +650,7 @@ summary:focus-visible {
   padding: 24px;
   border-radius: 16px;
   background: var(--t-surface);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.06);
+  box-shadow: none;
 }
 .admin-body .teacher-card-head h3,
 .admin-body .teacher-card > h3 {
@@ -711,10 +694,10 @@ summary:focus-visible {
     box-shadow 0.18s;
 }
 .admin-body .teacher-btn.primary {
-  box-shadow: 0 6px 18px rgba(128, 101, 255, 0.18);
+  box-shadow: none;
 }
 .admin-body .teacher-btn.primary:hover {
-  box-shadow: 0 9px 24px rgba(128, 101, 255, 0.26);
+  box-shadow: none;
 }
 .admin-body .teacher-table-wrap {
   border-radius: 12px;
@@ -865,7 +848,7 @@ summary:focus-visible {
   color: #fff;
 }
 html[data-theme="light"] .admin-body .teacher-card {
-  box-shadow: 0 10px 28px rgba(39, 72, 115, 0.04);
+  box-shadow: none;
 }
 @media (max-width: 850px) {
   .admin-body .teacher-card {
