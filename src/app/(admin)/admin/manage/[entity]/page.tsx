@@ -84,6 +84,40 @@ export default async function Page({
     ]),
     config = configs[entity];
   if (!config) notFound();
+  const sections = [...ctx.classes].sort((a, b) =>
+    sectionLabel(a).localeCompare(sectionLabel(b)),
+  );
+  const teachers = ctx.profiles.filter((p) => p.role === "teacher")
+    .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  const schoolYears = [...new Set<string>(sections
+    .map((section) => String(section.school_year || ""))
+    .filter(Boolean))].sort().reverse();
+  const sectionFilter = ["students", "teachers"].includes(entity) &&
+    (q.section === "assigned" || q.section === "unassigned" ||
+      sections.some((section) => String(section.id) === q.section))
+    ? q.section! : "all";
+  const teacherFilter = entity === "classes" &&
+    (q.teacher === "unassigned" || teachers.some((teacher) => String(teacher.id) === q.teacher))
+    ? q.teacher! : "all";
+  const yearFilter = entity === "classes" &&
+    (q.year === "unspecified" || schoolYears.includes(q.year || ""))
+    ? q.year! : "all";
+  const hasExtraFilters = sectionFilter !== "all" || teacherFilter !== "all" || yearFilter !== "all";
+  const studentSections = new Map<string, Set<string>>();
+  for (const membership of ctx.class_students) {
+    const studentId = String(membership.student_id);
+    const assigned = studentSections.get(studentId) || new Set<string>();
+    assigned.add(String(membership.class_id));
+    studentSections.set(studentId, assigned);
+  }
+  const teacherSections = new Map<string, Set<string>>();
+  for (const section of sections) {
+    if (!section.teacher_id) continue;
+    const teacherId = String(section.teacher_id);
+    const assigned = teacherSections.get(teacherId) || new Set<string>();
+    assigned.add(String(section.id));
+    teacherSections.set(teacherId, assigned);
+  }
   const role =
       entity === "teachers"
         ? "teacher"
@@ -93,16 +127,30 @@ export default async function Page({
     all = role
       ? ctx.profiles.filter((p) => p.role === role)
       : (ctx as any)[entity],
-    term = (q.search || "").toLowerCase(),
-    rows = term
-      ? all.filter((r: any) =>
-          Object.values(r).some((v) =>
-            String(v ?? "")
-              .toLowerCase()
-              .includes(term),
-          ),
-        )
-      : all,
+    supportsStatusFilter = ["teachers", "students", "classes"].includes(entity),
+    statusFilter = supportsStatusFilter
+      ? q.status === "archived" || q.status === "all"
+        ? q.status
+        : "active"
+      : "all",
+    term = (q.search || "").trim().toLowerCase(),
+    rows = all.filter((r: any) => {
+      if (statusFilter !== "all" && displayStatus(r, entity) !== statusFilter) return false;
+      if (term && !Object.values(r).some((v) =>
+        String(v ?? "").toLowerCase().includes(term),
+      )) return false;
+      if (sectionFilter !== "all") {
+        const assigned = (entity === "students" ? studentSections : teacherSections).get(String(r.id));
+        if (sectionFilter === "assigned" && !assigned?.size) return false;
+        if (sectionFilter === "unassigned" && assigned?.size) return false;
+        if (!["assigned", "unassigned"].includes(sectionFilter) && !assigned?.has(sectionFilter)) return false;
+      }
+      if (teacherFilter === "unassigned" && r.teacher_id) return false;
+      if (!["all", "unassigned"].includes(teacherFilter) && String(r.teacher_id) !== teacherFilter) return false;
+      if (yearFilter === "unspecified" && r.school_year) return false;
+      if (!["all", "unspecified"].includes(yearFilter) && String(r.school_year) !== yearFilter) return false;
+      return true;
+    }),
     editing = q.edit
       ? q.edit === "new"
         ? {}
@@ -185,7 +233,12 @@ export default async function Page({
         </div>
       )}
       <section className="teacher-card">
-        <form className="teacher-filterbar">
+        <form
+          key={JSON.stringify([entity, statusFilter, sectionFilter, teacherFilter, yearFilter, q.search])}
+          className="teacher-filterbar"
+          method="get"
+          action={"/admin/manage/" + entity}
+        >
           <label>
             Search {config.label.toLowerCase()}
             <input
@@ -194,8 +247,63 @@ export default async function Page({
               placeholder="Search by name, ID, email, or title"
             />
           </label>
-          <button className="teacher-btn">Search</button>
-          {q.search && (
+          {supportsStatusFilter && (
+            <label>
+              Status
+              <select name="status" defaultValue={statusFilter}>
+                <option value="active">Active</option>
+                <option value="archived">Archived</option>
+                <option value="all">All records</option>
+              </select>
+            </label>
+          )}
+          {["students", "teachers"].includes(entity) && (
+            <label>
+              Section assignment
+              <select name="section" defaultValue={sectionFilter}>
+                <option value="all">All assignments</option>
+                <option value="assigned">Has a section</option>
+                <option value="unassigned">No section assigned</option>
+                {sections.map((section) => (
+                  <option key={section.id} value={String(section.id)}>
+                    {sectionLabel(section)}{section.school_year ? " - " + section.school_year : ""}
+                    {section.status === "archived" ? " (archived)" : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {entity === "classes" && (
+            <>
+              <label>
+                Assigned teacher
+                <select name="teacher" defaultValue={teacherFilter}>
+                  <option value="all">All teachers</option>
+                  <option value="unassigned">No teacher assigned</option>
+                  {teachers.map((teacher) => (
+                    <option key={teacher.id} value={String(teacher.id)}>
+                      {teacher.name}{teacher.teacher_id ? " - " + teacher.teacher_id : ""}
+                      {!teacher.active ? " (archived)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                School year
+                <select name="year" defaultValue={yearFilter}>
+                  <option value="all">All school years</option>
+                  <option value="unspecified">Not specified</option>
+                  {schoolYears.map((year) => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </label>
+            </>
+          )}
+          <button type="submit" className="teacher-btn">
+            {supportsStatusFilter ? "Apply filters" : "Search"}
+          </button>
+          {(q.search || hasExtraFilters || (supportsStatusFilter && statusFilter !== "active")) && (
             <Link className="teacher-btn" href={"/admin/manage/" + entity}>
               Clear
             </Link>
@@ -219,7 +327,11 @@ export default async function Page({
               ) : (
                 <tr>
                   <td colSpan={4}>
-                    <div className="teacher-empty">No records found.</div>
+                    <div className="teacher-empty">
+                      {supportsStatusFilter
+                        ? "No records match these filters. Change your filters or use Clear to reset them."
+                        : "No records found."}
+                    </div>
                   </td>
                 </tr>
               )}
