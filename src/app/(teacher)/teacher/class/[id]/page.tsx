@@ -144,6 +144,7 @@ export default async function Page({
                         >
                           {s.status}
                         </span>
+                      <p className="teacher-note">{s.status_reason}</p>
                       </td>
                       <td>
                         <div className="class-card-actions">

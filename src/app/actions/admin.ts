@@ -450,8 +450,18 @@ export async function deleteAdminEntity(f: FormData) {
         .single();
       if (!p || p.role !== (entity === "teachers" ? "teacher" : "student"))
         throw Error("Account not found.");
+      if (entity === "teachers") {
+        if (str(f, "confirm_delete") !== "1")
+          throw Error("Confirm that you want to permanently delete this unused teacher account.");
+        const { error } = await a.rpc("assert_teacher_deletable", { p_admin: admin.id, p_teacher: id });
+        if (error?.code === "PGRST202" || error?.code === "42883")
+          throw Error("Safe teacher deletion is not installed yet. Archive the account instead.");
+        if (error) throw Error(error.message);
+      }
       const { error } = await a.auth.admin.deleteUser(id);
-      if (error) throw Error(error.message);
+      if (error) throw Error(entity === "teachers"
+        ? "Teacher deletion could not be completed. Linked records block deletion; archive the account instead."
+        : error.message);
     } else throw Error("This record cannot be deleted.");
     await audit(admin.id, "delete", entity, id);
     return "Record deleted.";

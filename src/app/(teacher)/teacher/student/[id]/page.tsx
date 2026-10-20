@@ -16,6 +16,8 @@ import {
 } from "@/lib/teacher-data";
 import { resetStudentPassword } from "@/app/actions/teacher";
 import { Back } from "@/components/teacher-ui";
+import { StudentPythonRuns } from "@/components/student-python-runs";
+import { MonitoringOutcomes, MonitoringGuide } from "@/components/monitoring-outcomes";
 export default async function Page({
   params,
   searchParams,
@@ -72,6 +74,7 @@ export default async function Page({
     .range((sessionPage - 1) * 50, sessionPage * 50 - 1);
   if (sessionError) throw new Error("Unable to load student sessions.");
   const sessions = savedSessions ?? [];
+  const pythonPage = Math.max(1, Math.min(10000, Math.floor(Number(q.pythonPage)) || 1));
   let flash: any = null;
   try {
     flash = JSON.parse(jar.get("kc_teacher_flash")?.value || "null");
@@ -131,6 +134,15 @@ export default async function Page({
         </div>
       </section>
       <section className="teacher-card">
+        <h3>Monitoring status: {summary.status}</h3>
+        <p>{summary.status_reason}</p>
+      </section>
+      <MonitoringGuide />
+      <nav className="run-session-links" aria-label="Student run history">
+        <Link className="teacher-btn" href="#level-sessions">Game sessions</Link>
+        <Link className="teacher-btn" href="#python-runs">Python runs</Link>
+      </nav>
+      <section className="teacher-card">
         <Head eyebrow="ACCOUNT ACCESS" title="Sign-in credentials" />
         <p className="teacher-note">
           Student ID <strong>{summary.student_id}</strong>
@@ -151,7 +163,9 @@ export default async function Page({
           <div className="detail-stat-list">
             <Row a="Lessons completed" b={completedLessons} />
             <Row a="Challenges completed" b={summary.completed_levels} />
-            <Row a="Challenge attempts" b={summary.attempts} />
+            <Row a="Game level attempts (starts/restarts)" b={summary.attempts} />
+            <Row a="Game code runs" b={<MonitoringOutcomes outcomes={summary.game_outcomes} />} />
+            <Row a="Python executions" b={<MonitoringOutcomes outcomes={summary.python_outcomes} />} />
             <Row a="Mistakes" b={summary.mistakes} />
             <Row
               a="Last activity"
@@ -315,7 +329,7 @@ export default async function Page({
         </div>
       </section>
       <section className="teacher-card" id="level-sessions">
-        <Head eyebrow="ATTEMPT RESULTS" title="Level Sessions" />
+        <Head eyebrow="ATTEMPT RESULTS" title="Game sessions" />
         <p>
           <Link className="teacher-btn" href={`/teacher/results?student=${id}`}>
             Search this student’s sessions →
@@ -382,7 +396,7 @@ export default async function Page({
             {sessionPage > 1 && (
               <Link
                 className="teacher-btn"
-                href={`?sessions=${sessionPage - 1}#level-sessions`}
+                href={`?sessions=${sessionPage - 1}&pythonPage=${pythonPage}#level-sessions`}
               >
                 Previous 50
               </Link>
@@ -393,7 +407,7 @@ export default async function Page({
             {sessionPage * 50 < (sessionCount ?? 0) && (
               <Link
                 className="teacher-btn"
-                href={`?sessions=${sessionPage + 1}#level-sessions`}
+                href={`?sessions=${sessionPage + 1}&pythonPage=${pythonPage}#level-sessions`}
               >
                 Next 50
               </Link>
@@ -401,6 +415,7 @@ export default async function Page({
           </nav>
         )}
       </section>
+      <StudentPythonRuns studentId={id} page={pythonPage} sessionPage={sessionPage} />
     </>
   );
 }

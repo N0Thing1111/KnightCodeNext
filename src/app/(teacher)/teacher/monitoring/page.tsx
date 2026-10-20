@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requireTeacher } from "@/lib/auth";
 import { avatar, getTeacherContext, teacherStudents } from "@/lib/teacher-data";
 import { Hero } from "@/components/teacher-ui";
+import { MonitoringGuide, MonitoringOutcomes } from "@/components/monitoring-outcomes";
 export default async function Page({
   searchParams,
 }: {
@@ -38,6 +39,7 @@ export default async function Page({
         </Link>
       </p>
       <p className="teacher-note">Assigned progress covers available assigned games plus Python activities attached to whole-lesson assignments. A Python submission counts as completion; teacher review is separate. Python Runs also update Last Activity. Status labels help you choose what to review; they are not grades.</p>
+      <MonitoringGuide />
       <div className="monitor-legend">
         {[
           "Active",
@@ -54,7 +56,7 @@ export default async function Page({
           </span>
         ))}
       </div>
-      <section className="teacher-card">
+      <section className="teacher-card monitoring-list">
         <form className="teacher-filterbar">
           <label>
             Search
@@ -94,18 +96,19 @@ export default async function Page({
           </label>
           <button className="teacher-btn primary">Apply</button>
         </form>
-        <div className="teacher-table-wrap">
-          <table className="teacher-table">
+        <p className="monitor-table-hint">Expand a run count for outcomes or a status for its reason.</p>
+        <div className="teacher-table-wrap" role="region" aria-label="Student monitoring results" tabIndex={0}>
+          <table className="teacher-table monitoring-table">
             <thead>
               <tr>
                 <th>Student</th>
-                <th>Assigned progress</th>
-                <th>Games completed</th>
-                <th>Attempts</th>
+                <th>Progress</th>
+                <th>Game runs</th>
+                <th>Python runs</th>
                 <th>Streak</th>
                 <th>Last Activity</th>
                 <th>Status</th>
-                <th />
+                <th><span className="monitor-sr-only">Student details</span></th>
               </tr>
             </thead>
             <tbody>
@@ -130,12 +133,14 @@ export default async function Page({
                         />
                       </div>
                       <small>{Math.round(s.progress_pct)}%</small>
+                      <small className="monitor-cell-note">{s.completed_levels}/{s.total_levels} games completed</small>
                     </td>
                     <td>
-                      {s.completed_levels} / {s.total_levels}
+                      <MonitoringOutcomes outcomes={s.game_outcomes} compact />
+                      <small className="monitor-cell-note" title="Level starts and restarts; separate from code runs">{s.attempts} level attempts</small>
                     </td>
                     <td>
-                      {s.attempts} <small>({s.failed_attempts} earlier {s.failed_attempts === 1 ? "attempt" : "attempts"})</small>
+                      <MonitoringOutcomes outcomes={s.python_outcomes} compact />
                     </td>
                     <td>🔥 {s.streak}</td>
                     <td>
@@ -144,14 +149,14 @@ export default async function Page({
                         : "Never"}
                     </td>
                     <td>
-                      <span
-                        className={
-                          "status-badge " +
-                          s.status.toLowerCase().replaceAll(" ", "-")
-                        }
-                      >
-                        {s.status}
-                      </span>
+                      <details className="monitor-status-details">
+                        <summary aria-label={`${s.status}: show reason for ${s.name}`}>
+                          <span className={"status-badge " + s.status.toLowerCase().replaceAll(" ", "-")}>
+                            {s.status}
+                          </span>
+                        </summary>
+                        <p>{s.status_reason}</p>
+                      </details>
                     </td>
                     <td>
                       <Link

@@ -685,12 +685,14 @@ function RecordRow({
                           ? "Only unused lessons can be deleted. Linked levels, assignments, Python activities, or recorded lesson visits block deletion. Archive the lesson to preserve these records."
                           : entity === "levels"
                             ? "Only unused levels can be deleted. Level or whole-lesson assignments and student history block deletion. Archive the level to preserve these records. Deleting this record does not remove its Unity scene."
-                            : "This also removes linked records."}
+                            : entity === "teachers"
+                              ? "Teachers with sections, assignments, announcements, Python reviews, or other linked records cannot be deleted. Archive the account to preserve these records."
+                              : "This also removes linked records."}
                       </small>
-                      {["lessons", "levels"].includes(entity) && (
+                      {["lessons", "levels", "teachers"].includes(entity) && (
                         <label className="admin-check">
                           <input type="checkbox" name="confirm_delete" value="1" required />
-                          Permanently delete this unused {entity === "levels" ? "level" : "lesson"}
+                          Permanently delete this unused {entity === "teachers" ? "teacher account" : entity === "levels" ? "level" : "lesson"}
                         </label>
                       )}
                       <button className="teacher-btn admin-delete">

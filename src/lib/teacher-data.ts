@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { allRows, rowsForIds } from "@/lib/query-pages";
-import { sessionAssessment, latestActivity } from "@/lib/student-assessment";
+import { latestActivity } from "@/lib/student-assessment";
+import { monitoringStatus, runOutcomes, type RunOutcomes } from "@/lib/student-monitoring";
 import { sectionLabel } from "@/lib/section-label";
 import { cache } from "react";
 import { learningStreak } from "./learning-streak";
@@ -21,7 +22,9 @@ export type TeacherStudent = Profile & {
   completed_levels: number;
   total_levels: number;
   attempts: number;
-  failed_attempts: number;
+  game_outcomes: RunOutcomes;
+  python_outcomes: RunOutcomes;
+  status_reason: string;
   mistakes: number;
   streak: number;
   last_activity: string | null;
@@ -48,12 +51,16 @@ export const getTeacherContext = cache(async (teacherId: string) => {
  const levels = allLevels.filter(l => lessons.some(lesson => lesson.id === l.lesson_id));
  const memberships = await rowsForIds(classList.map(c => c.id), ids => admin.from("class_students").select("*").in("class_id", ids).order("class_id").order("student_id"));
  const studentIds = unique(memberships.map(m => m.student_id));
- const [students, progress] = await Promise.all([
+ const [students, progress, gameExecutions, pythonRunOutcomes, pythonSubmissions, pythonReviews] = await Promise.all([
   rowsForIds(studentIds, ids => admin.from("profiles").select("*").in("id", ids).eq("role", "student").order("id")),
   rowsForIds(studentIds, ids => admin.from("student_level_progress").select("*").in("student_id", ids).order("student_id").order("level_id")),
+  rowsForIds(studentIds, ids => admin.from("student_code_executions").select("id,student_id,level_id,status,started_at").in("student_id", ids).order("id")),
+  rowsForIds(studentIds, ids => admin.from("python_runs").select("id,student_id,activity_id,status,started_at").in("student_id", ids).order("id")),
+  rowsForIds(studentIds, ids => admin.from("python_submissions").select("id,student_id,activity_id,submitted_at").in("student_id", ids).order("submitted_at", { ascending: false }).order("id", { ascending: false })),
+  rowsForIds(studentIds, ids => admin.from("python_reviews").select("id,student_id,submission_id,status,created_at").in("student_id", ids).order("created_at", { ascending: false }).order("id", { ascending: false })),
  ]);
  const summary = history.data as { recent: any[]; latest: any[]; sessions: any[]; days: { day: string; count: number }[] };
- return { classes: classList, assignments, levels, lessons, memberships, students, progress,
+ return { classes: classList, assignments, levels, lessons, memberships, students, progress, gameExecutions, pythonRunOutcomes, pythonSubmissions, pythonReviews,
   activity: summary.recent, latestActivity: summary.latest, sessionSummaries: summary.sessions, activityDays: summary.days,
   sessions: [] as any[], pythonRuns: summary.latest.filter(r => r.python_started).map(r => ({ student_id: r.student_id, started_at: r.python_started })), notifications, python };
 });
@@ -86,15 +93,6 @@ export function assignedLevelIds(
   }
   return result;
 }
-function statusFor(last: string | null, progress: number, failed: number) {
-  if (!last) return "Inactive";
-  const days = Math.floor((Date.now() - new Date(last).getTime()) / 86400000);
-  if (days >= 14) return "Inactive";
-  if (days <= 1 && progress >= 20) return "Active";
-  if (days <= 7 && progress >= 15 && failed < 5) return "On Track";
-  if (progress < 15 || failed >= 5 || days >= 7) return "Needs Attention";
-  return "Recently Active";
-}
 export function teacherStudents(
   ctx: Awaited<ReturnType<typeof getTeacherContext>>,
 ): TeacherStudent[] {
@@ -110,20 +108,51 @@ export function teacherStudents(
     const completed = rows.filter((p) => p.completed).length;
     const attempts = rows.reduce((n, p) => n + Number(p.attempts || 0), 0);
     const mistakes = rows.reduce((n, p) => n + Number(p.mistakes || 0), 0);
-    const preserved = rows.reduce((sum, p) => sum + Number(p.history_unsuccessful_attempts || 0), 0);
-    const failed = preserved + (ctx.sessionSummaries
-      ? ctx.sessionSummaries.filter(s => s.student_id === student.id && scope.has(Number(s.level_id))).reduce((n, s) => n + Number(s.unsuccessful), 0)
-      : sessionAssessment(ctx.sessions.filter(s => s.student_id === student.id && scope.has(Number(s.level_id)))).unsuccessful);
+    const gameRuns = ctx.gameExecutions.filter(r => r.student_id === student.id && scope.has(Number(r.level_id)));
+    const pythonRuns = ctx.pythonRunOutcomes.filter(r => r.student_id === student.id);
     const last = latestActivity([
       ctx.latestActivity?.find(a => a.student_id === student.id)?.game_activity,
       ...ctx.activity.filter(a => a.student_id === student.id).map(a => a.created_at),
-      ...ctx.pythonRuns.filter(r => r.student_id === student.id).map(r => r.started_at), ...rows.map(p => p.updated_at),
+      ...pythonRuns.map(r => r.started_at), ...gameRuns.map(r => r.started_at),
+      ...ctx.pythonSubmissions.filter(s => s.student_id === student.id).map(s => s.submitted_at),
+      ...rows.map(p => p.updated_at),
     ]);
     const fullLessons = new Set(ctx.assignments.filter(a => !a.level_id && (a.student_id === student.id || classRows.some(c => c.id === a.class_id))).map(a => a.lesson_id));
     const assignedLevels = ctx.levels.filter(l => scope.has(Number(l.id)));
     const work = summarizeCompletion(ctx.lessons.filter(l => l.active !== false && (fullLessons.has(l.id) || assignedLevels.some(v => v.lesson_id === l.id)))
       .map(l => lessonCompletion(l.id, student.id, assignedLevels, rows, fullLessons.has(l.id) ? ctx.python.activities : [], ctx.python.submissions)));
     const pct = work.overallPct;
+    const ownAssignments = ctx.assignments.filter(a =>
+      classRows.some(c => c.status === "active") &&
+      (a.student_id === student.id || classRows.some(c => c.id === a.class_id && c.status === "active")) &&
+      (!a.class_id || ctx.classes.some(c => c.id === a.class_id && c.status === "active")));
+    const availableLevels = ctx.levels.filter(l => isGameLevelAvailable(l));
+    const pending = ownAssignments.filter(a => {
+      if (a.level_id) return availableLevels.some(l => l.id === Number(a.level_id)) &&
+        !rows.some(p => p.level_id === Number(a.level_id) && p.completed);
+      if (!ctx.lessons.some(l => l.id === Number(a.lesson_id))) return false;
+      const completion = lessonCompletion(Number(a.lesson_id), student.id, availableLevels, rows, ctx.python.activities, ctx.python.submissions);
+      return completion.total > 0 && !completion.complete;
+    });
+    const now = Date.now();
+    const overdue = pending.filter(a => a.due_date && Date.parse(a.due_date) < now).length;
+    const monitoredLessons = new Set(ownAssignments.filter(a => !a.level_id).map(a => Number(a.lesson_id)));
+    const monitoredActivities = ctx.python.activities.filter(a => a.published && monitoredLessons.has(a.lesson_id) && ctx.lessons.some(l => l.id === a.lesson_id));
+    // Only the latest submission and its latest review determine a current
+    // revision request. A resubmission awaits a fresh review.
+    const revisions = monitoredActivities.filter(activity => {
+      const submission = ctx.pythonSubmissions.find(s => s.student_id === student.id && s.activity_id === activity.id);
+      return submission && ctx.pythonReviews.find(r => r.submission_id === submission.id)?.status === "needs_revision";
+    }).length;
+    const activeScope = new Set(ownAssignments.flatMap(a => a.level_id
+      ? availableLevels.filter(l => l.id === Number(a.level_id)).map(l => l.id)
+      : availableLevels.filter(l => l.lesson_id === Number(a.lesson_id)).map(l => l.id)));
+    const assignedTasks = activeScope.size + monitoredActivities.length;
+    const completedTasks = rows.filter(p => p.completed && activeScope.has(p.level_id)).length +
+      monitoredActivities.filter(a => ctx.python.submissions.some(s => s.student_id === student.id && s.activity_id === a.id)).length;
+    const pendingDates = pending.map(a => a.created_at).filter(d => Number.isFinite(Date.parse(d))).sort((a,b) => Date.parse(a)-Date.parse(b));
+    const monitoring = monitoringStatus({ lastActivity: last, assignedTasks, completedTasks, overdue, revisions,
+      oldestPendingAssignedAt: pendingDates[0] || null, active: student.active !== false }, now);
     return {
       ...student,
       classes: classRows.map((c) => sectionLabel(c!)).join(", "),
@@ -133,11 +162,13 @@ export function teacherStudents(
       completed_levels: completed,
       total_levels: scope.size,
       attempts,
-      failed_attempts: failed,
+      game_outcomes: runOutcomes(gameRuns, "game"),
+      python_outcomes: runOutcomes(pythonRuns, "python"),
+      status_reason: monitoring.reason,
       mistakes,
       streak: learningStreak(student).count,
       last_activity: last,
-      status: work.tasksTotal ? statusFor(last, pct, failed) : (last && Date.now() - Date.parse(last) < 14 * 86400000 ? "Recently Active" : "Inactive"),
+      status: monitoring.status,
     } as TeacherStudent;
   });
 }

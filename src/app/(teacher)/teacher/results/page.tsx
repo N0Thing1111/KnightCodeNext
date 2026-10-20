@@ -13,11 +13,13 @@ export default async function Page({
   const params = Object.fromEntries(
     Object.entries(raw).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]),
   );
+  const student = params.student && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.student) ? params.student : undefined;
   const python = params.type === "python";
   const account = await requireTeacher();
   const result = python ? null : await getSessionResults("teacher", raw);
   return (
     <>
+      {student && <p><Link className="teacher-btn" href={`/teacher/student/${student}${python ? "#python-runs" : "#level-sessions"}`}>Back to student monitoring</Link></p>}
       <Hero
         eyebrow="STUDENT RUN HISTORY"
         title="Session Results"
@@ -31,14 +33,14 @@ export default async function Page({
         <Link
           className={"teacher-btn" + (!python ? " primary" : "")}
           aria-current={!python ? "page" : undefined}
-          href="/teacher/results"
+          href={student ? `/teacher/results?student=${student}` : "/teacher/results"}
         >
           Game sessions
         </Link>
         <Link
           className={"teacher-btn" + (python ? " primary" : "")}
           aria-current={python ? "page" : undefined}
-          href="/teacher/results?type=python"
+          href={student ? `/teacher/results?type=python&student=${student}` : "/teacher/results?type=python"}
         >
           Python runs
         </Link>

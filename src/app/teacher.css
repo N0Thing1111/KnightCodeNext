@@ -3792,3 +3792,119 @@ body.teacher-body {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Compact monitoring overview; detailed outcomes stay available on demand. */
+.monitoring-list { min-width: 0; }
+.monitor-table-hint {
+  margin: 12px 0;
+  color: var(--t-muted);
+  font-size: 12px;
+}
+.teacher-table.monitoring-table {
+  min-width: 960px;
+  table-layout: auto;
+}
+.monitoring-table th,
+.monitoring-table td {
+  overflow-wrap: normal;
+  word-break: normal;
+  font-variant-numeric: tabular-nums;
+}
+.teacher-table.monitoring-table th {
+  white-space: nowrap;
+  font-size: 10px;
+  padding: 12px;
+}
+.teacher-table.monitoring-table td {
+  font-size: 12px;
+  padding: 12px;
+}
+.monitoring-table .table-person { min-width: 145px; }
+.monitoring-table td:nth-child(2) { min-width: 112px; }
+.monitoring-table td:nth-child(3),
+.monitoring-table td:nth-child(4) { min-width: 104px; }
+.monitoring-table td:nth-child(5),
+.monitoring-table td:last-child { white-space: nowrap; }
+.monitoring-table td:nth-child(6) { min-width: 108px; }
+.monitoring-table td:nth-child(7) { min-width: 140px; }
+.monitoring-table .table-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  white-space: nowrap;
+}
+.monitor-cell-note {
+  display: block;
+  margin-top: 4px;
+  color: var(--t-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.monitor-muted { color: var(--t-muted); }
+.monitor-run-details summary,
+.monitor-status-details summary {
+  cursor: pointer;
+  min-height: 32px;
+  align-content: center;
+  white-space: nowrap;
+}
+.monitor-run-details summary { font-weight: 600; }
+.monitor-status-details .status-badge { vertical-align: middle; }
+.monitor-run-details dl { margin: 6px 0 0; min-width: 158px; }
+.monitor-run-details dl > div { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; }
+.monitor-run-details dt { color: var(--t-muted); font-weight: 400; }
+.monitor-run-details dd { margin: 0; font-weight: 600; }
+.monitor-status-details p { max-width: 240px; margin: 6px 0 0; line-height: 1.5; color: var(--t-muted); }
+.monitoring-list summary:focus-visible,
+.monitoring-list .teacher-table-wrap:focus-visible {
+  outline: 2px solid var(--t-accent, #268dff);
+  outline-offset: 3px;
+}
+.monitor-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Keep the monitoring explanation separate from neighbouring controls. */
+.teacher-card.monitoring-guide {
+  margin-block: 20px 24px;
+}
+.monitoring-guide + .monitor-legend {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+.monitoring-guide > summary {
+  cursor: pointer;
+  padding-block: 6px;
+  line-height: 1.5;
+  font-size: 14px;
+  font-weight: 600;
+}
+.monitoring-guide > summary:focus-visible {
+  outline: 2px solid var(--t-accent, #268dff);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+.monitoring-guide-content {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--t-border);
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--t-muted);
+}
+.monitoring-guide-content > p,
+.monitoring-guide-content > ol {
+  max-width: 80ch;
+  margin: 0 0 16px;
+}
+.monitoring-guide-content > :last-child { margin-bottom: 0; }
+.monitoring-guide-content ol { padding-left: 22px; }
+.monitoring-guide-content li + li { margin-top: 10px; }
+.monitoring-guide-content strong { color: var(--t-text); }
