@@ -48,7 +48,7 @@ export default async function Page({
       <section className="teacher-card">
         <Filter q={q} classes={ctx.classes} />
         <div className="teacher-table-wrap">
-          <table className="teacher-table">
+          <table className="teacher-table student-roster-table">
             <thead>
               <tr>
                 <th>Student</th>
