@@ -3,7 +3,6 @@ import { requireStudent } from "@/lib/auth";
 import { getStudentLearningData, getViewedLessonIds } from "@/lib/student-data";
 import { isGameLevelAvailable } from "@/lib/game-build";
 
-const icons = ["🧭", "🧱", "⚙", "◈", "🛡", "∞", "✦"];
 export default async function LessonsPage() {
   const student = await requireStudent();
   const [data, viewed] = await Promise.all([
@@ -51,7 +50,7 @@ export default async function LessonsPage() {
             posts an assignment.
           </div>
         )}
-        {data.lessons.map((lesson, index) => {
+        {data.lessons.map((lesson) => {
           const levels = data.levels.filter(
             (level) => level.lesson_id === lesson.id,
           );
@@ -80,7 +79,6 @@ export default async function LessonsPage() {
                   {status}
                 </span>
               </div>
-              <div className="lesson-icon">{icons[index] ?? "⚔"}</div>
               <span className="muted-kicker">LESSON {lesson.order_number}</span>
               <h3>{lesson.title}</h3>
               <p>{lesson.description}</p>

@@ -626,6 +626,7 @@ input:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 15px;
+  flex-wrap: wrap;
   margin-bottom: 16px;
 }
 .panel-title-row > div {
@@ -3724,4 +3725,36 @@ html[data-theme="light"]
     :is(.sidebar-link, .teacher-nav-link) {
     transition: none;
   }
+}
+
+/* Shared interface polish: keep text readable and controls predictable. */
+.panel-title-row p { font-size: 13px; line-height: 1.6; }
+.panel-title-row > a, .text-link { font-size: 12px; }
+.btn { font-size: 13px; line-height: 1.4; text-align: center; }
+.btn:focus-visible, .text-link:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+.auth-form label { font-size: 13px; line-height: 1.5; }
+.auth-subtitle { font-size: 14px; line-height: 1.6; }
+.auth-form input {
+  background: var(--surface-soft);
+  color: var(--text);
+  border-color: var(--border-strong);
+  font-size: 16px;
+}
+.auth-form input:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.auth-form input::placeholder { color: var(--text-soft); }
+.profile-form, .lesson-content-card { min-width: 0; }
+.profile-form-actions { flex-wrap: wrap; gap: 10px; }
+@media (pointer: coarse) {
+  .btn { min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .btn, .btn::after { transition: none; }
+  .btn:hover, .btn:active { transform: none; }
 }

@@ -1051,3 +1051,14 @@ html[data-theme="light"] .admin-body .teacher-card {
   }
   .admin-body .admin-row-secondary summary { padding-block: 11px; }
 }
+
+/* Keep account forms comfortable without stretching their action buttons. */
+.admin-form label { min-width: 0; font-size: 13px; line-height: 1.5; }
+.admin-form :is(input, select, textarea) { min-width: 0; max-width: 100%; }
+.admin-form .teacher-btn { align-self: start; }
+@media (max-width: 600px) {
+  .admin-form { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .admin-form :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+    font-size: 16px;
+  }
+}

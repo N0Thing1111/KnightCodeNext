@@ -3908,3 +3908,46 @@ body.teacher-body {
 .monitoring-guide-content ol { padding-left: 22px; }
 .monitoring-guide-content li + li { margin-top: 10px; }
 .monitoring-guide-content strong { color: var(--t-text); }
+
+/* Staff screens share readable, compact table and form conventions. */
+.teacher-table th {
+  font-size: 11px;
+  line-height: 1.5;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+.teacher-table td { font-size: 12px; line-height: 1.55; }
+.teacher-table .table-person strong { font-size: 12px; }
+.teacher-table .table-person small, .teacher-table .status-badge { font-size: 11px; }
+.teacher-card-head { flex-wrap: wrap; }
+.teacher-card-head > a { font-size: 12px; }
+.teacher-empty { font-size: 13px; line-height: 1.6; }
+.teacher-table :is(.teacher-btn, .table-link, .status-badge) {
+  word-break: normal;
+  overflow-wrap: normal;
+}
+.teacher-table .table-link { white-space: nowrap; }
+.teacher-table-wrap { max-width: 100%; }
+.teacher-form label, .teacher-filterbar label { font-size: 13px; line-height: 1.5; }
+.teacher-note { font-size: 13px; line-height: 1.65; }
+.teacher-form :is(input, select, textarea),
+.teacher-filterbar :is(input, select) { min-width: 0; max-width: 100%; }
+.teacher-btn { line-height: 1.4; text-align: center; }
+.teacher-btn:focus-visible, .teacher-main summary:focus-visible,
+.teacher-main .table-link:focus-visible {
+  outline: 2px solid var(--t-blue);
+  outline-offset: 3px;
+}
+.teacher-btn:disabled { cursor: not-allowed; opacity: .6; transform: none; }
+@media (max-width: 600px) {
+  .teacher-filterbar label { min-width: 0; flex-basis: 100%; }
+  .teacher-form :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea),
+  .teacher-filterbar :is(input, select) { font-size: 16px; }
+}
+@media (pointer: coarse) {
+  .teacher-btn { min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .teacher-btn { transition: none; }
+  .teacher-btn:hover, .teacher-btn:active { transform: none; }
+}

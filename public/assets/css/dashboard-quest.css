@@ -1082,8 +1082,7 @@ html[data-theme="light"] .quest-dashboard .hero-character-glow img {
 }
 .quest-dashboard .upcoming-item:not(.locked):is(:hover, :focus-visible) {
   transform: none;
-  padding-left: 7px;
-  padding-right: 7px;
+  /* Keep the row aligned when hovered or keyboard-focused. */
 }
 @keyframes quest-route {
   0% {

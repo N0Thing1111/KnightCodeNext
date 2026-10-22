@@ -508,3 +508,16 @@
 .submissionSection { border-top: 3px solid var(--border-strong, #c6d1e3); }
 @media (max-width: 950px) { .comparison, .ratings { grid-template-columns: 1fr; } }
 @media (max-width: 520px) { .reviewCard { padding: 16px; } .checkStatus { margin-top: 6px; } }
+
+/* Preserve the syntax overlay's metrics; polish only surrounding controls. */
+.tableWrap { max-width: 100%; }
+.filters > *, .grid > * { min-width: 0; }
+.root th, .root td { padding: 12px 14px; }
+@media (max-width: 600px) {
+  .filters { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .actions { gap: 8px; }
+  .actions .quiet { margin-left: 0; }
+}
+@media (pointer: coarse) {
+  .root button { min-height: 44px; }
+}

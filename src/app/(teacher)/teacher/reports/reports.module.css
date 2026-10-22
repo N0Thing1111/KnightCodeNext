@@ -22,3 +22,13 @@
 .caption { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
 @media(max-width:800px) { .summary { grid-template-columns:repeat(2,minmax(0,1fr)); } .filters label { flex:1; } }
 @media(max-width:420px) { .summary { grid-template-columns:1fr; } }
+
+.tabs a:focus-visible, .filters :is(input, select, button):focus-visible {
+  outline: 2px solid var(--t-blue, #245fc2);
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .filters label { min-width: 0; flex-basis: 100%; }
+  .filters :is(input, select) { min-width: 0; max-width: 100%; font-size: 16px; }
+}
+@media (pointer: coarse) { .tabs a { min-height: 44px; } }
