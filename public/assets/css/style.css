@@ -3758,3 +3758,23 @@ html[data-theme="light"]
   .btn, .btn::after { transition: none; }
   .btn:hover, .btn:active { transform: none; }
 }
+/* Login forms keep their light surface even when a signed-out user last used dark mode.
+   Match browser autofill text, caret and fill to that surface across all login roles. */
+.auth-panel {
+  color-scheme: light;
+  --text: #17233c;
+  --text-soft: #52627b;
+  --surface-soft: #f1f5fb;
+}
+.auth-panel .auth-form input:is(:autofill, :-webkit-autofill) {
+  -webkit-text-fill-color: var(--text);
+  caret-color: var(--text);
+  box-shadow: 0 0 0 1000px var(--surface-soft) inset;
+}
+@media (forced-colors: active) {
+  .auth-panel .auth-form input:is(:autofill, :-webkit-autofill) {
+    -webkit-text-fill-color: CanvasText;
+    caret-color: CanvasText;
+    box-shadow: none;
+  }
+}

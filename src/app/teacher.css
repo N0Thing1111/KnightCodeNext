@@ -3968,3 +3968,14 @@ body.teacher-body {
 .student-roster-table td:nth-child(7) { min-width: 155px; font-variant-numeric: tabular-nums; }
 .student-roster-table td:nth-child(8) { min-width: 205px; max-width: 240px; }
 .student-roster-table .teacher-note { margin: 4px 0 0; font-size: 12px; line-height: 1.5; }
+
+/* Top-level panels need separation when they are not inside a gapped grid.
+   Scoped to staff pages; nested cards and student layouts keep their own spacing. */
+.teacher-main > .teacher-card + :is(.teacher-card, .teacher-grid, #history) {
+  margin-top: 20px;
+}
+@media (max-width: 650px) {
+  .teacher-main > .teacher-card + :is(.teacher-card, .teacher-grid, #history) {
+    margin-top: 16px;
+  }
+}

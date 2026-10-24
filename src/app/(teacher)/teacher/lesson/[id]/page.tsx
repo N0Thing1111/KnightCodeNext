@@ -1,3 +1,5 @@
+import { getPythonActivities } from "@/lib/python-data";
+import { TeacherLessonPython } from "@/components/teacher-lesson-python";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireTeacher } from "@/lib/auth";
@@ -13,6 +15,7 @@ export default async function Page({
     ctx = await getTeacherContext(t.id),
     lesson = ctx.lessons.find((l) => String(l.id) === id);
   if (!lesson) notFound();
+  const activities = await getPythonActivities();
   const students = teacherStudents(ctx),
     levels = ctx.levels.filter((l) => l.lesson_id === lesson.id);
   return (
@@ -52,6 +55,7 @@ export default async function Page({
           dangerouslySetInnerHTML={{ __html: lesson.content }}
         />
       </section>
+      <TeacherLessonPython activities={activities === null ? null : activities.filter((activity) => activity.lesson_id === lesson.id)} />
       <section className="teacher-card">
         <div className="teacher-card-head">
           <div>

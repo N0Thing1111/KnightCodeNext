@@ -1,0 +1,20 @@
+.root { min-width: 0; }
+.activity { margin-top: 20px; min-width: 0; }
+.activity + .activity { border-top: 1px solid var(--t-border); padding-top: 20px; }
+.root h4 { margin: 0 0 10px; font-size: 16px; }
+.root h5 { margin: 0 0 8px; font-size: 13px; }
+.block { margin-top: 16px; }
+.text { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; color: var(--t-muted); }
+.details { margin-top: 18px; border-top: 1px solid var(--t-border); padding-top: 14px; }
+.details summary { cursor: pointer; padding: 8px 0; font-weight: 600; line-height: 1.5; }
+.details summary:focus-visible, .root pre:focus-visible { outline: 2px solid var(--t-blue); outline-offset: 4px; }
+.root pre { max-width: 100%; overflow: auto; padding: 14px; border: 1px solid var(--t-border); border-radius: 10px; background: var(--t-surface2); color: var(--t-text); font-size: 13px; line-height: 1.6; }
+.root code { font-family: ui-monospace, Consolas, monospace; }
+.root li { margin: 8px 0; overflow-wrap: anywhere; line-height: 1.6; }
+.root li code { white-space: pre-wrap; }
+.check { margin-top: 18px; }
+.check + .check { border-top: 1px solid var(--t-border); padding-top: 18px; }
+.columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.columns > div { min-width: 0; }
+.columns pre { margin-top: 0; }
+@media (max-width: 650px) { .columns { grid-template-columns: 1fr; gap: 14px; } }

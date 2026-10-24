@@ -1,6 +1,7 @@
+import { AdminDataNavigation } from "@/components/admin-data-navigation";
 import { DownloadBackupForm } from "@/components/download-backup-form";
 import { RestoreBackupForm } from "@/components/restore-backup-form";
-import { AdminHero, Alerts } from "@/components/admin-ui";
+import { Alerts } from "@/components/admin-ui";
 export default async function Page({
   searchParams,
 }: {
@@ -8,11 +9,8 @@ export default async function Page({
 }) {
   const q = await searchParams;
   return (
-    <>
-      <AdminHero
-        title="Test with a way back."
-        description="Download an encrypted school save file before clearing data, then restore it when you need to return to that state."
-      />
+    <div className="admin-data-management">
+      <AdminDataNavigation active="backup" />
       <Alerts q={q} />
       <div className="teacher-grid two">
         <section className="teacher-card">
@@ -30,6 +28,6 @@ export default async function Page({
           <RestoreBackupForm />
         </section>
       </div>
-    </>
+    </div>
   );
 }
