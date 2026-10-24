@@ -65,7 +65,6 @@ export default async function Page({
             "student_achievements",
             "student_notifications",
             "teacher_notifications",
-            "python_grants",
             "teacher_import_batches",
             "announcements",
             "assignments",

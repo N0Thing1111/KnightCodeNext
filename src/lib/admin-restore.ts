@@ -29,7 +29,7 @@ export function validateRestoreBackup(backup: SchoolBackup) {
   const tables = backup.tables as Record<string, any[]>;
   const requiredTables = [
     ...BACKUP_TABLES,
-    ...(backup.version === 3 ? PYTHON_BACKUP_TABLES : []),
+    ...(backup.version >= 3 ? PYTHON_BACKUP_TABLES : []),
   ];
   const ids = new Map<string, Set<string>>();
   for (const table of requiredTables) {
@@ -112,17 +112,18 @@ export async function restoreSchoolBackup(
   validateRestoreBackup(backup);
   const db = createAdminClient();
   const ready = await db.rpc("school_restore_version");
-  if (ready.error || ![1, 2].includes(ready.data))
+  if (ready.error || ![1, 2, 3].includes(ready.data))
     throw Error(
       "Restore is unavailable until migration 202610070001_atomic_school_restore.sql is applied. No school records were changed.",
     );
 
   if (
-    (backup.version === 3 && ready.data !== 2) ||
-    (backup.version !== 3 && ready.data === 2)
+    (backup.version < 3 && ready.data >= 2) ||
+    (backup.version >= 3 && ready.data < 2) ||
+    (backup.version === 4 && ready.data < 3)
   )
     throw Error(
-      "This database requires a matching save format. Python-enabled databases need a new version 3 save; older saves cannot silently replace Python history. No accounts or records were changed. Keep the old file for a separately reviewed recovery.",
+      "This database requires a matching save format. Python-enabled databases require version 3 or 4 saves; version 4 requires the database backup update. Older saves cannot silently replace Python history. No accounts or records were changed. Keep the old file for a separately reviewed recovery.",
     );
 
   // Read every account, including beyond Supabase's default page size.
