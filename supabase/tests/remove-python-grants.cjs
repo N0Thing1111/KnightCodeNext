@@ -1,10 +1,10 @@
-﻿const assert = require('node:assert/strict');
+const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { PGlite } = require(process.env.KC_PGLITE_PATH || '@electric-sql/pglite');
 (async () => {
  const db = new PGlite();
- const migration=fs.readFileSync(path.join(__dirname,'../migrations/20261024022002_remove_legacy_python_grants.sql'),'utf8');
+ const migration=fs.readFileSync(path.join(__dirname,'../migrations/20261024022719_remove_legacy_python_grants.sql'),'utf8');
  await db.exec(fs.readFileSync(path.join(__dirname,'fixtures/python-grants-before.sql'),'utf8'));
  const admin='10000000-0000-4000-8000-000000000001', teacher='10000000-0000-4000-8000-000000000002', student='10000000-0000-4000-8000-000000000003';
  await db.exec(`INSERT INTO auth.users VALUES ('${admin}','admin@test.invalid'),('${teacher}','teacher@test.invalid'),('${student}','student@test.invalid');
