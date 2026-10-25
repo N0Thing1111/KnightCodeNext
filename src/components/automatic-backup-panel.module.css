@@ -1,0 +1,16 @@
+.panel { margin-block: 24px; min-width: 0; }
+.header { display: flex; align-items: start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.header h3 { margin: 0; }
+.note { max-width: 75ch; color: var(--t-muted); line-height: 1.6; }
+.tableWrap { overflow-x: auto; margin-block: 20px; }
+.table { width: 100%; border-collapse: collapse; min-width: 630px; text-align: left; font-variant-numeric: tabular-nums; }
+.table.table th, .table.table td { padding: 12px; vertical-align: top; border-bottom: 1px solid var(--t-border, #223557); }
+.table th { font-size: .8rem; color: var(--t-muted); }
+.table td { font-size: .875rem; }
+.table p { margin: 4px 0 0; max-width: 46ch; color: var(--t-muted); line-height: 1.5; }
+.table a { white-space: nowrap; }
+.form { max-width: 560px; scroll-margin-top: 100px; padding-block-start: 12px; }
+.form h4 { margin-block: 0 8px; }
+.details { margin-block: 20px 0; }
+.details summary { cursor: pointer; font-weight: 600; padding-block: 8px; }
+@media (max-width: 600px) { .table.table th, .table.table td { padding: 10px 8px; } }

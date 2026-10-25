@@ -1,9 +1,12 @@
+import { readStoredBackup } from "@/lib/automatic-backups";
 import { prepareTransfer, transferStorage, discardTransfer } from "@/lib/backup-transfer";
 import { NextResponse } from "next/server";
 import { getCurrentAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { captureBackup, encryptBackup } from "@/lib/admin-backup";
 import { createAdminClient } from "@/lib/supabase/admin";
+export const runtime = "nodejs";
+export const maxDuration = 300;
 export async function POST(r: Request) {
   const admin = await getCurrentAdmin();
   if (!admin) return NextResponse.json({ error: "Sign in as administrator again." }, { status: 401 });
@@ -23,19 +26,23 @@ export async function POST(r: Request) {
         password: current,
       });
     if (check.error) throw Error("Administrator password is incorrect.");
-    const file = encryptBackup(await captureBackup(admin.id), password);
+    const savedId = String(f.get("backup_id") || "");
+    if (password.length < 12) throw Error("Use a backup password of at least 12 characters.");
+    const snapshot = savedId ? await readStoredBackup(savedId) : await captureBackup(admin.id);
+    const file = encryptBackup(snapshot, password);
     await createAdminClient()
       .from("admin_audit_log")
       .insert({
         admin_id: admin.id,
-        action: "download_backup",
+        action: savedId ? "download_stored_backup" : "download_backup",
+        details: savedId ? { backup_id: savedId, snapshot_at: snapshot.created_at } : {},
         entity: "system",
       });
     path = await prepareTransfer(admin.id);
     const storage = transferStorage();
     const upload = await storage.upload(path, file, { contentType: "application/octet-stream", upsert: false });
     if (upload.error) throw Error("Could not store the encrypted download. Check available Storage space.");
-    const filename = "KnightCode-" + new Date().toISOString().replaceAll(":", "-") + ".knightsave";
+    const filename = "KnightCode-" + new Date(snapshot.created_at).toISOString().replaceAll(":", "-") + ".knightsave";
     const signed = await storage.createSignedUrl(path, 300, { download: filename });
     if (signed.error || !signed.data) throw Error("Could not prepare the download link.");
     return NextResponse.json({ url: signed.data.signedUrl, path, filename }, { headers: { "cache-control": "no-store" } });

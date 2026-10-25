@@ -109,6 +109,16 @@ export const pythonRequestSchema = z.discriminatedUnion("op", [
     feedback: z.string().trim().min(1).max(4000),
   }),
   z.object({
+    op: z.literal("edit_review"),
+    submission: z.uuid(), expected_review: z.uuid(),
+    expected_version: z.coerce.number().int().positive().max(2147483647),
+    status: z.enum(["needs_revision", "passed"]),
+    logic: z.coerce.number().int().min(0).max(4),
+    application: z.coerce.number().int().min(0).max(4),
+    correctness: z.coerce.number().int().min(0).max(4),
+    feedback: z.string().trim().min(1).max(4000),
+  }),
+  z.object({
     op: z.literal("activity"),
     activity: z.uuid(),
     content: pythonContentSchema,

@@ -1,7 +1,7 @@
 "use client";
 import { useActionState } from "react";
 import { discardBackupTransfer } from "@/app/actions/backup-transfer";
-export function DownloadBackupForm() {
+export function DownloadBackupForm({ backupId }: { backupId?: string }) {
  const [state, action, pending] = useActionState<{ error?: string; notice?: string }, FormData>(async (_previous: { error?: string; notice?: string }, form: FormData) => {
   let path: string | undefined;
   try {
@@ -20,6 +20,7 @@ export function DownloadBackupForm() {
   finally { if (path) await discardBackupTransfer(path).catch(() => {}); }
  }, {});
  return <form action={action} className="teacher-form">
+  {backupId && <input type="hidden" name="backup_id" value={backupId} />}
   <label>Choose a backup password<input name="backup_password" type="password" minLength={12} required autoComplete="new-password" /></label>
   <label>Confirm backup password<input name="backup_confirm" type="password" required autoComplete="new-password" /></label>
   <label>Your administrator password<input name="admin_password" type="password" required autoComplete="current-password" /></label>

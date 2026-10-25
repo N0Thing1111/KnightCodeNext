@@ -14,7 +14,7 @@ export function PythonForm({
   children,
   submitLabel = "Save",
 }: {
-  op: "review";
+  op: "review" | "edit_review";
   children: React.ReactNode;
   submitLabel?: string;
 }) {
@@ -25,6 +25,7 @@ export function PythonForm({
     <form
       onSubmit={async (event) => {
         event.preventDefault();
+        if (busy) return;
         setBusy(true);
         setMessage("");
         const data = Object.fromEntries(new FormData(event.currentTarget));

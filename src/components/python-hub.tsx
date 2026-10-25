@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getPythonActivities, getPythonRoster } from "@/lib/python-data";
 import { PythonPracticeChecks } from "@/components/python-practice-checks";
 import { displayedPythonRating, pythonRatingBands, pythonRatingCriteria } from "@/lib/python-ratings";
-import { PythonForm } from "@/components/python-forms";
+import { PythonAssessmentForm } from "@/components/python-assessment-form";
 import type { Profile } from "@/types/database";
 import type { PythonRun } from "@/lib/python-contract";
 import { pythonRunStatusLabel } from "@/lib/python-run-status";
@@ -145,7 +145,8 @@ export async function PythonHub({
         .select("*")
         .eq("submission_id", submission.id)
         .order("created_at", { ascending: false })
-        .limit(50)
+        .order("id", { ascending: false })
+        .limit(1)
     : { data: [], error: null };
   if (reviews.error) throw Error(reviews.error.message);
   const url = (overrides: Record<string, string>) => {
@@ -396,7 +397,7 @@ export async function PythonHub({
             <span className={styles.kicker}>SUBMISSION</span>
             <h2>{submission ? "Submitted for teacher review" : "Practice Run — not submitted"}</h2>
             <p>{submission
-              ? `Submitted ${when(submission.submitted_at)}. Reviews below belong to this submission. Each resubmission keeps its own review history.`
+              ? `Submitted ${when(submission.submitted_at)}. The feedback below belongs to this submission. Each new submission has its own feedback.`
               : "Running code saves practice history. It does not submit your work for marking. Use Submit this Run in the coding workspace when you are ready."}</p>
           </section>
           <section className={`${styles.card} ${styles.feedbackSection}`} aria-label="Teacher feedback">
@@ -405,13 +406,14 @@ export async function PythonHub({
             <p>Your teacher evaluates your programming logic, use of the lesson concept, and correctness. Practice-check results are separate from these ratings.</p>
             {!submission && <p className={styles.notice}>This Run has not been submitted, so it has no teacher review yet.</p>}
             {submission && !reviews.data?.length && <p className={styles.notice}>Awaiting teacher review. Your submission is saved; no rating has been given yet.</p>}
-            {reviews.data?.map((r, index) => (
+            {reviews.data?.map((r) => (
               <article className={styles.reviewCard} key={r.id}>
                 <div className={styles.reviewHeading}>
-                  <h3>{index === 0 ? "Latest feedback" : "Earlier feedback"}</h3>
+                  <h3>Current assessment</h3>
                   <span className={styles.status}>{r.status === "passed" ? "Passed" : r.status === "needs_revision" ? "Needs revision" : "No outcome recorded"}</span>
                 </div>
-                <p>Reviewed by <strong>{r.reviewer_name}</strong> · {when(r.created_at)}</p>
+                <p>Reviewed by <strong>{r.reviewer_name}</strong> ({r.reviewer_role === "admin" ? "Administrator" : "Teacher"}) &middot; {when(r.updated_at || r.created_at)}</p>
+                {r.version > 1 && <p>This feedback has been edited. The current assessment is shown above.</p>}
                 <div className={styles.ratings}>
                   {pythonRatingCriteria.map(({ key, label }) => (
                     <div className={styles.rating} key={key}>
@@ -430,31 +432,19 @@ export async function PythonHub({
             ))}
             {staff && submission && selected.result.history_cleared_at && <p className={styles.notice}>Existing feedback is retained. New reviews are unavailable here because the original code has been cleared.</p>}
             {staff && submission && !selected.result.history_cleared_at && (
-              <div className={styles.reviewForm}>
-                <h3>Write a review</h3>
-                <PythonForm op="review" submitLabel="Save review and notify student">
-                  <input type="hidden" name="submission" value={submission.id} />
-                  <label>Review outcome
-                    <select name="status" required defaultValue="">
-                      <option value="" disabled>Choose an outcome</option>
-                      <option value="passed">Passed</option>
-                      <option value="needs_revision">Needs revision</option>
-                    </select>
-                  </label>
-                  <p>Rate each criterion from 1 to 5 using the descriptions below. Do not deduct points just for extra Runs or longer time. The total does not automatically set the review outcome.</p>
-                  <div className={styles.ratings}>
-                    {pythonRatingCriteria.map(({ key, label, description }) => (
-                      <label key={key}>{label}
-                        <small>{description}</small>
-                        <select name={key} required defaultValue="">
-                          <option value="" disabled>Choose a rating</option>
-                          {pythonRatingBands.map((band, i) => <option value={i + 1} key={band}>{i + 1} — {band}</option>)}
-                        </select>
-                      </label>
-                    ))}
-                  </div>
-                  <label>Feedback<textarea name="feedback" required maxLength={4000} placeholder="Explain what worked and the next step the student should take." /></label>
-                </PythonForm>
+              reviews.data?.length ? (
+                <div className={styles.reviewForm}>
+                  <p>This submission has been assessed. Its code is fixed; any student revision must be a new run and submission.</p>
+                  {actor.role === "admin" || (reviews.data[0].reviewer_id === actor.id && reviews.data[0].reviewer_role === "teacher") ? <details key={`${reviews.data[0].id}:${reviews.data[0].version}`}>
+                    <summary>Edit feedback</summary>
+                    {actor.role === "admin" && <p>After an administrator saves an edit, this feedback is read-only for teachers.</p>}
+                    <PythonAssessmentForm submissionId={submission.id} previous={reviews.data[0]} />
+                  </details> : <p>{reviews.data[0].reviewer_role === "admin" ? "This feedback was saved by an administrator and is read-only for teachers." : "Only the reviewing teacher or an administrator can edit this feedback."}</p>}
+                </div>
+              ) : <div className={styles.reviewForm}>
+                <h3>Assess this submission</h3>
+                <p>Save one assessment for this submission. Choose Needs revision to let the student submit a new attempt, or Passed to complete the activity.</p>
+                <PythonAssessmentForm submissionId={submission.id} />
               </div>
             )}
           </section>

@@ -1,3 +1,5 @@
+import { requireAdmin } from "@/lib/auth";
+import { AutomaticBackupPanel } from "@/components/automatic-backup-panel";
 import { AdminDataNavigation } from "@/components/admin-data-navigation";
 import { DownloadBackupForm } from "@/components/download-backup-form";
 import { RestoreBackupForm } from "@/components/restore-backup-form";
@@ -7,11 +9,13 @@ export default async function Page({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
+  await requireAdmin();
   const q = await searchParams;
   return (
     <div className="admin-data-management">
       <AdminDataNavigation active="backup" />
       <Alerts q={q} />
+      <AutomaticBackupPanel selectedId={q.backup} retryId={q.retry} />
       <div className="teacher-grid two">
         <section className="teacher-card">
           <h3>Download a school save file</h3>

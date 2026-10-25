@@ -37,10 +37,13 @@ export default async function LessonPage({
   );
   const completion = data.completion.get(id)!;
   const db = await createClient();
-  const access = activity
-    ? await db.rpc("python_can_start", { p_activity: activity.id })
-    : null;
-  if (access?.error) throw Error(access.error.message);
+  const [access, workflow] = activity ? await Promise.all([
+    db.rpc("python_can_start", { p_activity: activity.id }),
+    db.rpc("python_activity_state", { p_activity: activity.id }),
+  ]) : [null, null];
+  if (access?.error || workflow?.error) throw Error("Unable to load activity status.");
+  const activityState = workflow?.data?.state;
+  const reviewOnly = activityState === "passed" || activityState === "awaiting_review";
   return (
     <main className="page-container lesson-page">
       <LessonViewBeacon lessonId={id} />
@@ -202,7 +205,7 @@ export default async function LessonPage({
               <span className="muted-kicker">{activity.content.concept}</span>
               <h3>{activity.content.title}</h3>
               <p>
-                {access?.data
+                {reviewOnly ? (activityState === "passed" ? "Activity passed. View your submitted code and teacher feedback." : "Your submission is awaiting teacher review. View your submitted code below.") : access?.data
                   ? "Write a program, try it, and submit your work for teacher feedback."
                   : completion.gamesDone +
                     " of " +
@@ -216,9 +219,9 @@ export default async function LessonPage({
               }
             >
               <i />
-              {completion.pythonDone ? "Submitted" : section.archived ? "Section archived" : access?.data ? "Ready to code" : "Locked"}
+              {section.archived ? "Section archived" : activityState === "passed" ? "Passed" : activityState === "awaiting_review" ? "Awaiting review" : activityState === "needs_revision" ? "Needs revision" : access?.data ? "Ready to code" : "Locked"}
             </div>
-            {section.archived ? (<a className="btn btn-secondary" href={"/lesson/" + id + "/python"}>View previous work</a>) : access?.data ? (
+            {section.archived ? (<a className="btn btn-secondary" href={"/lesson/" + id + "/python"}>View previous work</a>) : reviewOnly ? (<a className="btn btn-secondary" href={"/lesson/" + id + "/python"}>View submission and feedback</a>) : access?.data ? (
               <a className="btn btn-primary" href={"/lesson/" + id + "/python"}>
                 {completion.pythonDone ? "Open Python" : "Start Python"} <span>→</span>
               </a>

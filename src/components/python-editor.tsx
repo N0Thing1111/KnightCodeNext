@@ -391,7 +391,7 @@ export function PythonEditor({
       await api({ op: "submit", id: lastRun.id });
       router.refresh();
       setMessage(
-        "Submitted for teacher review. Further revisions create separate Runs and submissions.",
+        "Submitted for teacher review. New runs and submissions are closed until your teacher requests a revision.",
       );
     } catch (e) {
       setMessage((e as Error).message);
@@ -507,7 +507,7 @@ export function PythonEditor({
         </button>
         <a href="#history">View submissions and teacher feedback</a>
       </div>
-      <p>After submitting, open that Run in the history below to read its teacher feedback.</p>
+      <p>After submitting, the editor closes while you wait for review. Needs revision reopens it for a new attempt; Passed completes the activity.</p>
     </section>
     </>
   );

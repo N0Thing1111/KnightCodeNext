@@ -111,6 +111,18 @@ export async function POST(request: NextRequest) {
         p_feedback: p.feedback,
       });
       break;
+    case "edit_review":
+      response = await db.rpc("python_edit_review", {
+        p_submission: p.submission,
+        p_expected_review: p.expected_review,
+        p_expected_version: p.expected_version,
+        p_status: p.status,
+        p_logic: p.logic,
+        p_application: p.application,
+        p_correctness: p.correctness,
+        p_feedback: p.feedback,
+      });
+      break;
     case "activity":
       response = await db.rpc("python_update_activity", {
         p_activity: p.activity,
