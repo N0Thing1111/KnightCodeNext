@@ -17,7 +17,7 @@ else:
 
 <div class="lesson-block">
 <h3 class="lesson-block-heading">3. Equality is a decision you must make</h3>
-<p>At height 120, <code>height &gt;= minimum</code> is true. Output is Ready followed by 0. Changing <code>&gt;=</code> to <code>&gt;</code> would wrongly reject someone exactly at the minimum. The syntax could be valid while the rule was wrong.</p><p>Test 119, 120 and 121, explaining the branch for each. In an affordability problem, the boundary is exactly the price: enough money includes the exact amount, even if nothing remains afterward.</p>
+<p>At height 120, <code>height &gt;= minimum</code> is true. Output is Ready followed by 0. Changing <code>&gt;=</code> to <code>&gt;</code> would wrongly reject someone exactly at the minimum. The syntax could be valid while the rule was wrong.</p><p>Test 119, 120 and 121 to check both branches and the boundary. In an affordability problem, the boundary is exactly the price: enough money includes the exact amount, even if nothing remains afterward.</p>
 </div>
 
 <div class="lesson-block">
@@ -52,28 +52,29 @@ else:
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">7. Practise decisions in your levels</h3>
+<h3 class="lesson-block-heading">7. Apply this in the game</h3>
+<p>Use if/else to choose between two actions, then continue along the route to the exit.</p>
 <ul>
-<li><strong>Right or Up?:</strong> state which direction your decision prefers and why that helps the route.</li>
-<li><strong>When the Answer Is No:</strong> explain the alternative before running the false case.</li>
-<li><strong>Is It Blocked?:</strong> translate blocked into a yes-or-no question and check which branch true selects.</li>
-<li><strong>Looks Can Be Misleading:</strong> distinguish a tile's appearance from whether movement is actually allowed.</li>
+<li><strong>Right or Up?:</strong> Choose a direction at the junction, then continue around the obstacle to the exit.</li>
+<li><strong>When the Answer Is No:</strong> Take an alternative route when the preferred passage is blocked.</li>
+<li><strong>Is It Blocked?:</strong> Use blocked() to check a passage and guide the knight through the detour.</li>
+<li><strong>Looks Can Be Misleading:</strong> Check whether the wall-looking panel allows movement, then follow the route to the exit.</li>
 </ul>
-<p>A condition tests a local fact. It does not tell you whether a direction eventually reaches the exit. After choosing a branch, continue tracing the rest of the room.</p>
+<p>Run your code and watch the knight. If it does not reach the exit, adjust your instructions and try again.</p>
 </div>
 
 <div class="lesson-block">
 <h3 class="lesson-block-heading">8. Prepare for the Python activity</h3>
-<p>In <strong>Can I afford the notebook?</strong>, read the available money once and compare it with 35. Decide when change should be calculated and displayed. The insufficient-money branch does not ask for a change value.</p><p>Check less than the price, exactly the price, and more than the price. Explain why exactly enough selects the affordable branch. As in a game detour, the alternative needs to be planned; else does not invent the correct action.</p>
+<p>In <strong>Can I afford the notebook?</strong>, read the available money once and compare it with 35. Decide when change should be calculated and displayed. The insufficient-money branch does not ask for a change value.</p><p>Check less than the price, exactly the price, and more than the price. Exactly enough money selects the affordable branch. As in a game detour, the alternative needs to be planned; else does not invent the correct action.</p>
 </div>
 
 <div class="lesson-block">
 <h3 class="lesson-block-heading">9. Activity inputs and expected output</h3>
 <p><strong>Can I afford the notebook?:</strong> A notebook costs 35 pesos. Read the money available as a whole number. If it is enough, print Buy and then the remaining money on the next line. Otherwise print Save more. Handle exactly 35 correctly. Use if and else to express the two choices.</p><p>These are the required results, not a full code solution. Calculate or decide from the input; the same program must work with other valid values.</p><p class="code-label">Sample inputs, in order</p><pre><code>50</code></pre><p class="code-label">Output</p><pre><code>Buy
-15</code></pre><p>Match the required output wording, capitalization and line order. When only numbers are requested, print numbers without extra labels or success messages. A correct idea can still need an output-format correction; explain the reasoning as well as checking the display.</p>
+15</code></pre><p>Match the required output wording, capitalization and line order. When only numbers are requested, print numbers without extra labels or success messages. A correct idea can still need an output-format correction.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">10. Practise, submit, and explain your reasoning</h3>
-<p>Complete the available assigned game levels, then open this lesson's Python activity when it becomes available. Levels marked Coming Soon do not need to be completed first. Use the game to trace the concept visually and the activity to apply it to a different problem.</p><p>Type Python in the code editor and select Run Python. When the program asks for input, enter the next answer in the input field below the output; the output itself is not where you type code or answers. Each input call takes one answer. Practice checks try the supplied examples and are guidance, not the teacher's grade.</p><p>The worked examples above solve different problems from the assigned activity. Trace them on paper; if you try one in the activity editor, its output may not match that activity's checks. Return to the assigned task before submitting. Run records an attempt; Submit this Run sends the latest saved run for teacher review. Read teacher feedback in its run history.</p><p><strong>Explain:</strong> Explain why only one branch runs, why exactly 35 counts as affordable, and why an else movement in the game still needs a safe route.</p>
+<h3 class="lesson-block-heading">10. Practice, submit, and read your feedback</h3>
+<p>Complete the available assigned game levels, then open this lesson's Python activity when it becomes available. Levels marked Coming Soon do not need to be completed first. Use the game to trace the concept visually and the activity to apply it to a different problem.</p><p>Type Python in the code editor and select Run Python. When the program asks for input, enter the next answer in the input field below the output; the output itself is not where you type code or answers. Each input call takes one answer. Practice checks try the supplied examples and are guidance, not the teacher's grade.</p><p>The worked examples above solve different problems from the assigned activity. If you try one in the activity editor, its output may not match that activity's checks. Return to the assigned task before submitting. Run saves an execution record; Submit this Run sends the latest saved run for teacher review. Read your teacher feedback in the run history. Successful practice checks mean the example output matches; only your teacher decides Passed or Needs revision.</p>
 </div>

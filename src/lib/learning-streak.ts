@@ -19,8 +19,8 @@ export function learningStreak(profile: StreakProfile, now = Date.now()) {
   const todayCounted = last === today && count > 0;
   return {
     count, today, todayCounted,
-    message: todayCounted ? "Today counted! Practise again tomorrow to continue your streak."
-      : count > 0 ? "Practise today to continue your learning streak."
+    message: todayCounted ? "Today counted! Practice again tomorrow to continue your streak."
+      : count > 0 ? "Practice today to continue your learning streak."
       : "Run game code or Python today to start your learning streak.",
     week: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((label, i) => {
       const date = shiftSchoolDay(monday, i);

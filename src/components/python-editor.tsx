@@ -493,7 +493,7 @@ export function PythonEditor({
     <section className={styles.card + " " + styles.submissionSection} aria-label="Submit your work">
       <span className={styles.kicker}>SUBMISSION</span>
       <h2>Submit your work</h2>
-      <p>Ready for your teacher to review your approach? Submit your latest saved Run. Practice checks are guidance; you can submit a Run even if some examples do not pass.</p>
+      <p>Ready for your teacher to review your approach? Submit your latest saved Run. Practice checks are guidance; you can submit a Run even if some example outputs do not match.</p>
       <p>{pending ? "Save the pending result before submitting." : !lastRun ? "Run your program and wait for its result to save first." : lastRun.source !== code ? "Your code has changed. Run it again before submitting this version." : "Your latest saved Run is ready to submit."}</p>
       <div className={styles.actions}>
         <button

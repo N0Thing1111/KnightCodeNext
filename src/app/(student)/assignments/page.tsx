@@ -71,7 +71,7 @@ export default async function AssignmentsPage() {
             <h2>From your teachers</h2>
             <p>
               Open an assignment to read its lesson or play its selected
-              challenge.
+              challenge. Completion counts finished games and submitted Python work; teacher assessment is separate.
             </p>
           </div>
         </div>
@@ -126,7 +126,7 @@ export default async function AssignmentsPage() {
                 </div>
                 <div className={`level-status ${status}`}>
                   <i />
-                  {status[0].toUpperCase() + status.slice(1)}
+                  {status === "completed" ? (isLevel ? "Game completed" : "Finished / submitted") : status[0].toUpperCase() + status.slice(1)}
                 </div>
                 {href ? <Link
                   href={href}

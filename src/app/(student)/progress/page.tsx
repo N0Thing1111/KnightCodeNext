@@ -53,7 +53,7 @@ export default async function ProgressPage() {
         </div>
         <div className="page-hero-stat">
           <strong>{overallPct}%</strong>
-          <span>{tasksTotal ? "assigned work complete" : "no available tasks yet"}</span>
+          <span>{tasksTotal ? "games finished / Python submitted" : "no available tasks yet"}</span>
           <small>
             {tasksDone} of {tasksTotal} assigned tasks
           </small>
@@ -113,7 +113,7 @@ export default async function ProgressPage() {
           </div>
           <dl className={styles.stats}>
             <div><dt>Not submitted</dt><dd>{pythonTotal - pythonDone}</dd></div>
-            <div><dt>Lessons completed</dt><dd>{stats.lessonsCompleted} / {learning.lessons.length}</dd></div>
+            <div><dt>Lessons finished/submitted</dt><dd>{stats.lessonsCompleted} / {learning.lessons.length}</dd></div>
           </dl>
           <p className={styles.note}>{pythonTotal ? "Each activity counts once, even after resubmission. Submission counts toward completion; your teacher’s review and rating are separate." : "No published Python activities are included in your current whole-lesson assignments."}</p>
         </article>
@@ -121,7 +121,7 @@ export default async function ProgressPage() {
       <section className={"panel " + styles.next} aria-label="Next learning step">
         <div>
           <span className="panel-kicker">NEXT STEP</span>
-          <h2>{nextLesson ? nextLesson.title : tasksTotal ? "Your available assigned work is complete" : "Ready when your lessons are available"}</h2>
+          <h2>{nextLesson ? nextLesson.title : tasksTotal ? "Your required games are finished and Python work is submitted" : "Ready when your lessons are available"}</h2>
           <p className={styles.note}>{nextLesson
             ? nextIsPython ? "Your available games are complete. Open the lesson to continue its Python activity and submit your work." : "Continue the available game levels in this lesson, then complete its Python activity if assigned."
             : tasksTotal ? "You can revisit your lessons, practice again, or check your teacher’s feedback." : "Your teacher’s available lesson tasks will appear here. Coming Soon games do not count against your progress."}</p>
@@ -171,7 +171,7 @@ export default async function ProgressPage() {
                     <span style={{ width: `${pct}%` }} />
                   </div>
                   <div className={styles.lessonDetails}>
-                    <span>{completion.total ? pct + "% complete" : "Waiting for available content"}</span>
+                    <span>{completion.total ? pct + "% finished/submitted" : "Waiting for available content"}</span>
                     {completion.pythonRequired && <span className={styles.tag}>{completion.pythonDone ? "Python submitted" : "Python not submitted"}</span>}
                   </div>
                   <small>{attempts} game attempts · {formatDuration(seconds)} game practice</small>

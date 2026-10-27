@@ -36,7 +36,7 @@ export default async function PlayPage({
           <p>{level.description}</p>
           <div className="detail-meta">
             <span>◈ {level.difficulty}</span>
-            <span>⌘ {progress?.attempts ?? 0} attempts</span>
+            <span>⌘ {progress?.attempts ?? 0} level starts/restarts</span>
             <span>⭐ {progress?.xp_earned ?? 0} XP earned</span>
           </div>
         </div>

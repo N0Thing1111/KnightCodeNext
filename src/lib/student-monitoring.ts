@@ -36,7 +36,7 @@ export function monitoringStatus(input: {
     reasons.push("No recorded activity for 7 days while assigned work remains incomplete");
   if (reasons.length) return { status: "Needs Attention", reason: reasons.join("; ") + "." };
   if (input.assignedTasks > 0 && input.completedTasks >= input.assignedTasks)
-    return { status: "On Track", reason: "All currently available assigned work is complete; no current revision request." };
+    return { status: "On Track", reason: "Available assigned games completed and required Python work submitted; review may be pending. No current revision request." };
   if (Number.isFinite(last) && now - last < 2 * day)
     return { status: "Active", reason: "Recorded learning activity within 48 hours; no follow-up flag." };
   if (Number.isFinite(last) && now - last < 14 * day)

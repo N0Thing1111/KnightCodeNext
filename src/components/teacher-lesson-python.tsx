@@ -42,7 +42,7 @@ export function TeacherLessonPython({ activities }: { activities: PythonActivity
           </details>
           <details className={styles.details}>
             <summary>Practice checks and expected output ({activity.content.cases.length})</summary>
-            <p className="teacher-note">Each check supplies the inputs below in order and compares the program output with the expected output. Passing the checks does not replace your review of the student&apos;s logic.</p>
+            <p className="teacher-note">Each check supplies the inputs below in order and compares the program output with the expected output. Successful checks do not replace your review of the student&apos;s logic.</p>
             {activity.content.cases.map((check, index) => (
               <div className={styles.check} key={index}>
                 <h4>{check.label}</h4>

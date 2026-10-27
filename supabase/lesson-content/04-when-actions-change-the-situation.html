@@ -43,7 +43,7 @@ if can(up):
 <li>At the new position, check the upward passage.</li>
 <li>If that movement is now possible, move up.</li>
 </ol>
-<p>Checking up before the right move would ask about the old position and old room state. Even the same direction name can refer to a different neighboring space after movement. Explain where and when a check happens, not just which word it contains.</p>
+<p>Checking up before the right move would ask about the old position and old room state. Even the same direction name can refer to a different neighboring space after movement. The result depends on where and when the check happens.</p>
 </div>
 
 <div class="lesson-block">
@@ -69,13 +69,14 @@ if can(up):
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">8. Practise with your mechanisms</h3>
+<h3 class="lesson-block-heading">8. Apply this in the game</h3>
+<p>Buttons, crates and pressure plates change which passages are available. Open the required doors before the knight reaches them.</p>
 <ul>
-<li><strong>Open the Way:</strong> identify the button action that must happen before the crossing.</li>
-<li><strong>Keep It Open:</strong> explain what holds the plate after the knight moves away.</li>
-<li><strong>Multi-Door Vault:</strong> list which mechanism affects which passage, then order the dependencies.</li>
+<li><strong>Open the Way:</strong> Reach and activate the button, then travel through the opened passage.</li>
+<li><strong>Keep It Open:</strong> Push a crate onto the pressure plate and leave it there while the knight passes through the door.</li>
+<li><strong>Multi-Door Vault:</strong> Operate the plates and doors in the correct order to open a route through the room.</li>
 </ul>
-<p>Before running, explain not only where the knight goes but what changes in the room. After running, look for the first state change that differed from your prediction.</p>
+<p>Run your code and watch the knight. If it does not reach the exit, adjust your instructions and try again.</p>
 </div>
 
 <div class="lesson-block">
@@ -87,10 +88,10 @@ if can(up):
 <h3 class="lesson-block-heading">10. Activity inputs and expected output</h3>
 <p><strong>Track a changing balance:</strong> Read an opening balance, a deposit, and a withdrawal, in that order. Add the deposit to the balance first. If the updated balance can cover the withdrawal, subtract it and print the final balance. Otherwise print Declined and then the unchanged updated balance on the next line. Assume nonnegative whole-number inputs.</p><p>These are the required results, not a full code solution. Calculate or decide from the input; the same program must work with other valid values.</p><p class="code-label">Sample inputs, in order</p><pre><code>10
 30
-35</code></pre><p class="code-label">Output</p><pre><code>5</code></pre><p>Match the required output wording, capitalization and line order. When only numbers are requested, print numbers without extra labels or success messages. A correct idea can still need an output-format correction; explain the reasoning as well as checking the display.</p>
+35</code></pre><p class="code-label">Output</p><pre><code>5</code></pre><p>Match the required output wording, capitalization and line order. When only numbers are requested, print numbers without extra labels or success messages. A correct idea can still need an output-format correction.</p>
 </div>
 
 <div class="lesson-block">
-<h3 class="lesson-block-heading">11. Practise, submit, and explain your reasoning</h3>
-<p>Complete the available assigned game levels, then open this lesson's Python activity when it becomes available. Levels marked Coming Soon do not need to be completed first. Use the game to trace the concept visually and the activity to apply it to a different problem.</p><p>Type Python in the code editor and select Run Python. When the program asks for input, enter the next answer in the input field below the output; the output itself is not where you type code or answers. Each input call takes one answer. Practice checks try the supplied examples and are guidance, not the teacher's grade.</p><p>The worked examples above solve different problems from the assigned activity. Trace them on paper; if you try one in the activity editor, its output may not match that activity's checks. Return to the assigned task before submitting. Run records an attempt; Submit this Run sends the latest saved run for teacher review. Read teacher feedback in its run history.</p><p><strong>Explain:</strong> Explain which balance the condition checks and which balance a declined withdrawal preserves. In the game, explain why a pressure plate must remain held while its door is needed.</p>
+<h3 class="lesson-block-heading">11. Practice, submit, and read your feedback</h3>
+<p>Complete the available assigned game levels, then open this lesson's Python activity when it becomes available. Levels marked Coming Soon do not need to be completed first. Use the game to trace the concept visually and the activity to apply it to a different problem.</p><p>Type Python in the code editor and select Run Python. When the program asks for input, enter the next answer in the input field below the output; the output itself is not where you type code or answers. Each input call takes one answer. Practice checks try the supplied examples and are guidance, not the teacher's grade.</p><p>The worked examples above solve different problems from the assigned activity. If you try one in the activity editor, its output may not match that activity's checks. Return to the assigned task before submitting. Run saves an execution record; Submit this Run sends the latest saved run for teacher review. Read your teacher feedback in the run history. Successful practice checks mean the example output matches; only your teacher decides Passed or Needs revision.</p>
 </div>

@@ -17,7 +17,7 @@ export function PythonPracticeChecks({ cases, checks = [], running = false, stal
       <p className={styles.notice}>These checks compare printed output; they do not grade your programming logic. Your teacher reviews your code separately. Print the words, numbers, and line breaks requested by the task. Extra labels or messages can cause an output mismatch. Surrounding whitespace is ignored.</p>
       <p className={styles.checkSummary} role="status">
         {running ? "Run in progress. Example results will appear when it finishes." : checks.length
-          ? `${passed} of ${cases.length} examples passed. Open an example to compare its input and output.`
+          ? `${passed} of ${cases.length} practice checks successful. Open an example to compare its input and output.`
           : saved ? "No completed practice-check results were saved for this Run. This is not a failed check or a grade."
           : "Not checked yet. You can inspect the examples now, then use Run Python to check your solution."}
       </p>
@@ -26,7 +26,7 @@ export function PythonPracticeChecks({ cases, checks = [], running = false, stal
         {cases.map((example, index) => {
           const check = checks[index];
           const kind = !check ? "pending" : check.error ? "error" : check.passed ? "passed" : "mismatch";
-          const label = { pending: "Not checked", error: "Program error", passed: "Passed", mismatch: "Output doesn't match" }[kind];
+          const label = { pending: "Not checked", error: "Program error", passed: "Successful", mismatch: "Output doesn't match" }[kind];
           return (
             <details className={styles.checkItem} key={index}>
               <summary><span className={styles.checkTitle}>Example {index + 1}: {example.label}</span><span className={styles.checkStatus} data-result={kind}>{label}</span></summary>
@@ -38,7 +38,7 @@ export function PythonPracticeChecks({ cases, checks = [], running = false, stal
                 </div>
                 {kind === "mismatch" && <p>The printed output differs. Compare the values, wording, and line order above. A mismatch alone does not tell you whether the issue is formatting or programming logic.</p>}
                 {check?.error && <div><h3>Error in this example</h3><p>The program could not finish this example. Read the error, revise your code, and try again.</p><pre>{check.error}</pre></div>}
-                {kind === "passed" && <p>The printed output matches this example. Your teacher will also review how your code solves the task.</p>}
+                {kind === "passed" && <p>The printed output matches this example. This is not an activity grade. Your teacher decides Passed or Needs revision.</p>}
               </div>
             </details>
           );
