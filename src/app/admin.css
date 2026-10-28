@@ -1145,3 +1145,53 @@ html[data-theme="light"] .admin-body .teacher-card {
   .admin-data-links { grid-template-columns: 1fr; }
   .admin-data-management { gap: 16px; }
 }
+
+/* Levels separate build availability from record management actions. */
+.admin-body .admin-level-table th:last-child,
+.admin-body .admin-level-table td:last-child { width: 180px; min-width: 180px; max-width: 220px; }
+.admin-body .admin-level-table th:nth-child(3),
+.admin-body .admin-level-table td:nth-child(3) { width: 100px; white-space: nowrap; }
+.admin-body .admin-level-table th:nth-child(4),
+.admin-body .admin-level-preview { width: 125px; min-width: 125px; white-space: nowrap; }
+.admin-body .admin-level-preview .teacher-note { margin: 0; font-size: 12px; }
+.admin-body .admin-level-table .admin-row-secondary > form { margin: 0 0 8px; }
+
+/* Secondary level actions share the same control treatment. */
+.admin-body .admin-level-table .admin-row-secondary > form > .teacher-btn,
+.admin-body .admin-level-table .admin-row-secondary > details > summary {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 36px;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--t-border2);
+  border-radius: 7px;
+  background: var(--t-surface2);
+  color: var(--t-text);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: left;
+  justify-content: flex-start;
+  text-decoration: none;
+  cursor: pointer;
+  list-style: none;
+}
+.admin-body .admin-level-table .admin-row-secondary > details > summary::-webkit-details-marker { display: none; }
+.admin-body .admin-level-table .admin-row-secondary > details[open] {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.admin-body .admin-level-table .admin-row-secondary > form > .teacher-btn:hover,
+.admin-body .admin-level-table .admin-row-secondary > details > summary:hover {
+  background: var(--t-surface);
+  border-color: var(--t-blue);
+}
+@media (pointer: coarse) {
+  .admin-body .admin-level-table .admin-row-secondary > form > .teacher-btn,
+  .admin-body .admin-level-table .admin-row-secondary > details > summary { min-height: 44px; }
+}

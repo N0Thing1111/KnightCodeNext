@@ -1,3 +1,4 @@
+import { GamePreviewButton } from "@/components/game-preview-button";
 import { getPythonActivities } from "@/lib/python-data";
 import { TeacherLessonPython } from "@/components/teacher-lesson-python";
 import Link from "next/link";
@@ -74,6 +75,7 @@ export default async function Page({
                 <th>Difficulty</th>
                 <th>Description</th>
                 <th>Completed by</th>
+                <th>Preview</th>
               </tr>
             </thead>
             <tbody>
@@ -101,15 +103,14 @@ export default async function Page({
                     }{" "}
                     / {students.length} students
                   </td>
+                  <td><GamePreviewButton level={l} /></td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
         <p className="teacher-note">
-          This is a read-only view of the KnightCode curriculum — levels
-          aren&apos;t playable here. To see how an individual student did on a
-          specific level, open their page from Student Monitoring.
+          Preview an available level to try the same game and starter code students see. Preview play does not save learning records. To review an individual student&apos;s results, open their page from Student Monitoring.
         </p>
       </section>
     </>

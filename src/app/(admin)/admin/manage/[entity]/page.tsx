@@ -1,3 +1,4 @@
+import { GamePreviewButton } from "@/components/game-preview-button";
 import { SectionArchiveButton } from "@/components/section-archive-button";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from "next/link";
@@ -310,12 +311,13 @@ export default async function Page({
           )}
         </form>
         <div className="teacher-table-wrap">
-          <table className="teacher-table admin-record-table">
+          <table className={"teacher-table admin-record-table" + (entity === "levels" ? " admin-level-table" : "")}>
             <thead>
               <tr>
                 <th>Name / Title</th>
-                <th>Details</th>
+                <th>{entity === "levels" ? "Lesson" : "Details"}</th>
                 <th>Status</th>
+                {entity === "levels" && <th>Game</th>}
                 <th>Actions</th>
               </tr>
             </thead>
@@ -326,7 +328,7 @@ export default async function Page({
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4}>
+                  <td colSpan={entity === "levels" ? 5 : 4}>
                     <div className="teacher-empty">
                       {supportsStatusFilter
                         ? "No records match these filters. Change your filters or use Clear to reset them."
@@ -632,8 +634,10 @@ function RecordRow({
           {status}
         </span>
       </td>
+      {entity === "levels" && <td className="admin-level-preview"><GamePreviewButton level={row} /></td>}
       <td>
         <div className="admin-actions admin-record-actions">
+
           <Link
             className="teacher-btn admin-edit"
             href={"/admin/manage/" + entity + "?edit=" + row.id}
@@ -645,7 +649,7 @@ function RecordRow({
               Roster
             </Link>
           )}
-          <form action={setAdminEntityStatus}>
+          {entity !== "levels" && (<form action={setAdminEntityStatus}>
             <input type="hidden" name="entity" value={entity} />
             <input type="hidden" name="id" value={row.id} />
             <input
@@ -654,11 +658,19 @@ function RecordRow({
               value={archived ? "1" : "0"}
             />
             {entity === "classes" ? <SectionArchiveButton archived={archived} name={String(name)} className="teacher-btn" /> : <button className="teacher-btn">{archived ? "Restore" : "Archive"}</button>}
-          </form>
+          </form>)}
           {["teachers", "students", "classes", "lessons", "levels"].includes(entity) && (
             <details className="admin-row-more">
               <summary aria-label={"More actions for " + name}>More</summary>
               <div className="admin-row-secondary">
+                {entity === "levels" && (
+                  <form action={setAdminEntityStatus}>
+                    <input type="hidden" name="entity" value={entity} />
+                    <input type="hidden" name="id" value={row.id} />
+                    <input type="hidden" name="restore" value={archived ? "1" : "0"} />
+                    <button className="teacher-btn">{archived ? "Restore" : "Archive"}</button>
+                  </form>
+                )}
                 {["teachers", "students"].includes(entity) && (
                   <details>
                     <summary>Reset password</summary>
