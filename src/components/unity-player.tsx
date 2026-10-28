@@ -143,7 +143,7 @@ export function UnityPlayer({
 
       loader = document.createElement("script");
       loader.src =
-        "/game_build/Build/game_build.loader.js?v=20261028-pause-menu";
+        `/game_build/Build/game_build.loader.js?v=${process.env.NEXT_PUBLIC_UNITY_BUILD_VERSION}`;
       loader.async = true;
       loader.dataset.knightcodeRuntime = "loader";
       loader.onload = async () => {
@@ -155,11 +155,11 @@ export function UnityPlayer({
             canvas,
             {
               dataUrl:
-                "/game_build/Build/game_build.data?v=20261028-pause-menu",
+                `/game_build/Build/game_build.data?v=${process.env.NEXT_PUBLIC_UNITY_BUILD_VERSION}`,
               frameworkUrl:
-                "/game_build/Build/game_build.framework.js?v=20261028-pause-menu",
+                `/game_build/Build/game_build.framework.js?v=${process.env.NEXT_PUBLIC_UNITY_BUILD_VERSION}`,
               codeUrl:
-                "/game_build/Build/game_build.wasm?v=20261028-pause-menu",
+                `/game_build/Build/game_build.wasm?v=${process.env.NEXT_PUBLIC_UNITY_BUILD_VERSION}`,
               streamingAssetsUrl: "/game_build/StreamingAssets",
               companyName: "DefaultCompany",
               productName: "KnightCode",

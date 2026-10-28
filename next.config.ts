@@ -1,6 +1,17 @@
 import type { NextConfig } from "next";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+
+// Recomputed at startup/build time: replacing the Unity export changes all asset URLs together.
+const unityBuildHash = createHash("sha256");
+for (const extension of ["loader.js", "framework.js", "data", "wasm"]) {
+  unityBuildHash.update(readFileSync(path.join(process.cwd(), "public/game_build/Build", `game_build.${extension}`)));
+}
+const unityBuildVersion = unityBuildHash.digest("hex").slice(0, 16);
 
 const nextConfig: NextConfig = {
+  env: { NEXT_PUBLIC_UNITY_BUILD_VERSION: unityBuildVersion },
   // Separate build output allows verification without replacing a running dev build.
   distDir: process.env.KC_BUILD_DIR || ".next",
   experimental: { serverActions: { bodySizeLimit: "6mb" } },
