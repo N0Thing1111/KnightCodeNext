@@ -15,12 +15,12 @@ export async function login(
   const password = String(formData.get("password") ?? "");
   if (!identifier || !password)
     return {
-      error: "Please enter your Student ID, username, or email and password.",
+      error: "Please enter your username or email and password.",
     };
   let email = identifier;
   if (!identifier.includes("@")) {
     if (!/^[a-z0-9._-]{1,80}$/.test(identifier)) {
-      return { error: "Invalid Student ID / username / email or password." };
+      return { error: "Invalid username/email or password." };
     }
     try {
       const admin = createAdminClient();
@@ -28,15 +28,15 @@ export async function login(
         .from("profiles")
         .select("email")
         .eq("role", "student")
-        .or(`username.eq.${identifier},student_id.eq.${identifier}`)
+        .eq("username", identifier)
         .eq("active", true)
         .limit(2);
       if (!data || data.length !== 1)
         return {
           error:
             data && data.length > 1
-              ? "This Student ID matches more than one account. Please sign in with your username or email instead."
-              : "Invalid Student ID / username / email or password.",
+              ? "This username is ambiguous. Please sign in with your email."
+              : "Invalid username/email or password.",
         };
       email = data[0].email;
     } catch {
@@ -49,7 +49,7 @@ export async function login(
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error)
-    return { error: "Invalid Student ID / username / email or password." };
+    return { error: "Invalid username/email or password." };
   const {
     data: { user },
   } = await supabase.auth.getUser();

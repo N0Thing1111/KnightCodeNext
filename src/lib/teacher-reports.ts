@@ -25,7 +25,7 @@ export async function getTeacherReport(teacher: { id: string; name: string }, fi
     ctx.activity = activity; ctx.pythonRuns = pythonRuns;
   }
   const [school, submissions, reviews] = await Promise.all([
-    db.from("admin_settings").select("setting_value").eq("setting_key", "school_name").maybeSingle(),
+    db.from("admin_settings").select("setting_value").eq("setting_key", "platform_name").maybeSingle(),
     rowsForIds(ids, part => db.from("python_submissions").select("id,student_id,activity_id,submitted_at").in("student_id", part).order("id")),
     rowsForIds(ids, part => db.from("python_reviews").select("id,submission_id,status,created_at").in("student_id", part).order("id")),
   ]);

@@ -6,7 +6,7 @@ import { historyCategories, type HistoryFilters, type HistoryCleanupResponse } f
 import styles from "./run-history-cleanup.module.css";
 
 export function RunHistoryCleanup({ students, sections, defaultBefore, maxBefore }: {
-  students: { id: string; name: string; student_id: string | null; class_id: number }[];
+  students: { id: string; name: string; email?: string; class_id: number }[];
   sections: { id: number; name: string }[];
   defaultBefore: string;
   maxBefore: string;
@@ -63,7 +63,7 @@ export function RunHistoryCleanup({ students, sections, defaultBefore, maxBefore
           <label className="wide">Student
             <select value={filters.student} onChange={e => change({ student: e.target.value })}>
               <option value="">All students in the selection</option>
-              {visibleStudents.map(s => <option key={s.id} value={s.id}>{s.name} — {s.student_id || "No student ID"}</option>)}
+              {visibleStudents.map(s => <option key={s.id} value={s.id}>{s.name} — {s.email || ""}</option>)}
             </select>
           </label>
           <p className="admin-note wide">The cutoff excludes its entire date and anything newer. Recent activity within 24 hours and Python Runs still awaiting results are protected. Section filtering uses current enrolment. Each confirmation affects at most 500 records.</p>

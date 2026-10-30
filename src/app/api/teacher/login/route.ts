@@ -14,18 +14,19 @@ export async function POST(request: NextRequest) {
       .toLowerCase(),
     password = String(form.get("password") ?? "");
   if (!identifier || !password)
-    return fail(request, "Please enter your Teacher ID or email and password.");
+    return fail(request, "Please enter your username or email and password.");
   let email = identifier;
   if (!identifier.includes("@")) {
+    if (!/^[a-z0-9._-]{1,80}$/.test(identifier)) return fail(request, "Invalid username/email or password.");
     const { data } = await createAdminClient()
       .from("profiles")
       .select("email")
       .eq("role", "teacher")
-      .ilike("teacher_id", identifier)
+      .or(`username.eq.${identifier},teacher_id.ilike.${identifier}`)
       .eq("active", true)
       .limit(2);
     if (!data || data.length !== 1)
-      return fail(request, "Invalid Teacher ID/email or password.");
+      return fail(request, "Invalid username/email or password.");
     email = data[0].email;
   }
   const response = NextResponse.redirect(
@@ -46,18 +47,18 @@ export async function POST(request: NextRequest) {
     },
   );
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return fail(request, "Invalid Teacher ID/email or password.");
+  if (error) return fail(request, "Invalid username/email or password.");
   const {
     data: { user },
   } = await supabase.auth.getUser();
   const { data: profile } = await createAdminClient()
     .from("profiles")
-    .select("role,active")
+    .select("role,active,onboarding_status")
     .eq("id", user!.id)
     .maybeSingle();
   if (!profile || profile.role !== "teacher" || !profile.active) {
     await supabase.auth.signOut();
-    return fail(request, "This account cannot access the teacher portal.");
+    return fail(request, profile?.onboarding_status === "pending" ? "Your teacher registration is awaiting administrator approval." : "This account cannot access the teacher portal.");
   }
   return response;
 }

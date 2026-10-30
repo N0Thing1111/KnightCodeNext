@@ -1,5 +1,4 @@
 "use server";
-import { findStudentAccount } from "@/lib/student-identity";
 import { getSchoolName } from "@/lib/school-name";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -9,7 +8,7 @@ import { requireTeacher } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { sendStudentPasswordEmail } from "@/lib/mail";
-import { requireSectionArchive, requireSectionMembership, setStudentSection } from "@/lib/sections";
+import { requireSectionArchive, setStudentSection } from "@/lib/sections";
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 const num = (f: FormData, k: string) => Number(f.get(k) || 0);
 const admin = () => createAdminClient();
@@ -125,123 +124,15 @@ export async function addExistingStudent(f: FormData) {
     return "Student added to this section.";
   });
 }
-async function undoNewAccount(client: ReturnType<typeof createAdminClient>, id: string, email: string, cause: unknown): Promise<never> {
-  const message = cause instanceof Error ? cause.message : "Account setup failed.";
-  try {
-    const removed = await client.auth.admin.deleteUser(id);
-    if (removed.error) throw Error(removed.error.message);
-  } catch {
-    throw Error(message + " The newly created account could not be removed. Ask an administrator to find " + email + " and finish setup/reset its password before retrying.");
-  }
-  throw Error(message + " The new account was removed; correct the details and try again.");
-}
 function temporaryPassword() {
   return "KC-" + crypto.randomUUID().replaceAll("-", "").slice(0, 8) + "!";
 }
 
 export async function manualAddStudent(f: FormData) {
-  const teacher = await requireTeacher();
-  const classId = num(f, "class_id");
-  await finish("/teacher/class/" + classId, async () => {
-    if (!(await ownsClass(teacher.id, classId)))
-      throw Error("Unauthorized section.");
-    const targetSection = await admin().from("classes").select("status").eq("id", classId).single();
-    if (targetSection.error || targetSection.data?.status !== "active") throw Error("Restore this section before adding students.");
-    const studentId = str(f, "student_id"),
-      name = str(f, "name"),
-      email = str(f, "email").toLowerCase(),
-      username = str(f, "username").toLowerCase() || null;
-    if (!studentId || !name || !z.string().email().safeParse(email).success)
-      throw Error("Student ID, name, and a valid email are required.");
-    await requireSectionMembership();
-    const a = admin();
-    let profile = await findStudentAccount(a, email, studentId);
-    let password: string | null = null;
-    if (!profile) {
-      password = temporaryPassword();
-      const created = await a.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-        app_metadata: { role: "student" },
-      user_metadata: {
-          role: "student",
-          student_id: studentId,
-          username,
-          name,
-        },
-      });
-      if (created.error || !created.data.user)
-        throw Error(
-          created.error?.message || "Could not create student account.",
-        );
-      try {
-      const updated = await a
-        .from("profiles")
-        .update({
-          student_id: studentId,
-          username,
-          name,
-          email,
-        })
-        .eq("id", created.data.user.id)
-        .select()
-        .single();
-      if (updated.error) throw Error(updated.error.message);
-      profile = updated.data;
-      } catch (error) {
-        await undoNewAccount(a, created.data.user.id, email, error);
-      }
-    } else if (username) {
-      const { data: used } = await a
-        .from("profiles")
-        .select("id")
-        .ilike("username", username)
-        .neq("id", profile.id)
-        .maybeSingle();
-      if (used) throw Error("Username is already used by another student.");
-    }
-    if (!profile) throw Error("Student profile could not be loaded.");
-    try {
-      await setStudentSection(profile.id, classId, teacher.id);
-    } catch (error) {
-      if (password) await undoNewAccount(a, profile.id, email, error);
-      throw error;
-    }
-    if (password) {
-      const emailSent = await sendStudentPasswordEmail({
-        email,
-        name,
-        studentId,
-        username,
-        temporaryPassword: password,
-        schoolLabel: await getSchoolName(a),
-        reason: "welcome",
-      });
-      const jar = await cookies();
-      jar.set(
-        "kc_teacher_flash",
-        JSON.stringify({
-          message: "Student account created and added to this section.",
-          password,
-          studentId,
-          name,
-          email,
-          emailSent,
-        }),
-        {
-          httpOnly: true,
-          sameSite: "lax",
-          secure: process.env.NODE_ENV === "production",
-          maxAge: 180,
-          path: "/teacher/class/" + classId,
-        },
-      );
-      return "Student created.";
-    }
-    return "Existing student account found and linked to this section.";
-  });
+ await requireTeacher();
+ redirect("/teacher/class/"+num(f,"class_id")+"?error="+encodeURIComponent("Use the class invitation code. Students register and request enrollment themselves."));
 }
+
 export async function createAssignment(f: FormData) {
   const t = await requireTeacher();
   await finish("/teacher/assignments", async () => {

@@ -93,7 +93,7 @@ export function SessionResults({
                     </td>
                     <td className="session-text-cell">
                       <strong>{student?.name || "Student"}</strong>
-                      <small>{student?.student_id}</small>
+                      <small>{student?.username || student?.email}</small>
                     </td>
                     <td className="session-text-cell">
                       {sections.length

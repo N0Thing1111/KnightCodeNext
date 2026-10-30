@@ -55,7 +55,7 @@ export default async function Page({
                   </option>
                   {available.map((s) => (
                     <option key={s.id} value={s.id}>
-                      {s.name} · {s.student_id} -{" "}
+                      {s.name} · {s.username || s.email} -{" "}
                       {ctx.classes.find((c) =>
                         ctx.class_students.some(
                           (m) => m.student_id === s.id && m.class_id === c.id,
@@ -99,7 +99,7 @@ export default async function Page({
                 <tr key={s.id}>
                   <td>
                     <strong>{s.name}</strong>
-                    <small>{s.student_id}</small>
+                    <small>{s.username || s.email}</small>
                   </td>
                   <td>{s.email}</td>
                   <td>{sectionLabel(cls)}</td>

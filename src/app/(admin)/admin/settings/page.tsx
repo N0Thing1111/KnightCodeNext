@@ -16,15 +16,15 @@ export default async function Page({
   return (
     <>
       <AdminHero
-        title="Your space. Your school."
-        description="Manage your profile, personalize KnightCode, and keep your school connected."
+        title="Platform settings"
+        description="Manage your profile, personalize KnightCode, and manage your learning platform."
       >
-        <span className="admin-role-badge">♜ School administrator</span>
+        <span className="admin-role-badge">♜ Platform administrator</span>
       </AdminHero>
       <Alerts q={q} />
       <nav className="admin-settings-nav">
         <a href="#profile">Your profile</a>
-        <a href="#school">School details</a>
+        <a href="#school">Platform details</a>
         <a href="#theme">Appearance</a>
         <a href="#password">Security</a>
       </nav>
@@ -34,11 +34,11 @@ export default async function Page({
             <span>♞</span>
           </div>
           <div>
-            <span className="teacher-eyebrow">SCHOOL ADMINISTRATOR</span>
+            <span className="teacher-eyebrow">PLATFORM ADMINISTRATOR</span>
             <h2>{admin.name}</h2>
             <p>{admin.email}</p>
             <span className="admin-role-badge">
-              {setting(ctx, "school_name", "Your School")}
+              {setting(ctx, "platform_name", "KnightCode")}
             </span>
           </div>
         </div>
@@ -89,18 +89,18 @@ export default async function Page({
             <form action={saveAdminSettings} className="teacher-form">
               <input type="hidden" name="settings_action" value="school" />
               <label>
-                School name
+                Platform name
                 <input
-                  name="school_name"
-                  defaultValue={setting(ctx, "school_name", "KnightCode School")}
+                  name="platform_name"
+                  defaultValue={setting(ctx, "platform_name", "KnightCode")}
                   required
                 />
               </label>
-              <button className="teacher-btn primary">Save school details</button>
+              <button className="teacher-btn primary">Save platform details</button>
             </form>
           </section>
           <section className="teacher-card" id="support">
-            <h3>School contact and support</h3><p>These details appear on this deployment&apos;s student support page.</p>
+            <h3>Platform contact and support</h3><p>These details appear on this deployment&apos;s student support page.</p>
             <form action={saveAdminSettings} className="teacher-form">
               <input type="hidden" name="settings_action" value="support" />
               {[["support_contact","Contact person or office"],["support_email","Support email"],["support_phone","Phone or extension"],["support_hours","Office hours"]].map(([key,label]) => <label key={key}>{label}<input name={key} type={key === "support_email" ? "email" : "text"} maxLength={200} defaultValue={setting(ctx,key)} /></label>)}

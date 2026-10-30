@@ -163,10 +163,7 @@ export function ProfileForm({
                   autoComplete="email"
                 />
               </label>
-              <label>
-                Student ID
-                <input value={student.student_id ?? ""} disabled />
-              </label>
+
               <label>
                 Section
                 <input

@@ -1,3 +1,4 @@
+import { ClassEnrollment } from "@/components/class-enrollment";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
@@ -12,7 +13,6 @@ import {
 } from "@/lib/teacher-data";
 import {
   addExistingStudent,
-  manualAddStudent,
   removeStudent,
 } from "@/app/actions/teacher";
 import { Alerts, Hero } from "@/components/teacher-ui";
@@ -70,9 +70,9 @@ export default async function Page({
           <Link
             prefetch={false}
             className="teacher-btn"
-            href={"/teacher/classes?import=" + cls.id}
+            href="#enrollment"
           >
-            Import Students
+            Invite Students
           </Link>
           <Link
             prefetch={false}
@@ -130,7 +130,7 @@ export default async function Page({
                           </span>
                           <span>
                             <strong>{s.name}</strong>
-                            <small>{s.student_id}</small>
+                            <small>{s.username || s.email}</small>
                           </span>
                         </div>
                       </td>
@@ -187,7 +187,7 @@ export default async function Page({
         </section>
         <section className="teacher-card">
           <Head eyebrow="ADD STUDENTS" title="Build this roster" />
-          {cls.status === "archived" ? <p className="teacher-note">This section is archived. Restore it before adding or importing students.</p> : <>
+          {cls.status === "archived" ? <p className="teacher-note">This section is archived. Restore it before accepting enrollment requests.</p> : <>
           <p className="teacher-note">
             Students belong to one section. Moving a student removes the
             previous membership but keeps their learning history. Transfers from
@@ -204,7 +204,7 @@ export default async function Page({
                   </option>
                   {available.map((s) => (
                     <option value={s.id} key={s.id}>
-                      {s.name} · {s.student_id}
+                      {s.name} · {s.username || s.email}
                     </option>
                   ))}
                 </select>
@@ -213,30 +213,7 @@ export default async function Page({
             </form>
           )}
           <div style={{ height: 14 }} />
-          <form action={manualAddStudent} className="teacher-form">
-            <input type="hidden" name="class_id" value={cls.id} />
-            <div className="teacher-form-grid">
-              <label>
-                Student ID
-                <input name="student_id" required />
-              </label>
-              <label>
-                Full name
-                <input name="name" required />
-              </label>
-              <label>
-                Email
-                <input name="email" type="email" required />
-              </label>
-              <label>
-                Username (optional)
-                <input name="username" />
-              </label>
-            </div>
-            <button className="teacher-btn primary">
-              Create / Link Student
-            </button>
-          </form>
+          <ClassEnrollment classId={cls.id} />
           </>}
         </section>
       </div>

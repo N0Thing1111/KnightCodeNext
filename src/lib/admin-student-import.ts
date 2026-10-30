@@ -31,8 +31,8 @@ export function parseStudentCsv(text: string): ImportRow[] {
   row.push(cell);
   if (row.some(value => value.trim())) matrix.push(row);
   const headers = matrix.shift()?.map(value => value.trim().toLowerCase());
-  if (!headers || !["student_id", "name", "email"].every(key => headers.includes(key)))
-    throw Error("Include the CSV headers student_id,name,email. Optional columns: username,section.");
+  if (!headers || !["name", "email"].every(key => headers.includes(key)))
+    throw Error("Include the CSV headers name,email. Optional columns: username,section.");
   if (new Set(headers).size !== headers.length) throw Error("CSV headers must not be repeated.");
   if (matrix.length < 1 || matrix.length > 100) throw Error("Import between 1 and 100 students at a time.");
   return matrix.map(values => {
@@ -42,16 +42,15 @@ export function parseStudentCsv(text: string): ImportRow[] {
 }
 
 export function studentImportIssues(rows: ImportRow[], section?: Pick<ImportSection, "name" | "label">): string[][] {
-  const ids = new Set<string>(), emails = new Set<string>(), usernames = new Set<string>();
+  const emails = new Set<string>(), usernames = new Set<string>();
   return rows.map(row => {
     const issues: string[] = [];
-    if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,79}$/.test(row.student_id)) issues.push("Student ID needs 1–80 letters, numbers, dots, underscores or hyphens");
     if (!row.name || row.name.length > 150) issues.push("Name is required (maximum 150 characters)");
     if (row.email.length > 254 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(row.email)) issues.push("Valid email required");
     if (row.username && !/^[a-z0-9][a-z0-9._-]{0,79}$/.test(row.username)) issues.push("Invalid username");
-    const id = row.student_id.toLowerCase();
-    if (ids.has(id) || emails.has(row.email) || (row.username && usernames.has(row.username))) issues.push("Repeated student ID, email or username");
-    ids.add(id); emails.add(row.email); if (row.username) usernames.add(row.username);
+
+    if (emails.has(row.email) || (row.username && usernames.has(row.username))) issues.push("Repeated email or username");
+    emails.add(row.email); if (row.username) usernames.add(row.username);
     if (section && row.section && ![section.name, section.label].some(value => value.trim().toLowerCase() === row.section.trim().toLowerCase())) issues.push("CSV section does not match the selected section");
     return issues;
   });

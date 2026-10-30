@@ -10,7 +10,7 @@ export type SessionFilters = {
 export type SessionStudent = {
   id: string;
   name: string;
-  student_id: string | null;
+  username: string | null;
   email: string;
 };
 export type SessionClass = {
@@ -77,7 +77,7 @@ export function matchingSessionStudents(
     (s) =>
       (!filters.student || s.id === filters.student) &&
       (!term ||
-        [s.name, s.student_id, s.email].some((v) =>
+        [s.name, s.username, s.email].some((v) =>
           (v || "").toLocaleLowerCase().includes(term),
         )),
   );

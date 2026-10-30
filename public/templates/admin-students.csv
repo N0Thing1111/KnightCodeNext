@@ -1,2 +1,2 @@
-student_id,name,email,username,section
-STU-EXAMPLE-001,Example Student,replace-with-student-email@example.com,example_student,ICT-A
+name,email,username,section
+Example Student,student@example.com,example.student,

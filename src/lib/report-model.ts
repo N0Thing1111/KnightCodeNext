@@ -103,12 +103,12 @@ export function buildTeacherReport(ctx: ReportContext, filters: ReportFilters, m
     columns: [], rows: [],
   };
   if (filters.type === "student_progress" || filters.type === "class_performance") {
-    report.columns = ["Student ID", "Student", "Section", "Game levels completed", "Python activities submitted", "Latest Python reviews", "Assignments completed", "Assignment completion"];
-    report.rows = detail.map(s => [s.student.student_id || "Not set", s.student.name, s.section, ratio(s.gamesDone, s.games.length), ratio(s.pythonDone, s.python.length), s.python.length ? s.review : "N/A", ratio(s.done, s.assigned.length), percent(s.done, s.assigned.length)]);
+    report.columns = ["Account", "Student", "Section", "Game levels completed", "Python activities submitted", "Latest Python reviews", "Assignments completed", "Assignment completion"];
+    report.rows = detail.map(s => [(s.student.username || s.student.email) || "Not set", s.student.name, s.section, ratio(s.gamesDone, s.games.length), ratio(s.pythonDone, s.python.length), s.python.length ? s.review : "N/A", ratio(s.done, s.assigned.length), percent(s.done, s.assigned.length)]);
   }
   if (filters.type === "inactive") {
-    report.columns = ["Student ID", "Student", "Section", "Last recorded activity (UTC+08)", "Assignments completed", "Pending assignments"];
-    report.rows = detail.filter(s => !s.last || Date.parse(now) - Date.parse(s.last) >= 14 * 86400000).map(s => [s.student.student_id || "Not set", s.student.name, s.section, reportDate(s.last), ratio(s.done, s.assigned.length), String(s.assigned.length - s.done)]);
+    report.columns = ["Account", "Student", "Section", "Last recorded activity (UTC+08)", "Assignments completed", "Pending assignments"];
+    report.rows = detail.filter(s => !s.last || Date.parse(now) - Date.parse(s.last) >= 14 * 86400000).map(s => [(s.student.username || s.student.email) || "Not set", s.student.name, s.section, reportDate(s.last), ratio(s.done, s.assigned.length), String(s.assigned.length - s.done)]);
     report.note += " Inactive means no recorded game/Python activity or progress update within 14 days, or no activity yet. It does not mean the account is disabled.";
   }
   if (filters.type === "lesson_completion") {
@@ -141,14 +141,14 @@ export function buildTeacherReport(ctx: ReportContext, filters: ReportFilters, m
     });
   }
   if (filters.type === "activity") {
-    report.columns = ["Recorded at (UTC+08)", "Student ID", "Student", "Event", "Activity", "XP earned"];
+    report.columns = ["Recorded at (UTC+08)", "Account", "Student", "Event", "Activity", "XP earned"];
     const start = filters.from ? Date.parse(filters.from + "T00:00:00+08:00") : -Infinity;
     const end = filters.to ? Date.parse(filters.to + "T00:00:00+08:00") + 86400000 : Infinity;
     const events = [
       ...ctx.activity.filter(a => allowedIds.has(a.student_id)).map(a => ({ ...a, event: String(a.action_type).replaceAll("_", " "), title: ctx.levels.find(l => l.id === a.level_id)?.title || ctx.lessons.find(l => String(l.id) === String(a.metadata?.lesson_id))?.title || "KnightCode", xp: String(a.xp_earned || 0) })),
       ...ctx.pythonRuns.filter(r => allowedIds.has(r.student_id)).map(r => ({ student_id: r.student_id, created_at: r.started_at, event: "Python run started", title: "Python practice", xp: "N/A" })),
     ].filter(a => Date.parse(a.created_at) >= start && Date.parse(a.created_at) < end).sort((a, b) => b.created_at.localeCompare(a.created_at));
-    report.rows = events.map(a => { const s = students.find(s => s.id === a.student_id)!; return [reportDate(a.created_at), s.student_id || "Not set", s.name, a.event, a.title, a.xp]; });
+    report.rows = events.map(a => { const s = students.find(s => s.id === a.student_id)!; return [reportDate(a.created_at), s.username || s.email, s.name, a.event, a.title, a.xp]; });
     report.summary = [{ label: "Recorded events", value: String(events.length) }, { label: "Students with events", value: String(new Set(events.map(e => e.student_id)).size) }, { label: "Python runs started", value: String(events.filter(e => e.event === "Python run started").length) }, { label: "Sections in scope", value: String(classes.length) }];
     report.note = "Recorded events within the selected dates, inclusive in UTC+08:00. A Python run-start event does not imply completion or submission. Use Session Results / Review Runs for code and detailed execution history.";
   }

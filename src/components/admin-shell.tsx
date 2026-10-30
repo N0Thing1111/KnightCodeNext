@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { Profile } from "@/types/database";
 
 const links = [
+  ["/admin/registrations", "", "Teacher registrations"],
   ["/admin", "⌂", "Overview"],
   ["/admin/manage/teachers", "♜", "Teachers"],
   ["/admin/manage/students", "♙", "Students"],
@@ -40,7 +41,7 @@ export function AdminShell({
             <img src="/assets/img/knight-logo.png" alt="" />
             <span>
               Knight<span>Code</span>
-              <small>School Administration</small>
+              <small>Platform Administration</small>
             </span>
           </Link>
           <button onClick={() => setMenu(false)} aria-label="Close menu">
@@ -48,7 +49,7 @@ export function AdminShell({
           </button>
         </div>
         <nav aria-label="Administration">
-          <span className="teacher-nav-label">School workspace</span>
+          <span className="teacher-nav-label">Platform workspace</span>
           {links.map(([href, icon, label]) => (
             <Link
               key={href}
@@ -79,7 +80,7 @@ export function AdminShell({
             ☰
           </button>
           <div>
-            <span>KNIGHTCODE · SCHOOL ADMIN</span>
+            <span>KNIGHTCODE · PLATFORM ADMIN</span>
             <h1>{pageTitle(path)}</h1>
           </div>
         </div>
@@ -87,7 +88,7 @@ export function AdminShell({
           <span>♞</span>
           <div>
             <strong>{admin.name}</strong>
-            <small>School Administrator</small>
+            <small>Platform Administrator</small>
           </div>
         </Link>
       </header>
@@ -96,7 +97,7 @@ export function AdminShell({
   );
 }
 function pageTitle(path: string) {
-  if (path === "/admin") return "School Overview";
+  if (path === "/admin") return "Platform overview";
   if (path.includes("/manage/teachers")) return "Teachers";
   if (path.includes("/manage/students")) return "Students";
   if (path.includes("/manage/classes") || path.includes("/classes/"))
@@ -108,5 +109,5 @@ function pageTitle(path: string) {
   if (path.includes("/settings")) return "Profile & Settings";
   if (path.includes("/backup")) return "Backup & Recovery";
   if (path.includes("/data")) return "Data Management";
-  return "School Administration";
+  return "Platform Administration";
 }

@@ -58,11 +58,11 @@ export async function importAdminStudents(_previous: AdminStudentImportState, fo
       const created = await db.auth.admin.createUser({
         email: row.email, password, email_confirm: true,
         app_metadata: { role: "student" },
-        user_metadata: { role: "student", student_id: row.student_id, name: row.name, username: row.username || null },
+        user_metadata: { role: "student", student_id: row.student_id || null, name: row.name, username: row.username || null },
       });
       if (created.error || !created.data.user) throw Error(created.error?.message || "Could not create account.");
       newUserId = created.data.user.id;
-      const updated = await db.from("profiles").update({ student_id: row.student_id, name: row.name, username: row.username || null, active: true, must_change_password: true }).eq("id", newUserId).select("id").single();
+      const updated = await db.from("profiles").update({ student_id: row.student_id || null, name: row.name, username: row.username || null, active: true, must_change_password: true }).eq("id", newUserId).select("id").single();
       if (updated.error) throw Error(updated.error.message);
       await setStudentSection(newUserId, sectionId, actor.id, false);
       result.created.push({ ...row, temp_password: password, email_sent: false });

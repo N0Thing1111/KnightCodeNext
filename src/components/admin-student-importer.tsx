@@ -28,18 +28,18 @@ export function AdminStudentImporter({ sections }: { sections: ImportSection[] }
     <p>{state.result.created.length} accounts created; {state.result.existing.length} existing students linked or already enrolled; {state.result.errors.length} errors.</p>
     <p>Copy any undelivered passwords before leaving. They are shown once here and are not stored in the results. Existing accounts keep their passwords.</p>
     {state.result.created.length > 0 && <div className="teacher-table-wrap"><table className="teacher-table">
-      <thead><tr><th>Student ID</th><th>Name</th><th>Email</th><th>Temporary password</th><th>Email status</th></tr></thead>
-      <tbody>{state.result.created.map(row => <tr key={row.student_id}><td>{row.student_id}</td><td>{row.name}</td><td>{row.email}</td><td><code>{row.temp_password}</code></td><td>{row.email_sent ? "Sent" : "Not sent — share securely"}</td></tr>)}</tbody>
+      <thead><tr><th>Name</th><th>Email</th><th>Temporary password</th><th>Email status</th></tr></thead>
+      <tbody>{state.result.created.map(row => <tr key={row.email}><td>{row.name}</td><td>{row.email}</td><td><code>{row.temp_password}</code></td><td>{row.email_sent ? "Sent" : "Not sent — share securely"}</td></tr>)}</tbody>
     </table></div>}
-    {state.result.existing.length > 0 && <p>Existing students: {state.result.existing.map(row => `${row.name} (${row.student_id})`).join(", ")}</p>}
-    {state.result.errors.map((row, index) => <p className="teacher-alert error" key={index}>{row.student_id}: {row.issue}</p>)}
+    {state.result.existing.length > 0 && <p>Existing students: {state.result.existing.map(row => `${row.name} (${row.email})`).join(", ")}</p>}
+    {state.result.errors.map((row, index) => <p className="teacher-alert error" key={index}>{row.email}: {row.issue}</p>)}
     <Link href="/admin/manage/students" className="teacher-btn">Back to Students</Link>
   </section>;
   return <>
     <section className="teacher-card">
       <h2>Import students from CSV</h2>
       <p>Import up to 100 students into one section. Its assigned teacher will manage these students. Existing accounts keep their passwords, and students in another section will not be moved.</p>
-      <p>Required columns: <code>student_id,name,email</code>. Optional: <code>username,section</code>. If provided, the CSV section must match your selection.</p>
+      <p>Required columns: <code>name,email</code>. Optional: <code>username,section</code>. If provided, the CSV section must match your selection.</p>
       <p><a className="teacher-btn" href="/templates/admin-students.csv" download>Download CSV template</a></p>
       {sections.length === 0 ? <p className="teacher-alert">Create an active section with an active teacher before importing. <Link href="/admin/manage/classes">Manage sections</Link></p> : <>
         <label className="admin-file-label">Section and teacher
@@ -58,8 +58,8 @@ export function AdminStudentImporter({ sections }: { sections: ImportSection[] }
     {rows.length > 0 && <section className="teacher-card">
       <h3>Review {rows.length} students{section ? ` for ${section.label}` : ""}</h3>
       <div className="teacher-table-wrap"><table className="teacher-table">
-        <thead><tr><th>Row</th><th>Student ID</th><th>Name</th><th>Email</th><th>Username</th><th>Validation</th></tr></thead>
-        <tbody>{rows.map((row, index) => <tr key={index}><td>{index + 2}</td><td>{row.student_id}</td><td>{row.name}</td><td>{row.email}</td><td>{row.username || "—"}</td><td>{issues[index].join("; ") || "Ready"}</td></tr>)}</tbody>
+        <thead><tr><th>Row</th><th>Name</th><th>Email</th><th>Username</th><th>Validation</th></tr></thead>
+        <tbody>{rows.map((row, index) => <tr key={index}><td>{index + 2}</td><td>{row.name}</td><td>{row.email}</td><td>{row.username || "—"}</td><td>{issues[index].join("; ") || "Ready"}</td></tr>)}</tbody>
       </table></div>
       <form action={action}>
         <input type="hidden" name="class_id" value={sectionId} />

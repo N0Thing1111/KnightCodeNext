@@ -4,8 +4,8 @@ import { AdminHero } from "@/components/admin-ui";
 const views = [
   { key: "history", label: "Run history", href: "/admin/data?scope=history" },
   { key: "learning", label: "Learning records reset", href: "/admin/data?scope=learning" },
-  { key: "school", label: "School data reset", href: "/admin/data?scope=school" },
-  { key: "backup", label: "Save or restore school data", href: "/admin/backup" },
+  { key: "school", label: "Platform data reset", href: "/admin/data?scope=school" },
+  { key: "backup", label: "Save or restore platform data", href: "/admin/backup" },
 ] as const;
 
 export function AdminDataNavigation({ active }: { active: typeof views[number]["key"] }) {
@@ -13,7 +13,7 @@ export function AdminDataNavigation({ active }: { active: typeof views[number]["
     <>
       <AdminHero
         title="Data Management"
-        description="Save or restore school data, clean up run history, or reset learning and school records."
+        description="Save or restore platform data, clean up run history, or reset learning and platform records."
       />
       <nav className="teacher-card admin-data-navigation" aria-label="Data management sections">
         <div className="admin-data-links">

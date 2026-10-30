@@ -54,7 +54,7 @@ export default async function Page({
             <table className="teacher-table">
               <thead>
                 <tr>
-                  <th>Student ID</th>
+                  <th>Email</th>
                   <th>Name</th>
                   <th>Email</th>
                   <th>Temporary Password</th>
@@ -63,8 +63,8 @@ export default async function Page({
               </thead>
               <tbody>
                 {result.created.map((r: any) => (
-                  <tr key={r.student_id}>
-                    <td>{r.student_id}</td>
+                  <tr key={r.email}>
+                    <td>{r.email}</td>
                     <td>{r.name}</td>
                     <td>{r.email}</td>
                     <td>
@@ -129,7 +129,7 @@ export default async function Page({
             <thead>
               <tr>
                 <th>Row</th>
-                <th>Student ID</th>
+                <th>Email</th>
                 <th>Name</th>
                 <th>Email</th>
                 <th>Result</th>
@@ -139,7 +139,7 @@ export default async function Page({
               {preview.map((r) => (
                 <tr key={r.row}>
                   <td>{r.row}</td>
-                  <td>{r.data.student_id}</td>
+                  <td>{r.data.email}</td>
                   <td>{r.data.name}</td>
                   <td>{r.data.email}</td>
                   <td>

@@ -35,7 +35,7 @@ export const PYTHON_BACKUP_TABLES = [
 ] as const;
 export type SchoolBackup = {
   format: "KnightCode Supabase school save";
-  version: 1 | 2 | 3 | 4;
+  version: 1 | 2 | 3 | 4 | 5;
   created_at: string;
   tables: Record<string, unknown[]>;
 };
@@ -95,7 +95,7 @@ export function decryptBackup(file: Buffer, password: string): SchoolBackup {
     );
     if (
       data.format !== "KnightCode Supabase school save" ||
-      ![1, 2, 3, 4].includes(data.version) ||
+      ![1, 2, 3, 4, 5].includes(data.version) ||
       !data.tables
     )
       throw Error();
@@ -104,6 +104,7 @@ export function decryptBackup(file: Buffer, password: string): SchoolBackup {
       data.tables.student_code_executions = [];
     for (const t of [
       ...BACKUP_TABLES,
+      ...(data.version >= 5 ? ["enrollment_requests"] : []),
       ...(data.version >= 3 ? PYTHON_BACKUP_TABLES : []),
     ])
       if (!Array.isArray(data.tables[t])) throw Error();

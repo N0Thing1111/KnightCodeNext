@@ -104,7 +104,7 @@ export default async function Page({
             <span className="teacher-eyebrow">STUDENT PROFILE</span>
             <h2>{summary.name}</h2>
             <p>
-              {summary.student_id} · {summary.email}
+              {summary.username || summary.email} · {summary.email}
               {summary.username ? " · @" + summary.username : ""}
             </p>
             <div className="student-class-tags">
@@ -145,7 +145,7 @@ export default async function Page({
       <section className="teacher-card">
         <Head eyebrow="ACCOUNT ACCESS" title="Sign-in credentials" />
         <p className="teacher-note">
-          Student ID <strong>{summary.student_id}</strong>
+          Account <strong>{summary.username || summary.email}</strong>
           {summary.username ? ", username " + summary.username + "," : ""} and
           email <strong>{summary.email}</strong> can all be used to sign in. If
           the original temporary password wasn&apos;t saved, reset it below —

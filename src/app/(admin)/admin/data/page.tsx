@@ -21,7 +21,7 @@ export default async function Page({
       <AdminDataNavigation active="history" />
       <Alerts q={q} />
       <RunHistoryCleanup
-        students={roster.students.map(({ id, name, student_id, class_id }) => ({ id, name, student_id, class_id }))}
+        students={roster.students.map(({ id, name, email, class_id }) => ({ id, name, email, class_id }))}
         sections={roster.sections.map(({ id, name }) => ({ id, name }))}
         defaultBefore={phDate(30)} maxBefore={phDate(1)}
       />
@@ -60,6 +60,7 @@ export default async function Page({
             "teacher_import_batches",
             "announcements",
             "assignments",
+            "enrollment_requests",
             "class_students",
             "classes",
             "profiles",
@@ -76,11 +77,11 @@ export default async function Page({
       <AdminDataNavigation active={scope} />
       <Alerts q={q} />
       <section className="teacher-card">
-        <h2>{scope === "learning" ? "Learning records reset" : "School data reset"}</h2>
+        <h2>{scope === "learning" ? "Learning records reset" : "Platform data reset"}</h2>
         <p className="admin-note">
           {scope === "learning"
-            ? "Clears game performance, Python drafts, Runs, submissions, reviews, activity, earned achievements, and notifications. Resets game XP and streaks. Accounts, sections, assignments, lessons, and levels remain."
-            : "Also removes teacher/student accounts, sections, enrolments, assignments, and announcements. Administrator access, settings, lessons, and levels remain."}
+            ? "Clears game performance, Python drafts, Runs, submissions, reviews, activity, earned achievements, and notifications. Resets game XP and streaks. Accounts, sections, enrollment requests, assignments, lessons, and levels remain."
+            : "Affects ALL teachers and students on the platform. Also removes their accounts, sections, enrollment requests, assignments, and announcements. Administrator access, settings, lessons, and levels remain."}
         </p>
         <p className="admin-note">
           <Link href="/admin/backup">Download a password-protected save</Link> before resetting.

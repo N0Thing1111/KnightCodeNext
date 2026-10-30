@@ -31,7 +31,7 @@ export function SessionResultFilters({
           type="search"
           name="q"
           defaultValue={filters.q}
-          placeholder="Student name, ID, or email"
+          placeholder="Student name, username, or email"
         />
       </label>
       <label>
@@ -66,7 +66,7 @@ export function SessionResultFilters({
           {options.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name}
-              {s.student_id ? ` · ${s.student_id}` : ""}
+              {s.username ? ` · ${s.username}` : ""}
             </option>
           ))}
         </select>

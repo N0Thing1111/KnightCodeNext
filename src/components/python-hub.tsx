@@ -50,7 +50,7 @@ export async function PythonHub({
   let students = roster.students.filter(
     (s) =>
       (!section || s.class_id === section) &&
-      (!q || `${s.name} ${s.student_id} ${s.email}`.toLowerCase().includes(q)),
+      (!q || `${s.name} ${s.username} ${s.email}`.toLowerCase().includes(q)),
   );
   const page = Math.max(
     1,
@@ -107,7 +107,7 @@ export async function PythonHub({
     const ids = [...new Set(visibleRuns.map((r) => r.student_id))];
     const profiles = await createAdminClient()
       .from("profiles")
-      .select("id,name,student_id,email")
+      .select("id,name,username,email")
       .in("id", ids);
     if (profiles.error) throw Error(profiles.error.message);
     students = [
@@ -174,11 +174,11 @@ export async function PythonHub({
               {staff && (
                 <>
                   <label>
-                    Student name, ID, or email
+                    Student name, username, or email
                     <input
                       name="q"
                       defaultValue={params.q}
-                      placeholder="Name, student ID, or email"
+                      placeholder="Name, username, or email"
                     />
                   </label>
                   <label>
@@ -263,7 +263,7 @@ export async function PythonHub({
                       <small>
                         {
                           students.find((s) => s.id === r.student_id)
-                            ?.student_id
+                            ?.username
                         }
                       </small>
                     </td>
@@ -329,7 +329,7 @@ export async function PythonHub({
               Student:{" "}
               {students.find((s) => s.id === selected.student_id)?.name ||
                 "Student"}{" "}
-              · {students.find((s) => s.id === selected.student_id)?.student_id}
+              · {students.find((s) => s.id === selected.student_id)?.username}
             </p>
           )}
           <p>

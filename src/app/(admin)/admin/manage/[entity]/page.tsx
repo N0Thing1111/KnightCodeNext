@@ -1,3 +1,4 @@
+import { AdminRecordActions } from "@/components/admin-record-actions";
 import { GamePreviewButton } from "@/components/game-preview-button";
 import { SectionArchiveButton } from "@/components/section-archive-button";
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -29,7 +30,6 @@ const configs: any = {
     description:
       "Create accounts, edit details, or archive access while preserving history.",
     fields: [
-      "student_id",
       "name",
       "email",
       "username",
@@ -601,7 +601,7 @@ function RecordRow({
       entity === "classes"
         ? [row.subject, row.school_year].filter(Boolean).join(" - ")
         : row.teacher_id ||
-          row.student_id ||
+          (entity === "students" ? row.username || row.email : null) ||
           (entity === "lessons"
             ? "Order " + row.order_number
             : "Scene " + row.level_number),
@@ -660,9 +660,7 @@ function RecordRow({
             {entity === "classes" ? <SectionArchiveButton archived={archived} name={String(name)} className="teacher-btn" /> : <button className="teacher-btn">{archived ? "Restore" : "Archive"}</button>}
           </form>)}
           {["teachers", "students", "classes", "lessons", "levels"].includes(entity) && (
-            <details className="admin-row-more">
-              <summary aria-label={"More actions for " + name}>More</summary>
-              <div className="admin-row-secondary">
+            <AdminRecordActions name={String(name)}>
                 {entity === "levels" && (
                   <form action={setAdminEntityStatus}>
                     <input type="hidden" name="entity" value={entity} />
@@ -713,8 +711,7 @@ function RecordRow({
                     </form>
                   </details>
                 )}
-              </div>
-            </details>
+            </AdminRecordActions>
           )}
         </div>
       </td>

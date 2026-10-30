@@ -18,7 +18,7 @@ export default async function Page({
       <AutomaticBackupPanel selectedId={q.backup} retryId={q.retry} />
       <div className="teacher-grid two">
         <section className="teacher-card">
-          <h3>Download a school save file</h3>
+          <h3>Download a platform save file</h3>
           <p className="teacher-note">
             Includes curriculum, accounts, sections, assignments, notifications,
             achievements, and recorded performance. Authentication password

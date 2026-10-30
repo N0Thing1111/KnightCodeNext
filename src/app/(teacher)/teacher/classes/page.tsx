@@ -144,10 +144,8 @@ export default async function Page({
                     {c.status === "active" && <Link
                       prefetch={false}
                       className="teacher-btn small"
-                      href={"/teacher/classes?import=" + c.id}
-                    >
-                      Import
-                    </Link>}
+                      href={"/teacher/class/" + c.id + "#enrollment"}
+                    >Invite students</Link>}
                     <form action={setClassStatus}>
                       <input type="hidden" name="id" value={c.id} />
                       <input
@@ -170,49 +168,4 @@ export default async function Page({
     </>
   );
 }
-function ImportBox({ classId }: { classId: string }) {
-  return (
-    <section className="teacher-card">
-      <div className="teacher-card-head">
-        <div>
-          <span className="teacher-eyebrow">IMPORT STUDENTS</span>
-          <h3>Upload student list</h3>
-        </div>
-        <a
-          className="teacher-btn small"
-          href="/teacher/sample-students-import.csv"
-          download
-        >
-          Download Sample CSV
-        </a>
-      </div>
-      <form
-        action="/api/teacher/import"
-        method="post"
-        encType="multipart/form-data"
-        className="teacher-import-box"
-      >
-        <input type="hidden" name="class_id" value={classId} />
-        <div className="upload-drop">
-          <strong>Drop a CSV or XLSX file here</strong>
-          <span>or choose a file from your device · maximum 5 MB</span>
-          <input type="file" name="student_file" accept=".csv,.xlsx" required />
-        </div>
-        <div className="import-columns">
-          <p>
-            All rows are enrolled in the selected section. Any Section column in
-            an older file is ignored.
-          </p>
-          <strong>Required columns</strong>
-          <span>Student ID</span>
-          <span>First Name + Last Name (or Name)</span>
-          <span>Email</span>
-          <span>Optional: Username</span>
-        </div>
-        <button className="teacher-btn primary">
-          Validate &amp; Preview →
-        </button>
-      </form>
-    </section>
-  );
-}
+function ImportBox({ classId }: { classId: string }) { return <section className="teacher-card"><h3>Invite students to your class</h3><p>Students now register with their own email and password. Share your class code, then approve their enrollment requests.</p><Link className="teacher-btn" href={"/teacher/class/"+classId+"#enrollment"}>Open invitations</Link></section>; }

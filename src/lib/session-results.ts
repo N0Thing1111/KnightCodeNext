@@ -87,7 +87,7 @@ export async function getSessionResults(
       : await readAll<SessionStudent>((from, to) => {
           let q = db
             .from("profiles")
-            .select("id,name,student_id,email")
+            .select("id,name,username,email")
             .eq("role", "student")
             .order("id");
           if (role === "teacher") q = q.in("id", memberIds);

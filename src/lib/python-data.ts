@@ -62,7 +62,7 @@ export async function getPythonRoster(actor: Profile) {
   const students: {
     id: string;
     name: string;
-    student_id: string | null;
+    username: string | null;
     email: string;
     class_id: number;
   }[] = [];
@@ -71,7 +71,7 @@ export async function getPythonRoster(actor: Profile) {
     for (let from = 0; ; from += 500) {
       const page = await db
         .from("profiles")
-        .select("id,name,student_id,email")
+        .select("id,name,username,email")
         .eq("role", "student")
         .order("id")
         .range(from, from + 499);
@@ -89,7 +89,7 @@ export async function getPythonRoster(actor: Profile) {
       const part = memberships.slice(start, start + 100);
       const rows = await db
         .from("profiles")
-        .select("id,name,student_id,email")
+        .select("id,name,username,email")
         .eq("role", "student")
         .in(
           "id",

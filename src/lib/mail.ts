@@ -56,18 +56,18 @@ export async function sendStudentPasswordEmail(
     "Hi " + input.name + ",",
     "",
     input.reason === "restore"
-      ? "Your school administrator has recreated your KnightCode account while restoring a school save at " +
+      ? "Your platform administrator has recreated your KnightCode account while restoring a platform save at " +
         school +
         ". Use the new temporary password below."
       : input.reason === "welcome"
-        ? "Your KnightCode account has been created by your school at " +
+        ? "Your KnightCode account has been created by the platform administrator at " +
           school +
           "."
         : "Your KnightCode password was reset by your teacher at " +
           school +
           ".",
     "",
-    "Student ID: " + input.studentId,
+
   ];
   if (input.username) lines.push("Username: " + input.username);
   lines.push(
@@ -75,7 +75,7 @@ export async function sendStudentPasswordEmail(
     "Temporary password: " + input.temporaryPassword,
     "",
     "Sign in at: " + loginUrl(),
-    "Use your Student ID, username, or email with the temporary password above.",
+    "Use your username or email with the temporary password above.",
     "After signing in, open Profile and change the temporary password in the Security section.",
     "",
     "- " + school,
@@ -96,11 +96,11 @@ export async function sendTeacherPasswordEmail(input: {
     "Hi " + input.name + ",",
     "",
     input.reason === "restore"
-      ? "Your school administrator has recreated your KnightCode teacher account while restoring a school save at " +
+      ? "Your platform administrator has recreated your KnightCode teacher account while restoring a platform save at " +
         school +
         ". Use the new temporary password below."
-      : input.reason === "reset" ? "Your school administrator reset your KnightCode teacher password at " + school + "."
-      : "Your KnightCode teacher account has been created by your school administrator at " +
+      : input.reason === "reset" ? "Your platform administrator reset your KnightCode teacher password at " + school + "."
+      : "Your KnightCode teacher account has been created by your platform administrator at " +
         school +
         ".",
     "",

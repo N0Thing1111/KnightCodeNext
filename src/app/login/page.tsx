@@ -66,14 +66,11 @@ export default async function LoginPage() {
               Pick up your coding quest where you left off.
             </p>
             <LoginForm />
+          <p><Link href="/register">Create an account</Link></p>
             <div className="auth-trust-row">
               <span>✓ Secure sign-in</span>
               <span>✓ Student account</span>
             </div>
-            <p className="auth-help">
-              Need an account? Ask your instructor for your KnightCode
-              credentials.
-            </p>
           </div>
         </section>
       </main>

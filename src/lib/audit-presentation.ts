@@ -7,12 +7,13 @@ export const auditId = (value: unknown) => typeof value === "string" || typeof v
 const count = (value: unknown) => typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : null;
 const outcome = (value: unknown) => value === "passed" ? "Passed" : value === "needs_revision" ? "Needs revision" : value === "reviewed" ? "No outcome recorded" : "";
 const labels: Record<string, string> = {
+  approve_teacher: "Teacher approved", reject_teacher: "Teacher registration rejected",
   sign_in: "Signed in", create: "Created", update: "Updated", archive: "Archived", restore: "Restored", delete: "Deleted",
   enrol: "Student assigned", enroll: "Student assigned", enol: "Student assigned", remove_from_class: "Student removed",
   import: "Accounts imported", reset_password: "Password reset", update_password: "Password changed", update_profile: "Profile updated",
-  update_school: "School details updated", update_support: "Support details updated", update_theme: "Appearance changed",
+  update_school: "Platform details updated", update_support: "Support details updated", update_theme: "Appearance changed",
   create_stored_backup: "Backup saved", download_stored_backup: "Saved backup downloaded",
-  download_backup: "Backup downloaded", restore_backup: "Backup restored", reset_learning: "Learning records reset", reset_school: "School data reset",
+  download_backup: "Backup downloaded", restore_backup: "Backup restored", reset_learning: "Learning records reset", reset_school: "Platform data reset",
   clear_run_history: "Run history cleared", edit_python_feedback: "Feedback edited", correct_python_review: "Feedback corrected",
   consolidate_python_feedback: "Feedback consolidated", restore_legacy_python_feedback: "Older feedback preserved",
 };
@@ -56,12 +57,14 @@ export function presentAudit(event: AuditEvent, names: AuditNames) {
       if (errors) summary += " " + errors + " rows could not be imported.";
       break;
     }
-    case "create_stored_backup": summary = d.source === "weekly" ? "Saved a scheduled weekly school backup." : "Created a school backup in the private archive."; break;
+    case "approve_teacher": summary = "Approved a verified teacher registration and enabled teacher access."; break;
+    case "reject_teacher": summary = "Rejected a teacher registration; teacher access remains disabled."; break;
+    case "create_stored_backup": summary = d.source === "weekly" ? "Saved a scheduled weekly platform backup." : "Created a platform backup in the private archive."; break;
     case "download_stored_backup": summary = "Downloaded a saved backup encrypted with a password chosen for that file."; break;
-    case "download_backup": summary = "Downloaded a school backup file."; break;
-    case "restore_backup": summary = "Restored school records from a backup file."; break;
+    case "download_backup": summary = "Downloaded a platform backup file."; break;
+    case "restore_backup": summary = "Restored platform records from a backup file."; break;
     case "reset_learning": summary = "Cleared learning records and reset progress; accounts and curriculum were kept."; break;
-    case "reset_school": summary = "Reset the school's operational data."; break;
+    case "reset_school": summary = "Reset the platform's operational data."; break;
     case "clear_run_history": {
       const kinds: Record<string, string> = { python_practice: "unsuccessful Python practice runs", python_finished: "finished, unsubmitted Python runs", python_submitted: "submitted Python runs", game_unfinished: "unfinished game sessions", game_completed: "completed game sessions", game_all: "game sessions" };
       const kind = auditText(d.category), affected = count(d.affected);

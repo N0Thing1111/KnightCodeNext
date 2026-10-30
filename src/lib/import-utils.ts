@@ -19,7 +19,7 @@ export function normalizeRow(raw: Record<string, unknown>): ImportRow {
     last = normalized.last_name || normalized.lastname || "";
   return {
     student_id:
-      normalized.student_id || normalized.studentid || normalized.id || "",
+      "",
     name: normalized.name || [first, last].filter(Boolean).join(" "),
     email: (normalized.email || "").toLowerCase(),
     username: (normalized.username || "").toLowerCase(),
@@ -28,11 +28,11 @@ export function normalizeRow(raw: Record<string, unknown>): ImportRow {
 }
 export function issues(row: ImportRow, seen: Set<string>) {
   const out: string[] = [];
-  if (!row.student_id || !row.name || !row.email)
+  if (!row.name || !row.email)
     out.push("Missing required field");
   if (row.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(row.email))
     out.push("Invalid email");
-  const key = row.student_id.toLowerCase() + "|" + row.email;
+  const key = row.email;
   if (seen.has(key)) out.push("Duplicate row");
   seen.add(key);
   return out;

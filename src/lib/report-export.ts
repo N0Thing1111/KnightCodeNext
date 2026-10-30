@@ -10,7 +10,7 @@ function csvCell(value: string) {
   return '"' + safe.replaceAll('"', '""') + '"';
 }
 export function reportCsv(report: Report) {
-  const metaColumns = ["Report", "School", "Teacher", "Section scope", "School year", "Generated at (UTC+08)", "Reporting period"];
+  const metaColumns = ["Report", "Platform", "Teacher", "Section scope", "School year", "Generated at (UTC+08)", "Reporting period"];
   const metaValues = [report.title, report.school, report.teacher, report.section, report.schoolYear, reportDate(report.generatedAt), report.period];
   return "\uFEFF" + [[...metaColumns, ...report.columns], ...report.rows.map(row => [...metaValues, ...row])].map(row => row.map(csvCell).join(",")).join("\r\n") + "\r\n";
 }
@@ -73,7 +73,7 @@ export async function reportPdf(report: Report): Promise<Uint8Array<ArrayBuffer>
 
   // The register keeps identity details together, leaving room for learning evidence.
   const student = report.columns.indexOf("Student");
-  const studentId = report.columns.indexOf("Student ID");
+  const studentId = report.columns.indexOf("Account");
   const section = report.columns.indexOf("Section");
   const combineStudent = student >= 0 && studentId >= 0;
   const kept = report.columns.map((_, i) => i).filter(i => !combineStudent || (i !== studentId && i !== section));
@@ -169,7 +169,7 @@ export async function reportPdf(report: Report): Promise<Uint8Array<ArrayBuffer>
     doc.setFont("ReportSans", "normal"); doc.setFontSize(8); doc.setTextColor(muted);
     doc.text("Generated (UTC+08)", margin, height - 91);
     doc.text(reportDate(report.generatedAt), margin, height - 77);
-    doc.text("School use", left, height - 20);
+    doc.text("Teacher records", left, height - 20);
     doc.setFont("times", "normal"); doc.setFontSize(18); doc.setTextColor(ink);
     doc.text(String(page), margin, height - 34);
     doc.setFont("ReportSans", "normal"); doc.setFontSize(8); doc.setTextColor(muted);

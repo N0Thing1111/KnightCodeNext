@@ -81,14 +81,14 @@ export async function saveAdminEntity(f: FormData) {
       const role = entity === "teachers" ? "teacher" : "student",
         name = str(f, "name"),
         email = str(f, "email").toLowerCase(),
-        code = str(f, role === "teacher" ? "teacher_id" : "student_id"),
+        code = role === "teacher" ? str(f, "teacher_id") : "",
         username =
           role === "student" ? str(f, "username").toLowerCase() || null : null;
-      if (!name || !email.includes("@") || !code)
+      if (!name || !email.includes("@") || (role === "teacher" && !code))
         throw Error("Complete the required account fields.");
       if (role === "student") {
         const existingStudent = await findStudentAccount(a, email, code, id || null);
-        if (existingStudent) throw Error("Email or student ID already belongs to an existing student. Edit that account instead of creating a duplicate.");
+        if (existingStudent) throw Error("Email already belongs to an existing student. Edit that account instead of creating a duplicate.");
         await requireSectionMembership();
         const sectionId = num(f, "class_id");
         if (sectionId) {
@@ -160,7 +160,6 @@ export async function saveAdminEntity(f: FormData) {
       if (role === "teacher") patch.teacher_id = code;
       else
         Object.assign(patch, {
-          student_id: code,
           username,
         });
       try {
@@ -513,9 +512,9 @@ export async function saveAdminSettings(f: FormData) {
       if (error) throw Error(error.message);
     } else if (action === "school") {
       for (const [key, value] of [
-        ["school_name", str(f, "school_name")],
+        ["platform_name", str(f, "platform_name")],
       ]) {
-        if (!value) throw Error("Complete the school details.");
+        if (!value) throw Error("Complete the platform details.");
         await a
           .from("admin_settings")
           .upsert({ setting_key: key, setting_value: value });

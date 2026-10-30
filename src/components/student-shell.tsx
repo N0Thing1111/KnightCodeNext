@@ -87,6 +87,7 @@ export function StudentShell({
 
   const links = [
     ["/dashboard", "⌂", "Dashboard"],
+    ["/join", "", "Your class"],
     ["/lessons", "▤", "Lessons"],
     ["/assignments", "✓", "My Assignments"],
     ["/lessons#levels", "⚔", "Challenges"],
@@ -326,6 +327,7 @@ function pageTitle(path: string) {
   if (path.startsWith("/assignments")) return "My Assignments";
   if (path.startsWith("/progress")) return "My Progress";
   if (path.startsWith("/support")) return "Contact & Support";
+  if (path.startsWith("/join")) return "Your class";
   if (path.startsWith("/profile")) return "Profile";
   if (path.startsWith("/play/")) return "Challenge";
   return "Dashboard";

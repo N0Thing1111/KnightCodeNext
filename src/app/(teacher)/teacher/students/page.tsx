@@ -16,7 +16,7 @@ export default async function Page({
   if (q.q) {
     const x = q.q.toLowerCase();
     rows = rows.filter((s) =>
-      (s.name + s.student_id + s.email).toLowerCase().includes(x),
+      (s.name + s.username + s.email + s.email).toLowerCase().includes(x),
     );
   }
   if (q.class_id)
@@ -74,7 +74,7 @@ export default async function Page({
                         <span>
                           <strong>{s.name}</strong>
                           <small>
-                            {s.student_id} · {s.email}
+                            {s.username || s.email} · {s.email}
                             {s.username ? " · @" + s.username : ""}
                           </small>
                         </span>

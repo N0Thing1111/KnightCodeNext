@@ -47,7 +47,7 @@ export default async function Page() {
             students.length,
             "♙",
             "Students",
-            "Learning at your school",
+            "Learning across KnightCode",
             "students",
           ],
           [
@@ -181,7 +181,7 @@ export default async function Page() {
             eyebrow="KEEP THINGS MOVING"
             title={
               "What’s next for " +
-              setting(ctx, "school_name", "your school") +
+              setting(ctx, "platform_name", "KnightCode") +
               "?"
             }
           />

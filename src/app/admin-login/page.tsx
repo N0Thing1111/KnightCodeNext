@@ -27,7 +27,7 @@ export default async function Page({
           </h1>
           <p>
             Support your teachers, shape the curriculum, and oversee learning
-            across your school&apos;s KnightCode deployment.
+            across the KnightCode platform.
           </p>
           <div className="auth-feature-grid">
             <div>
@@ -50,7 +50,7 @@ export default async function Page({
           <span className="eyebrow">ADMIN PORTAL</span>
           <h2>Welcome back</h2>
           <p className="auth-subtitle">
-            Sign in with your school administrator account.
+            Sign in with your platform administrator account.
           </p>
           {q.error && <div className="alert alert-error">{q.error}</div>}
           <form method="post" action="/api/admin/login" className="auth-form">

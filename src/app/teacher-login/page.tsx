@@ -67,12 +67,12 @@ export default async function Page({
           )}
           <form action="/api/teacher/login" method="post" className="auth-form">
             <label htmlFor="teacher-identifier">
-              Teacher ID or Email
+              Username or Email
               <input
                 id="teacher-identifier"
                 type="text"
                 name="identifier"
-                placeholder="TCH-2026-001"
+                placeholder="teacher@example.edu.ph"
                 autoComplete="username"
                 required
                 autoFocus
@@ -102,7 +102,7 @@ export default async function Page({
             <span>✓ Teacher account</span>
           </div>
           <p className="auth-help">
-            Teacher accounts are created by your school administrator.
+            <Link href="/register?role=teacher">Request teacher access with your education email</Link>
           </p>
           <p className="auth-help">
             <Link href="/login">← Student Login</Link>

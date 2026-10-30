@@ -40,7 +40,7 @@ export default async function Page({
           students={students.filter(s => ctx.memberships.some(m => m.student_id === s.id && ctx.classes.some(c => c.id === m.class_id && c.status === "active"))).map((s) => ({
             id: s.id,
             name: s.name,
-            studentId: s.student_id ?? "",
+            studentId: s.username || s.email,
             classIds: ctx.memberships
               .filter((m) => m.student_id === s.id)
               .map((m) => m.class_id),
@@ -112,7 +112,7 @@ export default async function Page({
                           <small>
                             {c
                               ? c.subject
-                              : (s?.student_id ?? "Historical assignment")}
+                              : (s?.username ?? "Historical assignment")}
                           </small>
                         </div>
                       </td>

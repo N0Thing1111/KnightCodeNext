@@ -15,11 +15,11 @@ export function LoginForm() {
         </div>
       )}
       <label htmlFor="identifier">
-        Student ID, Username, or Email
+        Username or Email
         <input
           id="identifier"
           name="identifier"
-          placeholder="STU-2026-001"
+          placeholder="Your username or email"
           autoComplete="username"
           required
           autoFocus
