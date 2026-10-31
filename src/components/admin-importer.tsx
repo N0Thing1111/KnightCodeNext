@@ -66,6 +66,8 @@ export function AdminImporter() {
           generated ID and password, emailed to their address and shown in the
           results for you to copy if sending fails.
         </p>
+        <p>Replace the example row with real account details. Do not include passwords or IDs.</p>
+        <p><a className="teacher-btn" href="/templates/admin-teachers.csv" download>Download CSV template</a></p>
         <label className="admin-file-label">
           Teacher CSV
           <input

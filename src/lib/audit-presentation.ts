@@ -13,18 +13,18 @@ const labels: Record<string, string> = {
   import: "Accounts imported", reset_password: "Password reset", update_password: "Password changed", update_profile: "Profile updated",
   update_school: "Platform details updated", update_support: "Support details updated", update_theme: "Appearance changed",
   create_stored_backup: "Backup saved", download_stored_backup: "Saved backup downloaded",
-  download_backup: "Backup downloaded", restore_backup: "Backup restored", reset_learning: "Learning records reset", reset_school: "Platform data reset",
+  download_backup: "Backup downloaded", restore_backup: "Backup restored", reset_learning: "Learning records reset", reset_school: "Platform data reset", reset_platform_data: "Data reset",
   clear_run_history: "Run history cleared", edit_python_feedback: "Feedback edited", correct_python_review: "Feedback corrected",
   consolidate_python_feedback: "Feedback consolidated", restore_legacy_python_feedback: "Older feedback preserved",
 };
-const entities: Record<string, string> = { students: "Student account", teachers: "Teacher account", classes: "Section", lessons: "Lesson", levels: "Game level", class_students: "Section membership", admin: "Administrator account", system: "School data", run_history: "Run history", python_reviews: "Python feedback" };
+const entities: Record<string, string> = { students: "Student account", teachers: "Teacher account", classes: "Section", lessons: "Lesson", levels: "Game level", class_students: "Section membership", admin: "Administrator account", system: "Platform data", run_history: "Run history", python_reviews: "Python feedback" };
 export function presentAudit(event: AuditEvent, names: AuditNames) {
   const d = auditObject(event.details), before = auditObject(d.before), after = auditObject(d.after);
   const actorId = auditId(d.actor_id) || event.admin_id || "", actor = names.profiles.get(actorId);
   const actorName = auditText(d.actor_name) || actor?.name || (actorId ? "Former or unavailable account" : "System");
   const role = auditText(d.actor_role) || actor?.role || (event.admin_id ? "admin" : "");
   const actorRole = role === "teacher" ? "Teacher" : role === "admin" ? "Administrator" : "";
-  const id = auditId(event.record_id), entity = entities[event.entity] || "School record";
+  const id = auditId(event.record_id), entity = entities[event.entity] || "Platform record";
   const studentId = auditId(after.student_id) || auditId(before.student_id) || auditId(d.student_id);
   let record = entity;
   if (["students", "teachers", "class_students"].includes(event.entity)) record = names.profiles.get(id)?.name || entity;
@@ -63,6 +63,11 @@ export function presentAudit(event: AuditEvent, names: AuditNames) {
     case "download_stored_backup": summary = "Downloaded a saved backup encrypted with a password chosen for that file."; break;
     case "download_backup": summary = "Downloaded a platform backup file."; break;
     case "restore_backup": summary = "Restored platform records from a backup file."; break;
+    case "reset_platform_data": {
+      const totals = auditObject(d.counts), learners = count(totals.learner_profiles_reset) ?? 0;
+      summary = "Reset " + (d.mode === "learning" ? "learning records for " : "platform records for ") + (auditText(d.target_label) || "the selected scope") + " (" + learners + " learners). " + (d.mode === "platform_delete" ? "Deleted " + (count(totals.accounts_deleted) ?? 0) + " teacher/student accounts. " : "Accounts kept. ") + "Shared content and backups preserved.";
+      break;
+    }
     case "reset_learning": summary = "Cleared learning records and reset progress; accounts and curriculum were kept."; break;
     case "reset_school": summary = "Reset the platform's operational data."; break;
     case "clear_run_history": {

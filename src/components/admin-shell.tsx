@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import type { Profile } from "@/types/database";
 
 const links = [
-  ["/admin/registrations", "", "Teacher registrations"],
   ["/admin", "⌂", "Overview"],
   ["/admin/manage/teachers", "♜", "Teachers"],
   ["/admin/manage/students", "♙", "Students"],

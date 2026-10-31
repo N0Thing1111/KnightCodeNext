@@ -2,16 +2,12 @@
 import { randomBytes, createHash } from "node:crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { requireAdmin, requireStudent, requireTeacher } from "@/lib/auth";
+import { requireStudent, requireTeacher } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 async function finish(path:string,work:()=>Promise<void>) {
  let message="Saved.",key="notice";
  try { await work(); } catch(e) {key="error";message=e instanceof Error?e.message:"Unable to save.";}
  revalidatePath("/","layout");redirect(path+"?"+key+"="+encodeURIComponent(message));
-}
-export async function reviewTeacher(form:FormData) {
- const actor=await requireAdmin();
- await finish("/admin/registrations",async()=>{const r=await createAdminClient().rpc("review_teacher_registration",{p_actor:actor.id,p_teacher:String(form.get("teacher_id")),p_approve:form.get("decision")==="approve"});if(r.error)throw Error(r.error.message);});
 }
 export async function rotateClassCode(form:FormData) {
  const actor=await requireTeacher();const classId=Number(form.get("class_id"));

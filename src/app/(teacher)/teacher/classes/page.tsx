@@ -1,10 +1,11 @@
+import { SectionDeleteButton } from "@/components/section-delete-button";
 import { SectionArchiveButton } from "@/components/section-archive-button";
 import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
 import { requireTeacher } from "@/lib/auth";
 import { getTeacherContext } from "@/lib/teacher-data";
 import { Alerts, Hero } from "@/components/teacher-ui";
-import { saveClass, setClassStatus } from "@/app/actions/teacher";
+import { saveClass, setClassStatus, deleteUnusedClass } from "@/app/actions/teacher";
 export default async function Page({
   searchParams,
 }: {
@@ -20,7 +21,7 @@ export default async function Page({
       <Hero
         eyebrow="SECTION MANAGEMENT"
         title="My Sections"
-        description="Create sections, import students, and monitor section performance."
+        description="Create sections, invite students, and monitor section performance."
       >
         <Link
           prefetch={false}
@@ -141,11 +142,6 @@ export default async function Page({
                     >
                       Edit
                     </Link>
-                    {c.status === "active" && <Link
-                      prefetch={false}
-                      className="teacher-btn small"
-                      href={"/teacher/class/" + c.id + "#enrollment"}
-                    >Invite students</Link>}
                     <form action={setClassStatus}>
                       <input type="hidden" name="id" value={c.id} />
                       <input
@@ -155,6 +151,11 @@ export default async function Page({
                       />
                       <SectionArchiveButton archived={c.status === "archived"} name={sectionLabel(c)} className="teacher-btn small danger" />
                     </form>
+                    {count === 0 && <form action={deleteUnusedClass}>
+                      <input type="hidden" name="id" value={c.id} />
+                      <input type="hidden" name="confirm_delete" value="1" />
+                      <SectionDeleteButton name={sectionLabel(c)} />
+                    </form>}
                   </div>
                 </article>
               );

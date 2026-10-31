@@ -316,6 +316,7 @@ export default async function Page({
               <tr>
                 <th>Name / Title</th>
                 <th>{entity === "levels" ? "Lesson" : "Details"}</th>
+                {entity === "students" && <th>Class / Learning mode</th>}
                 <th>Status</th>
                 {entity === "levels" && <th>Game</th>}
                 <th>Actions</th>
@@ -328,7 +329,7 @@ export default async function Page({
                 ))
               ) : (
                 <tr>
-                  <td colSpan={entity === "levels" ? 5 : 4}>
+                  <td colSpan={entity === "levels" || entity === "students" ? 5 : 4}>
                     <div className="teacher-empty">
                       {supportsStatusFilter
                         ? "No records match these filters. Change your filters or use Clear to reset them."
@@ -629,6 +630,7 @@ function RecordRow({
           </details>
         ) : detail}
       </td>
+      {entity === "students" && <td>{(() => { const membership = ctx.class_students.find((m: any) => m.student_id === row.id); const section = membership && ctx.classes.find((c: any) => c.id === membership.class_id); return section ? sectionLabel(section) + (section.status === "archived" ? " (archived)" : "") : membership ? "Section unavailable" : "Independent learner"; })()}</td>}
       <td>
         <span className={"admin-status " + (archived ? "is-archived" : "")}>
           {status}

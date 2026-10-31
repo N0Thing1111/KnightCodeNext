@@ -1244,3 +1244,17 @@ html[data-theme="light"] .admin-body .teacher-card {
   .admin-record-dialog-head { gap: 12px; }
   .admin-record-dialog-head h2 { font-size: 18px; }
 }
+
+.platform-reset-form { display: grid; gap: 24px; min-width: 0; }
+.platform-reset-form .admin-form { margin-top: 20px; }
+.platform-reset-form .teacher-table-wrap { margin-block: 20px; }
+
+.platform-reset-form .admin-form > button { justify-self: start; align-self: end; }
+@media (max-width: 640px) { .platform-reset-form .admin-form { grid-template-columns: minmax(0, 1fr); } }
+
+.reset-affected-learners { margin-top: 16px; }
+.reset-affected-learners ul { max-height: 240px; overflow: auto; padding-left: 24px; overflow-wrap: anywhere; }
+
+.platform-reset-form .teacher-table { min-width: 0; width: 100%; table-layout: fixed; }
+.platform-reset-form .teacher-table th:last-child, .platform-reset-form .teacher-table td:last-child { width: 72px; text-align: right; font-variant-numeric: tabular-nums; }
+.platform-reset-form .teacher-table th, .platform-reset-form .teacher-table td { white-space: normal; overflow-wrap: anywhere; }

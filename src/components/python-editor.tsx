@@ -30,7 +30,9 @@ export function PythonEditor({
   studentId,
   initialSource,
   initialRun = null,
+  independent = false,
 }: {
+  independent?: boolean;
   activity: PythonActivity;
   studentId: string;
   initialSource: string;
@@ -177,7 +179,7 @@ export function PythonEditor({
       setPending(null);
       router.refresh();
       setMessage(
-        "Run saved. Review the result, revise, or submit this Run to your teacher.",
+        independent ? "Run saved. After a successful execution, select Complete practice to record your progress." : "Run saved. Review the result, revise, or submit this Run to your teacher.",
       );
     } catch (error) {
       if (!mounted.current) return;
@@ -301,7 +303,7 @@ export function PythonEditor({
         if (worker.current !== w || !current.current) return;
         if (data.type === "ready") {
           if (timer.current) clearTimeout(timer.current);
-          setMessage("Running. Your teacher can review this Run.");
+          setMessage(independent ? "Running. Your practice is saved to your history." : "Running. Your teacher can review this Run.");
           startClock();
           w.postMessage({
             type: "run",
@@ -388,10 +390,10 @@ export function PythonEditor({
     if (!lastRun || lastRun.source !== code) return;
     setSaving(true);
     try {
-      await api({ op: "submit", id: lastRun.id });
+      await api({ op: independent ? "complete_practice" : "submit", id: lastRun.id });
       router.refresh();
       setMessage(
-        "Submitted for teacher review. New runs and submissions are closed until your teacher requests a revision.",
+        independent ? "Practice completed. Return to Lessons to continue your learning path. This is not a teacher assessment." : "Submitted for teacher review. New runs and submissions are closed until your teacher requests a revision.",
       );
     } catch (e) {
       setMessage((e as Error).message);
@@ -483,7 +485,7 @@ export function PythonEditor({
         {message}
       </p>
       <p>
-        Run records your coding process; Submit sends that Run for review. Save
+        {independent ? "Run records your practice; Complete practice saves independent progress." : "Run records your coding process; Submit sends that Run for review."} Save
         your draft before leaving. Closing during execution stops the Run. If the
         connection is lost, a pending Run is shown as unfinished after 24 hours
         without contact from its page.
@@ -491,9 +493,9 @@ export function PythonEditor({
     </section>
     <PythonPracticeChecks cases={activity.content.cases} checks={checks} running={busy} stale={checks.length > 0 && lastRun?.source !== code} />
     <section className={styles.card + " " + styles.submissionSection} aria-label="Submit your work">
-      <span className={styles.kicker}>SUBMISSION</span>
-      <h2>Submit your work</h2>
-      <p>Ready for your teacher to review your approach? Submit your latest saved Run. Practice checks are guidance; you can submit a Run even if some example outputs do not match.</p>
+      <span className={styles.kicker}>{independent ? "INDEPENDENT PRACTICE" : "SUBMISSION"}</span>
+      <h2>{independent ? "Complete independent practice" : "Submit your work"}</h2>
+      <p>{independent ? "Complete a successful saved run, review the example checks, then record practice completion. This records participation, not a teacher-assessed Passed grade." : "Ready for your teacher to review your approach? Submit your latest saved Run. Practice checks are guidance; you can submit a Run even if some example outputs do not match."}</p>
       <p>{pending ? "Save the pending result before submitting." : !lastRun ? "Run your program and wait for its result to save first." : lastRun.source !== code ? "Your code has changed. Run it again before submitting this version." : "Your latest saved Run is ready to submit."}</p>
       <div className={styles.actions}>
         <button
@@ -503,11 +505,11 @@ export function PythonEditor({
           className={styles.submit}
           onClick={submit}
         >
-          Submit this Run
+          {independent ? "Complete practice" : "Submit this Run"}
         </button>
-        <a href="#history">View submissions and teacher feedback</a>
+        <a href="#history">{independent ? "View run history" : "View submissions and teacher feedback"}</a>
       </div>
-      <p>After submitting, the editor closes while you wait for review. Needs revision reopens it for a new attempt; Passed completes the activity.</p>
+      <p>{independent ? "Once the available games and Python practice are complete, the next lesson unlocks. You can continue practicing here." : "After submitting, the editor closes while you wait for review. Needs revision reopens it for a new attempt; Passed completes the activity."}</p>
     </section>
     </>
   );

@@ -49,6 +49,7 @@ export default async function AssignmentsPage() {
   ).length;
   return (
     <main className="page-container lessons-page">
+      {scope.independent && <section className="panel"><h2>No class assignments yet</h2><p>You can learn independently without assignments. Open Lessons to follow your learning path, or join a class to receive work from a teacher.</p><Link className="btn btn-primary" href="/lessons">Continue learning</Link></section>}
       <section className="page-hero lessons-hero">
         <div>
           <span className="eyebrow">TEACHER ASSIGNMENTS</span>

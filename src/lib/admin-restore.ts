@@ -115,7 +115,7 @@ export async function restoreSchoolBackup(
   const ready = await db.rpc("school_restore_version");
   if (ready.error || ![1, 2, 3, 4].includes(ready.data))
     throw Error(
-      "Restore is unavailable until migration 202610070001_atomic_school_restore.sql is applied. No school records were changed.",
+      "Restore is unavailable until migration 202610070001_atomic_school_restore.sql is applied. No platform records were changed.",
     );
 
   if (
@@ -133,14 +133,15 @@ export async function restoreSchoolBackup(
   for (let from = 0; ; from += 500) {
     const r = await db
       .from("profiles")
-      .select("id,email,role")
+      .select("id,email,role,active,onboarding_status")
       .order("id")
       .range(from, from + 499);
     if (r.error) throw Error("Could not verify existing accounts.");
     current.push(...(r.data || []));
     if (!r.data || r.data.length < 500) break;
   }
-  const profiles = backup.tables.profiles as any[];
+  // Reconcile a copy: the original encrypted save remains unchanged.
+  const profiles = (backup.tables.profiles as any[]).map((profile) => ({ ...profile }));
   const mapping: Record<string, string> = {};
   const missing: any[] = [];
   for (const p of profiles) {
@@ -158,6 +159,24 @@ export async function restoreSchoolBackup(
           "An account role conflicts with the save file. No records were replaced.",
         );
       mapping[p.id] = byEmail.id;
+      if (p.role === "teacher" && p.onboarding_status === "pending") {
+        // A pending snapshot must not undo a later archive or rejection.
+        if (
+          byEmail.onboarding_status === "rejected" ||
+          (byEmail.onboarding_status === "approved" && byEmail.active === false)
+        ) {
+          p.onboarding_status = byEmail.onboarding_status;
+          p.active = false;
+        } else {
+          const account = await db.auth.admin.getUserById(byEmail.id);
+          if (account.error || !account.data.user)
+            throw Error("Could not verify a restored teacher's email status. No records were replaced.");
+          if (account.data.user.email_confirmed_at) {
+            p.onboarding_status = "approved";
+            p.active = true;
+          }
+        }
+      }
     } else missing.push(p);
   }
   const credentials: NonNullable<RestoreResult["credentials"]> = [];
@@ -177,6 +196,12 @@ export async function restoreSchoolBackup(
         "Could not prepare a missing account. School records were not replaced. Any accounts already prepared can be managed under Teachers/Students.",
       );
     mapping[p.id] = created.data.user.id;
+    // createUser already confirmed this account. Restoring an old pending
+    // status would leave it waiting for a confirmation event that cannot recur.
+    if (p.role === "teacher" && p.onboarding_status === "pending") {
+      p.onboarding_status = "approved";
+      p.active = true;
+    }
     credentials.push({
       name: p.name,
       email: p.email,
@@ -186,7 +211,7 @@ export async function restoreSchoolBackup(
     });
   }
   const restored = await db.rpc("restore_school_backup", {
-    p_backup: backup,
+    p_backup: { ...backup, tables: { ...backup.tables, profiles } },
     p_user_map: mapping,
     p_admin: adminId,
   });

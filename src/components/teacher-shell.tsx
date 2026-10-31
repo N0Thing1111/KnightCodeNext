@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import Link from "next/link";
+import { useNotifications } from "@/components/use-notifications";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { TeacherProfile } from "@/lib/teacher-data";
@@ -18,7 +19,7 @@ export function TeacherShell({
   const pathname = usePathname();
   const [menu, setMenu] = useState(false);
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState(notifications);
+  const { items, setItems, refreshNotifications } = useNotifications(notifications, "/api/teacher/notifications", pathname);
   const unread = useMemo(() => items.filter((n) => !n.is_read).length, [items]);
   useEffect(() => {
     document.documentElement.dataset.theme = teacher.theme_preference;
@@ -134,7 +135,7 @@ export function TeacherShell({
             <button
               className={"teacher-icon-btn " + (unread ? "has-unread" : "")}
               type="button"
-              onClick={() => setOpen(!open)}
+              onClick={() => { setOpen(!open); if (!open) void refreshNotifications(); }}
               aria-expanded={open}
             >
               🔔{unread > 0 && <b>{unread > 9 ? "9+" : unread}</b>}

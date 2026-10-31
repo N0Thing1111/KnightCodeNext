@@ -63,7 +63,7 @@ export async function sendStudentPasswordEmail(
         ? "Your KnightCode account has been created by the platform administrator at " +
           school +
           "."
-        : "Your KnightCode password was reset by your teacher at " +
+        : "Your KnightCode password was reset by the platform administrator at " +
           school +
           ".",
     "",

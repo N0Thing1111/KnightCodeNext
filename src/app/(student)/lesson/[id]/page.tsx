@@ -43,7 +43,7 @@ export default async function LessonPage({
   ]) : [null, null];
   if (access?.error || workflow?.error) throw Error("Unable to load activity status.");
   const activityState = workflow?.data?.state;
-  const reviewOnly = activityState === "passed" || activityState === "awaiting_review";
+  const reviewOnly = !data.scope.independent && (activityState === "passed" || activityState === "awaiting_review");
   return (
     <main className="page-container lesson-page">
       <LessonViewBeacon lessonId={id} />
@@ -70,7 +70,7 @@ export default async function LessonPage({
             <span style={{ width: `${pct}%` }} />
           </div>
           <small>
-            {completion.gamesDone} of {completion.gamesTotal} playable game levels complete{completion.pythonRequired ? (completion.pythonDone ? "; Python submitted" : "; Python submission pending") : ""}
+            {completion.gamesDone} of {completion.gamesTotal} playable game levels complete{completion.pythonRequired ? (completion.pythonDone ? (data.scope.independent ? "; Python practice complete" : "; Python submitted") : (data.scope.independent ? "; Python practice pending" : "; Python submission pending")) : ""}
           </small>
           {nextLevel && !section.archived && (
             <Link
@@ -206,7 +206,7 @@ export default async function LessonPage({
               <h3>{activity.content.title}</h3>
               <p>
                 {reviewOnly ? (activityState === "passed" ? "Activity passed. View your submitted code and teacher feedback." : "Your submission is awaiting teacher review. View your submitted code below.") : access?.data
-                  ? "Write a program, try it, and submit your work for teacher feedback."
+                  ? data.scope.independent ? "Write a program, run it successfully, then complete practice to continue your learning path." : "Write a program, try it, and submit your work for teacher feedback."
                   : completion.gamesDone +
                     " of " +
                     completion.gamesTotal +

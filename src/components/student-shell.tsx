@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useNotifications } from "@/components/use-notifications";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { Notification, Profile } from "@/types/database";
@@ -40,7 +41,7 @@ export function StudentShell({
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
-  const [items, setItems] = useState(notifications);
+  const { items, setItems, refreshNotifications } = useNotifications(notifications, "/api/notifications", pathname);
   const unread = useMemo(
     () => items.filter((item) => !item.is_read).length,
     [items],
@@ -148,7 +149,7 @@ export function StudentShell({
               onClick={() => setMobileOpen(false)}
               className={`sidebar-link ${active(href) ? "active" : ""}`}
             >
-              <span className="nav-icon">{icon}</span>
+              <span className="nav-icon">{href === "/join" ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3" /><path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M21 21v-2a6 6 0 0 0-4-5.65" /></svg> : icon}</span>
               <span>{label}</span>
             </Link>
           ))}
@@ -219,7 +220,7 @@ export function StudentShell({
           <div className="notification-wrap">
             <button
               className={`icon-btn notification-trigger ${unread ? "has-unread" : ""}`}
-              onClick={() => setNoticeOpen(!noticeOpen)}
+              onClick={() => { setNoticeOpen(!noticeOpen); if (!noticeOpen) void refreshNotifications(); }}
               aria-label="Notifications"
               aria-expanded={noticeOpen}
             >

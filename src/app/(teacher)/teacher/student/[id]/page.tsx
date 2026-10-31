@@ -3,7 +3,6 @@ import { lessonCompletion } from "@/lib/lesson-completion";
 import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { requireTeacher } from "@/lib/auth";
 import {
@@ -14,7 +13,6 @@ import {
   getTeacherContext,
   teacherStudents,
 } from "@/lib/teacher-data";
-import { resetStudentPassword } from "@/app/actions/teacher";
 import { Back } from "@/components/teacher-ui";
 import { StudentPythonRuns } from "@/components/student-python-runs";
 import { MonitoringOutcomes, MonitoringGuide } from "@/components/monitoring-outcomes";
@@ -25,11 +23,10 @@ export default async function Page({
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const [{ id }, q, t, jar] = await Promise.all([
+  const [{ id }, q, t] = await Promise.all([
       params,
       searchParams,
       requireTeacher(),
-      cookies(),
     ]),
     ctx = await getTeacherContext(t.id),
     summary = teacherStudents(ctx).find((s) => s.id === id);
@@ -75,26 +72,12 @@ export default async function Page({
   if (sessionError) throw new Error("Unable to load student sessions.");
   const sessions = savedSessions ?? [];
   const pythonPage = Math.max(1, Math.min(10000, Math.floor(Number(q.pythonPage)) || 1));
-  let flash: any = null;
-  try {
-    flash = JSON.parse(jar.get("kc_teacher_flash")?.value || "null");
-  } catch {}
   const assignedLessons = new Set(ctx.assignments.filter(a => !a.level_id && (a.student_id === id || cls.some(c => c!.id === a.class_id))).map(a => Number(a.lesson_id)));
   const completedLessons = ctx.lessons.filter(l => assignedLessons.has(Number(l.id)) && lessonCompletion(Number(l.id), id, ctx.levels, ctx.progress, ctx.python.activities, ctx.python.submissions).complete).length;
   return (
     <>
       <Back href="/teacher/monitoring" label="Back to monitoring" />
       {q.error && <div className="teacher-alert error">{q.error}</div>}
-      {flash && (
-        <div className="teacher-alert success">
-          ✓ {flash.message} <strong>{flash.password}</strong>{" "}
-          <span className="teacher-note">
-            {flash.emailSent
-              ? "The new password was also emailed to " + flash.email + "."
-              : "Email delivery failed or is not configured. Copy and share this password securely."}
-          </span>
-        </div>
-      )}
       <section className="student-hero">
         <div className="student-profile-large">
           <span className="teacher-avatar xl">
@@ -145,17 +128,10 @@ export default async function Page({
       <section className="teacher-card">
         <Head eyebrow="ACCOUNT ACCESS" title="Sign-in credentials" />
         <p className="teacher-note">
-          Account <strong>{summary.username || summary.email}</strong>
-          {summary.username ? ", username " + summary.username + "," : ""} and
-          email <strong>{summary.email}</strong> can all be used to sign in. If
-          the original temporary password wasn&apos;t saved, reset it below —
-          the new one is shown once here and emailed to the student when mail
-          delivery is available.
+          Students sign in with their username or email. If they forget their password,
+          they can select <strong>Forgot password?</strong> on the student sign-in page
+          and recover their account through their own email. Teachers cannot reset student passwords.
         </p>
-        <form action={resetStudentPassword}>
-          <input type="hidden" name="student_id" value={id} />
-          <button className="teacher-btn">Reset Password</button>
-        </form>
       </section>
       <div className="teacher-grid three">
         <section className="teacher-card">
@@ -199,7 +175,7 @@ export default async function Page({
           <Head eyebrow="ASSIGNMENTS" title="Recent" />
           {assignments.length ? (
             assignments.map((a) => {
-              const counts = assignmentCounts(ctx, a),
+              const counts = assignmentCounts(ctx, { ...a, student_id: id }),
                 l =
                   ctx.levels.find((x) => x.id === a.level_id) ??
                   ctx.lessons.find((x) => x.id === a.lesson_id);

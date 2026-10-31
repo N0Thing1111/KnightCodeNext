@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { createHash } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isEducationEmail, validUsername } from "@/lib/registration-rules";
+import { validUsername } from "@/lib/registration-rules";
 
 export type RegistrationState = { error?: string; success?: string; email?: string };
 export async function registerAccount(_: RegistrationState, form: FormData): Promise<RegistrationState> {
@@ -16,7 +16,6 @@ export async function registerAccount(_: RegistrationState, form: FormData): Pro
   if (!resend && (!name || name.length>150 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.length>254 || !validUsername(username) || password.length<12 || password.length>128))
     return {error:"Enter your name, a valid email, a username of 3 to 40 letters/numbers/dots/underscores/hyphens, and a password of 12 to 128 characters."};
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.length>254) return {error:"Enter a valid email address."};
-  if(role==="teacher" && !isEducationEmail(email)) return {error:"Teacher registration requires an .edu or .edu.ph email address."};
   try {
     const db=createAdminClient();
     const h=await headers();
@@ -35,6 +34,6 @@ export async function registerAccount(_: RegistrationState, form: FormData): Pro
     }
     const result=await client.auth.signUp({email,password,options:{emailRedirectTo:base.replace(/\/$/,"")+"/auth/callback",data:{name,username,requested_role:role}}});
     if(result.error) return {error:result.error.code==="signup_disabled" ? "Registration is not enabled yet. Please contact KnightCode support." : "Registration could not finish. Check your details, try another username, or sign in if you already have an account."};
-    return {email,success:role==="teacher" ? "Check your education email to verify your account. Platform administrators must approve your registration before you can access the teacher portal." : "Check your email to verify your account. Then sign in and use your teacher's class code to request enrollment."};
+    return {email,success:role==="teacher" ? "Check your email to verify your account. Once verified, sign in to the teacher portal." : "Check your email to verify your account. Then sign in and use your teacher's class code to request enrollment."};
   } catch { return {error:"Registration is temporarily unavailable. Please try again later."}; }
 }

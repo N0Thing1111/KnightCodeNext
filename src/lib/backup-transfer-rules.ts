@@ -1,4 +1,4 @@
-export const BACKUP_BUCKET = "school-backup-transfers";
+export const BACKUP_BUCKET = "platform-backup-transfers";
 export const MAX_BACKUP_BYTES = 32 * 1024 * 1024;
 export const MAX_BACKUP_JSON_BYTES = 128 * 1024 * 1024;
 export const TRANSFER_LIFETIME_MS = 2 * 60 * 60 * 1000;

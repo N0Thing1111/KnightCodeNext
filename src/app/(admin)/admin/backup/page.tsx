@@ -28,7 +28,8 @@ export default async function Page({
           <DownloadBackupForm />
         </section>
         <section className="teacher-card">
-          <h3>Restore a save file</h3>
+          <h3>Restore a platform save</h3>
+          <p className="teacher-note">Restoration replaces saved platform records for everyone. It can roll back other users&apos; work since the save. This is not a selective student or section undo. Accounts absent from the save are not automatically deleted.</p>
           <RestoreBackupForm />
         </section>
       </div>

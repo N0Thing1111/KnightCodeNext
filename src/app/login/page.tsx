@@ -5,7 +5,8 @@ import { getCurrentStudent } from "@/lib/auth";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Sign In" };
-export default async function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  const { error } = await searchParams;
   if (await getCurrentStudent()) redirect("/dashboard");
   return (
     <div className="auth-body">
@@ -65,7 +66,9 @@ export default async function LoginPage() {
             <p className="auth-subtitle">
               Pick up your coding quest where you left off.
             </p>
+            {error && <p className="alert alert-error" role="alert">{error}</p>}
             <LoginForm />
+          <p><Link href="/forgot-password">Forgot password?</Link></p>
           <p><Link href="/register">Create an account</Link></p>
             <div className="auth-trust-row">
               <span>✓ Secure sign-in</span>

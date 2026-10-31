@@ -1,13 +1,10 @@
 "use server";
-import { getSchoolName } from "@/lib/school-name";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireTeacher } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { sendStudentPasswordEmail } from "@/lib/mail";
 import { requireSectionArchive, setStudentSection } from "@/lib/sections";
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 const num = (f: FormData, k: string) => Number(f.get(k) || 0);
@@ -124,9 +121,6 @@ export async function addExistingStudent(f: FormData) {
     return "Student added to this section.";
   });
 }
-function temporaryPassword() {
-  return "KC-" + crypto.randomUUID().replaceAll("-", "").slice(0, 8) + "!";
-}
 
 export async function manualAddStudent(f: FormData) {
  await requireTeacher();
@@ -196,14 +190,15 @@ export async function createAssignment(f: FormData) {
     let recipients: string[] = [];
     if (studentId) recipients = [studentId];
     else if (classId) {
-      const { data } = await admin()
+      const { data, error: recipientsError } = await admin()
         .from("class_students")
         .select("student_id")
         .eq("class_id", classId);
+      if (recipientsError) return "Assignment created, but notification recipients could not be loaded. Students can still view it in Assignments.";
       recipients = (data ?? []).map((x) => x.student_id);
     }
     if (recipients.length) {
-      await admin()
+      const { error: notificationError } = await admin()
         .from("student_notifications")
         .upsert(
           recipients.map((s) => ({
@@ -227,8 +222,9 @@ export async function createAssignment(f: FormData) {
           })),
           { onConflict: "student_id,notification_key" },
         );
+      if (notificationError) return "Assignment created, but notifications could not be delivered. Students can still view it in Assignments.";
     }
-    return "Assignment created and students notified.";
+    return recipients.length ? "Assignment created and students notified." : "Assignment created. There are no students to notify yet.";
   });
 }
 export async function deleteAssignment(f: FormData) {
@@ -283,15 +279,16 @@ export async function saveAnnouncement(f: FormData) {
       .select("id")
       .eq("teacher_id", t.id).eq("status", "active");
     const ids = classId ? [classId] : (classes ?? []).map((c) => c.id);
-    const { data: members } = ids.length
+    const { data: members, error: recipientsError } = ids.length
       ? await admin()
           .from("class_students")
           .select("student_id")
           .in("class_id", ids)
-      : { data: [] };
+      : { data: [], error: null };
+    if (recipientsError) return "Announcement published, but notification recipients could not be loaded. Students can still see it on their dashboard.";
     const recipients = [...new Set((members ?? []).map((m) => m.student_id))];
-    if (recipients.length)
-      await admin()
+    if (recipients.length) {
+      const { error: notificationError } = await admin()
         .from("student_notifications")
         .upsert(
           recipients.map((s) => ({
@@ -304,7 +301,9 @@ export async function saveAnnouncement(f: FormData) {
           })),
           { onConflict: "student_id,notification_key" },
         );
-    return "Announcement published and delivered to students.";
+      if (notificationError) return "Announcement published, but notifications could not be delivered. Students can still see it on their dashboard.";
+    }
+    return recipients.length ? "Announcement published and students notified." : "Announcement published. There are no students to notify yet.";
   });
 }
 export async function deleteAnnouncement(f: FormData) {
@@ -317,52 +316,6 @@ export async function deleteAnnouncement(f: FormData) {
       .eq("teacher_id", t.id);
     if (error) throw Error(error.message);
     return "Announcement deleted.";
-  });
-}
-export async function resetStudentPassword(f: FormData) {
-  const t = await requireTeacher();
-  const id = str(f, "student_id");
-  await finish("/teacher/student/" + id, async () => {
-    if (!(await ownsStudent(t.id, id))) throw Error("Unauthorized student.");
-    const a = admin();
-    const { data: student, error: studentError } = await a
-      .from("profiles")
-      .select("name,email,student_id,username")
-      .eq("id", id)
-      .eq("role", "student")
-      .single();
-    if (studentError || !student)
-      throw Error(studentError?.message || "Student account not found.");
-    const password = temporaryPassword();
-    const { error } = await a.auth.admin.updateUserById(id, { password });
-    if (error) throw Error(error.message);
-    const emailSent = await sendStudentPasswordEmail({
-      email: student.email,
-      name: student.name,
-      studentId: student.student_id,
-      username: student.username,
-      temporaryPassword: password,
-      schoolLabel: await getSchoolName(a),
-      reason: "reset",
-    });
-    const jar = await cookies();
-    jar.set(
-      "kc_teacher_flash",
-      JSON.stringify({
-        message: "Password reset. New temporary password:",
-        password,
-        emailSent,
-        email: student.email,
-      }),
-      {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 180,
-        path: "/teacher/student/" + id,
-      },
-    );
-    return "Password reset.";
   });
 }
 export async function saveTeacherProfile(f: FormData) {
@@ -454,5 +407,19 @@ export async function changeTeacherPassword(f: FormData) {
     const { error } = await s.auth.updateUser({ password: next });
     if (error) throw Error(error.message);
     return "Password changed successfully.";
+  });
+}
+
+export async function deleteUnusedClass(f: FormData) {
+  const teacher = await requireTeacher();
+  await finish("/teacher/classes", async () => {
+    const id = num(f, "id");
+    if (!Number.isSafeInteger(id) || id <= 0 || str(f, "confirm_delete") !== "1")
+      throw Error("Confirm deletion of this unused section.");
+    const { error } = await admin().rpc("delete_unused_teacher_section", { p_teacher: teacher.id, p_section: id });
+    if (error?.code === "PGRST202" || error?.code === "42883")
+      throw Error("Section deletion is not available yet. The database update must be installed first.");
+    if (error) throw Error(error.message);
+    return "Unused section permanently deleted.";
   });
 }

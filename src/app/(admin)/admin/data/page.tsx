@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import Link from "next/link";
+import { PlatformResetForm } from "@/components/platform-reset-form";
+import { allRows } from "@/lib/query-pages";
 import { AdminDataNavigation } from "@/components/admin-data-navigation";
-import { clearAdminData } from "@/app/actions/admin-data";
 import { Alerts } from "@/components/admin-ui";
 import { requireAdmin } from "@/lib/auth";
 import { getPythonRoster } from "@/lib/python-data";
@@ -27,106 +27,15 @@ export default async function Page({
       />
     </div>;
   }
-  const scope = q.scope === "school" ? "school" : "learning",
-    tables =
-      scope === "learning"
-        ? [
-            "python_reviews",
-            "python_submissions",
-            "python_runs",
-            "python_drafts",
-            "student_code_executions",
-            "student_level_sessions",
-            "student_telemetry_runs",
-            "student_level_progress",
-            "student_activity",
-            "student_achievements",
-            "student_notifications",
-            "teacher_notifications",
-          ]
-        : [
-            "python_reviews",
-            "python_submissions",
-            "python_runs",
-            "python_drafts",
-            "student_code_executions",
-            "student_level_sessions",
-            "student_telemetry_runs",
-            "student_level_progress",
-            "student_activity",
-            "student_achievements",
-            "student_notifications",
-            "teacher_notifications",
-            "teacher_import_batches",
-            "announcements",
-            "assignments",
-            "enrollment_requests",
-            "class_students",
-            "classes",
-            "profiles",
-          ];
-  const counts = Object.fromEntries(await Promise.all(tables.map(async table => {
-    let query = createAdminClient().from(table).select("*", { count: "exact", head: true });
-    if (table === "profiles") query = query.neq("role", "admin");
-    const result = await query;
-    if (result.error) throw Error("Could not count records affected by reset.");
-    return [table, result.count || 0];
-  })));
-  return (
-    <div className="admin-data-management">
-      <AdminDataNavigation active={scope} />
-      <Alerts q={q} />
-      <section className="teacher-card">
-        <h2>{scope === "learning" ? "Learning records reset" : "Platform data reset"}</h2>
-        <p className="admin-note">
-          {scope === "learning"
-            ? "Clears game performance, Python drafts, Runs, submissions, reviews, activity, earned achievements, and notifications. Resets game XP and streaks. Accounts, sections, enrollment requests, assignments, lessons, and levels remain."
-            : "Affects ALL teachers and students on the platform. Also removes their accounts, sections, enrollment requests, assignments, and announcements. Administrator access, settings, lessons, and levels remain."}
-        </p>
-        <p className="admin-note">
-          <Link href="/admin/backup">Download a password-protected save</Link> before resetting.
-          Supabase passwords cannot be exported. Existing accounts keep their current
-          passwords when restored; only missing accounts get temporary passwords.
-        </p>
-        <div className="teacher-table-wrap">
-          <table className="teacher-table">
-            <thead>
-              <tr>
-                <th>Records affected</th>
-                <th>Current count</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tables.map((t) => (
-                <tr key={t}>
-                  <td>{t.replaceAll("_", " ")}</td>
-                  <td>
-                    {counts[t]}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-      <section className="teacher-card admin-danger">
-        <h3>Confirm permanent reset</h3>
-        <form action={clearAdminData} className="admin-form">
-          <input type="hidden" name="scope" value={scope} />
-          <label>
-            Type{" "}
-            {scope === "school" ? "CLEAR SCHOOL DATA" : "CLEAR LEARNING DATA"}
-            <input name="confirmation" required autoComplete="off" />
-          </label>
-          <label>
-            Your administrator password
-            <input type="password" name="admin_password" required />
-          </label>
-          <button className="teacher-btn">
-            Clear selected data permanently
-          </button>
-        </form>
-      </section>
-    </div>
-  );
+  const platform = q.scope === "platform" || q.scope === "school";
+  const roster = await getPythonRoster(admin);
+  const teachers = await allRows(() => createAdminClient().from("profiles").select("id,name,email,active").eq("role","teacher").order("id"));
+  const sectionNames = new Map(roster.sections.map(s => [s.id,s.name]));
+  return <div className="admin-data-management">
+    <AdminDataNavigation active={platform?"school":"learning"}/><Alerts q={q}/>
+    <PlatformResetForm key={platform?"platform":"learning"} platform={platform}
+      students={roster.students.map(s=>({id:s.id,label:s.name+" ("+s.email+") - "+(sectionNames.get(s.class_id)||"Independent learner")}))}
+      sections={roster.sections.map(s=>({id:String(s.id),label:s.name+" - "+(teachers.find(t=>t.id===s.teacher_id)?.name||"Teacher")+(s.status==='archived'?' (archived)':'')}))}
+      teachers={teachers.map(t=>({id:t.id,label:t.name+" ("+t.email+")"+(t.active?'':' (archived)')}))}/>
+  </div>;
 }

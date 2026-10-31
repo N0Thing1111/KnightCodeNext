@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     },
   );
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return fail(request, "Invalid username/email or password.");
+  if (error) return fail(request, error.code === "email_not_confirmed" ? "Verify your email before signing in. Check your inbox and spam folder." : "Invalid username/email or password.");
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     .maybeSingle();
   if (!profile || profile.role !== "teacher" || !profile.active) {
     await supabase.auth.signOut();
-    return fail(request, profile?.onboarding_status === "pending" ? "Your teacher registration is awaiting administrator approval." : "This account cannot access the teacher portal.");
+    return fail(request, profile?.onboarding_status === "pending" ? "Verify your email before accessing the teacher portal." : "This account cannot access the teacher portal.");
   }
   return response;
 }

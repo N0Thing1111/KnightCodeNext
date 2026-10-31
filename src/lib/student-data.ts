@@ -18,6 +18,8 @@ import type {
 
 type Scope = {
   assignments: Assignment[];
+  independent: boolean;
+  independentPython: string[];
   lessonIds: Set<number>;
   fullLessonIds: Set<number>;
   directLevelIds: Set<number>;
@@ -77,11 +79,14 @@ const getStudentProgress = cache(async (studentId: string) => {
 
 export const getAssignmentScope = cache(
   async (studentId: string): Promise<Scope> => {
-    const [assignments, activeLevels, activeLessons] = await Promise.all([
+    const [assignments, activeLevels, activeLessons, independentResult] = await Promise.all([
       getAssignments(studentId),
       getActiveLevels(),
       getActiveLessons(),
+      (await createClient()).rpc("independent_learning_scope"),
     ]);
+    if (independentResult.error) throw Error("Unable to load learning access.");
+    const independent = independentResult.data as { independent: boolean; lesson_ids: number[]; python_completed: string[] };
     const activeLessonIds = new Set(activeLessons.map(lesson => lesson.id));
     const levelById = new Map(activeLevels.map((level) => [level.id, level]));
     const lessonIds = new Set<number>();
@@ -102,11 +107,12 @@ export const getAssignmentScope = cache(
       }
     }
 
+    if (independent.independent) for (const id of independent.lesson_ids) { lessonIds.add(id); fullLessonIds.add(id); }
     const levelIds = new Set(directLevelIds);
     for (const level of activeLevels) {
       if (fullLessonIds.has(level.lesson_id)) levelIds.add(level.id);
     }
-    return { assignments, lessonIds, fullLessonIds, directLevelIds, levelIds };
+    return { assignments, lessonIds, fullLessonIds, directLevelIds, levelIds, independent: independent.independent, independentPython: independent.python_completed };
   },
 );
 
@@ -142,7 +148,7 @@ export const getStudentLearningData = cache(async (studentId: string) => {
       if (!progressByLevel.get(level.id)?.completed) break;
     }
   }
-  const completion = new Map(lessons.map(l => [l.id, lessonCompletion(l.id, studentId, levels, progressRows, scope.fullLessonIds.has(l.id) ? python.activities : [], python.submissions)]));
+  const completion = new Map(lessons.map(l => [l.id, lessonCompletion(l.id, studentId, levels, progressRows, scope.fullLessonIds.has(l.id) ? python.activities : [], (scope.independent ? scope.independentPython.map(activity_id => ({student_id: studentId, activity_id})) : python.submissions))]));
   return { scope, lessons, levels, progress: progressRows, playable, python, completion };
 });
 

@@ -72,7 +72,7 @@ export default async function Page({
                 id="teacher-identifier"
                 type="text"
                 name="identifier"
-                placeholder="teacher@example.edu.ph"
+                placeholder="teacher@example.com"
                 autoComplete="username"
                 required
                 autoFocus
@@ -97,13 +97,12 @@ export default async function Page({
               Enter Teacher Portal <span>→</span>
             </button>
           </form>
+          <p><Link href="/forgot-password">Forgot password?</Link></p>
+          <p><Link href="/register?role=teacher">Create an account</Link></p>
           <div className="auth-trust-row">
             <span>✓ Secure sign-in</span>
             <span>✓ Teacher account</span>
           </div>
-          <p className="auth-help">
-            <Link href="/register?role=teacher">Request teacher access with your education email</Link>
-          </p>
           <p className="auth-help">
             <Link href="/login">← Student Login</Link>
           </p>

@@ -1,3 +1,5 @@
+import { getCurrentStudent } from '@/lib/auth';
+import { getNotifications } from '@/lib/student-data';
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -22,4 +24,11 @@ export async function POST(request: Request) {
   return error
     ? NextResponse.json({ ok: false }, { status: 500 })
     : NextResponse.json({ ok: true });
+}
+
+export async function GET() {
+  const actor = await getCurrentStudent();
+  if (!actor) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const notifications = await getNotifications(actor.id);
+  return NextResponse.json({ notifications }, { headers: { 'Cache-Control': 'private, no-store' } });
 }

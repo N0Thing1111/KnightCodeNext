@@ -98,6 +98,9 @@ export async function POST(request: NextRequest) {
         p_result: p.result,
       });
       break;
+    case "complete_practice":
+      response = await db.rpc("complete_independent_python", { p_run: p.id });
+      break;
     case "submit":
       response = await db.rpc("python_submit", { p_run: p.id });
       break;

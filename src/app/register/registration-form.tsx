@@ -10,9 +10,9 @@ export function RegistrationForm({role}:{role:"student"|"teacher"}) {
   {state.success ? <><p className="alert alert-success" role="status">{state.success}</p><input type="hidden" name="email" value={state.email || ""}/><button className="btn btn-secondary" name="intent" value="resend" disabled={pending}>{pending ? "Requesting email..." : "Resend verification email"}</button></> : <>
   <label>Full name<input name="name" autoComplete="name" required maxLength={150}/></label>
   <label>Username<input name="username" autoComplete="username" required minLength={3} maxLength={40} pattern="[a-zA-Z0-9][a-zA-Z0-9._\-]{2,39}"/></label>
-  <label>{role==="teacher" ? "Education email (.edu or .edu.ph)" : "Email"}<input name="email" type="email" autoComplete="email" required maxLength={254}/></label>
+  <label>Email<input name="email" type="email" autoComplete="email" required maxLength={254}/></label>
   <label>Password<PasswordInput name="password" autoComplete="new-password" required minLength={12} maxLength={128}/></label>
-  <button className="btn btn-primary btn-block" disabled={pending}>{pending ? "Creating account..." : role==="teacher" ? "Request teacher access" : "Create account"}</button>
+  <button className="btn btn-primary btn-block" disabled={pending}>{pending ? "Creating account..." : "Create account"}</button>
   </>}
  </form>;
 }

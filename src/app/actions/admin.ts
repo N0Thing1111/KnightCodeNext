@@ -87,7 +87,7 @@ export async function saveAdminEntity(f: FormData) {
       if (!name || !email.includes("@") || (role === "teacher" && !code))
         throw Error("Complete the required account fields.");
       if (role === "student") {
-        const existingStudent = await findStudentAccount(a, email, code, id || null);
+        const existingStudent = await findStudentAccount(a, email, id || null);
         if (existingStudent) throw Error("Email already belongs to an existing student. Edit that account instead of creating a duplicate.");
         await requireSectionMembership();
         const sectionId = num(f, "class_id");

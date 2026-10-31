@@ -2,10 +2,10 @@ import Link from "next/link";
 import { AdminHero } from "@/components/admin-ui";
 
 const views = [
-  { key: "history", label: "Run history", href: "/admin/data?scope=history" },
-  { key: "learning", label: "Learning records reset", href: "/admin/data?scope=learning" },
-  { key: "school", label: "Platform data reset", href: "/admin/data?scope=school" },
-  { key: "backup", label: "Save or restore platform data", href: "/admin/backup" },
+  { key: "history", label: "Run history cleanup", href: "/admin/data?scope=history" },
+  { key: "learning", label: "Learning reset", href: "/admin/data?scope=learning" },
+  { key: "school", label: "Platform reset", href: "/admin/data?scope=platform" },
+  { key: "backup", label: "Backups & restore", href: "/admin/backup" },
 ] as const;
 
 export function AdminDataNavigation({ active }: { active: typeof views[number]["key"] }) {

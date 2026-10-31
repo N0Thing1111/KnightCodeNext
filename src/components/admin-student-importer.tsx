@@ -39,7 +39,8 @@ export function AdminStudentImporter({ sections }: { sections: ImportSection[] }
     <section className="teacher-card">
       <h2>Import students from CSV</h2>
       <p>Import up to 100 students into one section. Its assigned teacher will manage these students. Existing accounts keep their passwords, and students in another section will not be moved.</p>
-      <p>Required columns: <code>name,email</code>. Optional: <code>username,section</code>. If provided, the CSV section must match your selection.</p>
+      <p>Required columns: <code>name,email</code>. Optional: <code>username,section</code>. Leave optional values blank if not needed. If provided, the CSV section must match your selection.</p>
+      <p>Replace the example row with real account details. Do not include passwords or student IDs. New accounts receive generated temporary passwords.</p>
       <p><a className="teacher-btn" href="/templates/admin-students.csv" download>Download CSV template</a></p>
       {sections.length === 0 ? <p className="teacher-alert">Create an active section with an active teacher before importing. <Link href="/admin/manage/classes">Manage sections</Link></p> : <>
         <label className="admin-file-label">Section and teacher

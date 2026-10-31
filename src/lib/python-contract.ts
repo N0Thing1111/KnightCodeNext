@@ -99,6 +99,7 @@ export const pythonRequestSchema = z.discriminatedUnion("op", [
   z.object({ op: z.literal("heartbeat"), id: z.uuid() }),
   z.object({ op: z.literal("abandon"), id: z.uuid() }),
   z.object({ op: z.literal("submit"), id: z.uuid() }),
+  z.object({ op: z.literal("complete_practice"), id: z.uuid() }),
   z.object({
     op: z.literal("review"),
     submission: z.uuid(),

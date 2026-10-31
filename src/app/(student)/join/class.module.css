@@ -1,0 +1,22 @@
+﻿.page { display: grid; gap: 24px; }
+.heading h1 { margin: 0 0 8px; }
+.heading p { margin: 0; }
+.panel { padding: 28px; min-width: 0; }
+.panel h2 { margin: 0; font-size: 1.35rem; overflow-wrap: anywhere; }
+.panel > p { max-width: 68ch; line-height: 1.65; }
+.titleRow { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.status, .you { display: inline-block; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: .8125rem; white-space: nowrap; }
+.panel > .status { margin-bottom: 16px; }
+.details { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin: 28px 0; }
+.details dt { font-size: .875rem; margin-bottom: 6px; }
+.details dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.links { display: flex; align-items: center; flex-wrap: wrap; gap: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+.links > a { max-width: 100%; }
+.note { font-size: .875rem; line-height: 1.6; }
+.roster { list-style: none; padding: 0; margin: 20px 0 0; }
+.roster li { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 15px 0; border-top: 1px solid var(--border); }
+.roster li > span:first-child { overflow-wrap: anywhere; min-width: 0; }
+.join { max-width: 680px; width: 100%; box-sizing: border-box; }
+.join form { margin-top: 24px; }
+.join button { justify-self: start; }
+@media (max-width: 600px) { .panel { padding: 20px; } .details { grid-template-columns: 1fr; gap: 18px; } .links { align-items: flex-start; flex-direction: column; } }

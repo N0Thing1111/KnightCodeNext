@@ -17,17 +17,17 @@ const archive = () => createAdminClient().storage.from(AUTOMATIC_BACKUP_BUCKET);
 const pathFor = (id: string) => "snapshots/" + id + ".knightsave";
 export async function getStoredBackup(id: string) {
   if (!validBackupId(id)) throw Error("Invalid saved backup.");
-  const { data, error } = await createAdminClient().from("school_backups").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await createAdminClient().from("platform_backups").select("*").eq("id", id).maybeSingle();
   if (error || !data) throw Error("Saved backup could not be found. Refresh the page.");
   return data as StoredSchoolBackup;
 }
 export async function listStoredBackups() {
   const db = createAdminClient();
   const results = await Promise.all([
-    db.from("school_backups").select("*").eq("status", "ready").order("started_at", { ascending: false }).limit(100),
-    db.from("school_backups").select("*").neq("status", "ready").order("started_at", { ascending: false }).limit(20),
+    db.from("platform_backups").select("*").eq("status", "ready").order("started_at", { ascending: false }).limit(100),
+    db.from("platform_backups").select("*").neq("status", "ready").order("started_at", { ascending: false }).limit(20),
   ]);
-  if (results.some(result => result.error)) throw Error("Backup history is unavailable. Check the database connection and apply the weekly_school_backups migration.");
+  if (results.some(result => result.error)) throw Error("Backup history is unavailable. Check the database connection and check the platform backup setup.");
   return { rows: results.flatMap(result => result.data ?? []).sort((a, b) => Date.parse(b.started_at) - Date.parse(a.started_at)) as StoredSchoolBackup[], checkedAt: Date.now() };
 }
 export async function readStoredBackup(id: string): Promise<SchoolBackup> {
@@ -44,23 +44,23 @@ export async function readStoredBackup(id: string): Promise<SchoolBackup> {
 
 async function cleanArchive() {
   const db = createAdminClient();
-  const { data, error } = await db.from("school_backups").select("*").eq("status", "ready");
+  const { data, error } = await db.from("platform_backups").select("*").eq("status", "ready");
   if (error) throw Error("Could not read retention history.");
   for (const id of expiredBackupIds(data as StoredSchoolBackup[])) {
     const removed = await archive().remove([pathFor(id)]);
     if (removed.error) throw Error("Old files could not be removed; extra copies have been kept.");
-    const updated = await db.from("school_backups").update({ status: "expired" }).eq("id", id).eq("status", "ready");
+    const updated = await db.from("platform_backups").update({ status: "expired" }).eq("id", id).eq("status", "ready");
     if (updated.error) throw Error("Could not update retention history.");
   }
   // A terminated process can leave an uploaded file before its completion record.
   // Failed attempt IDs have independent paths; wait a full day before deleting these remnants.
-  const stale = await db.from("school_backups").select("id").eq("status", "failed").is("cleaned_at", null)
+  const stale = await db.from("platform_backups").select("id").eq("status", "failed").is("cleaned_at", null)
     .lt("started_at", new Date(Date.now() - 86400000).toISOString()).order("started_at").limit(100);
   if (stale.error) throw Error("Could not check incomplete files.");
   if (stale.data?.length) {
     const removed = await archive().remove(stale.data.map(row => pathFor(row.id)));
     if (removed.error) throw Error("Incomplete files could not be removed.");
-    const marked = await db.from("school_backups").update({ cleaned_at: new Date().toISOString() }).in("id", stale.data.map(row => row.id)).eq("status", "failed");
+    const marked = await db.from("platform_backups").update({ cleaned_at: new Date().toISOString() }).in("id", stale.data.map(row => row.id)).eq("status", "failed");
     if (marked.error) throw Error("Could not record incomplete-file cleanup.");
   }
 }
@@ -76,10 +76,10 @@ export async function createStoredBackup(input: { key: string; source: "weekly" 
   try {
     const bucket = await db.storage.getBucket(AUTOMATIC_BACKUP_BUCKET);
     if (bucket.error || !bucket.data || bucket.data.public || bucket.data.file_size_limit !== MAX_BACKUP_BYTES) throw Error(stage);
-    const olderKeys = await db.from("school_backups").select("id").eq("status", "ready").neq("key_id", keyId).limit(1);
+    const olderKeys = await db.from("platform_backups").select("id").eq("status", "ready").neq("key_id", keyId).limit(1);
     if (olderKeys.error) throw Error(stage);
     if (olderKeys.data?.length) throw Error("The encryption secret changed. Restore the original AUTOMATIC_BACKUP_SECRET before creating more backups.");
-    stage = "Could not capture school records. The database may be busy; retry shortly.";
+    stage = "Could not capture platform records. The database may be busy; retry shortly.";
     const captured = await db.rpc("capture_scheduled_school_backup");
     if (captured.error || !captured.data) throw Error(stage);
     const snapshot = captured.data as SchoolBackup;
@@ -92,14 +92,14 @@ export async function createStoredBackup(input: { key: string; source: "weekly" 
     const verified = await archive().download(pathFor(job.id));
     if (verified.error || !verified.data || verified.data.size !== file.length || backupDigest(Buffer.from(await verified.data.arrayBuffer())) !== digest) throw Error(stage);
     stage = "Could not finish recording the backup. Retry to capture a new snapshot.";
-    const completed = await db.from("school_backups").update({ status: "ready", completed_at: new Date().toISOString(), snapshot_at: snapshot.created_at,
+    const completed = await db.from("platform_backups").update({ status: "ready", completed_at: new Date().toISOString(), snapshot_at: snapshot.created_at,
       byte_size: file.length, sha256: digest, key_id: keyId, error_message: null })
       .eq("id", job.id).eq("status", "running").gt("lease_until", new Date().toISOString()).select("id").maybeSingle();
     if (completed.error || !completed.data) throw Error(stage);
   } catch (error) {
     const message = error instanceof Error && error.message.startsWith("The encryption secret changed") ? error.message : stage;
     // Do not expose database internals, school records, keys, or passwords in error history.
-    await db.from("school_backups").update({ status: "failed", completed_at: new Date().toISOString(), error_message: message }).eq("id", job.id).eq("status", "running");
+    await db.from("platform_backups").update({ status: "failed", completed_at: new Date().toISOString(), error_message: message }).eq("id", job.id).eq("status", "running");
     // Leave any upload for later cleanup: a lost response may hide a successful commit.
     throw Error(message);
   }
@@ -107,6 +107,6 @@ export async function createStoredBackup(input: { key: string; source: "weekly" 
   try { await cleanArchive(); } catch { warning = "Backup saved. Retention cleanup needs another attempt; extra files may remain. It runs again after the next successful backup."; }
   const audit = await db.from("admin_audit_log").insert({ admin_id: input.adminId ?? null, action: "create_stored_backup", entity: "system", details: { backup_id: job.id, source: input.source } });
   if (audit.error) warning = (warning ? warning + " " : "") + "Backup saved, but its audit entry could not be recorded.";
-  if (warning) await db.from("school_backups").update({ retention_warning: warning }).eq("id", job.id);
+  if (warning) await db.from("platform_backups").update({ retention_warning: warning }).eq("id", job.id);
   return { state: "ready" as const, id: job.id, warning };
 }

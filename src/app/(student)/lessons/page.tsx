@@ -36,10 +36,9 @@ export default async function LessonsPage() {
       <section className="section-heading-row" id="lessons">
         <div>
           <span className="panel-kicker">YOUR CURRICULUM</span>
-          <h2>Lessons assigned by your teacher.</h2>
+          <h2>{data.scope.independent ? "Your independent learning path" : "Lessons assigned by your teacher."}</h2>
           <p>
-            Your available lessons and challenges appear here when a teacher
-            assigns them to you or your section.
+            {data.scope.independent ? "Start with the first lesson. Complete its available games and Python practice to unlock the next lesson." : "Your available lessons and challenges appear here when a teacher assigns them to you or your section."}
           </p>
         </div>
       </section>

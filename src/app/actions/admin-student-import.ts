@@ -42,7 +42,7 @@ export async function importAdminStudents(_previous: AdminStudentImportState, fo
   for (const row of rows) {
     let newUserId: string | null = null;
     try {
-      const existing = await findStudentAccount(db, row.email, row.student_id);
+      const existing = await findStudentAccount(db, row.email);
       if (existing) {
         // No password reset or transfer: the database enforces one section/teacher.
         await setStudentSection(existing.id, sectionId, actor.id, false);
@@ -58,11 +58,11 @@ export async function importAdminStudents(_previous: AdminStudentImportState, fo
       const created = await db.auth.admin.createUser({
         email: row.email, password, email_confirm: true,
         app_metadata: { role: "student" },
-        user_metadata: { role: "student", student_id: row.student_id || null, name: row.name, username: row.username || null },
+        user_metadata: { role: "student", name: row.name, username: row.username || null },
       });
       if (created.error || !created.data.user) throw Error(created.error?.message || "Could not create account.");
       newUserId = created.data.user.id;
-      const updated = await db.from("profiles").update({ student_id: row.student_id || null, name: row.name, username: row.username || null, active: true, must_change_password: true }).eq("id", newUserId).select("id").single();
+      const updated = await db.from("profiles").update({ name: row.name, username: row.username || null, active: true, must_change_password: true }).eq("id", newUserId).select("id").single();
       if (updated.error) throw Error(updated.error.message);
       await setStudentSection(newUserId, sectionId, actor.id, false);
       result.created.push({ ...row, temp_password: password, email_sent: false });
@@ -79,7 +79,7 @@ export async function importAdminStudents(_previous: AdminStudentImportState, fo
   // Only fully enrolled new accounts receive welcome email. No passwords go into cookies or audit records.
   for (const row of result.created) {
     try {
-      row.email_sent = await sendStudentPasswordEmail({ email: row.email, name: row.name, studentId: row.student_id, username: row.username || null, temporaryPassword: row.temp_password, schoolLabel: await getSchoolName(db), reason: "welcome" });
+      row.email_sent = await sendStudentPasswordEmail({ email: row.email, name: row.name, studentId: "", username: row.username || null, temporaryPassword: row.temp_password, schoolLabel: await getSchoolName(db), reason: "welcome" });
     } catch { row.email_sent = false; }
   }
   const audit = await db.from("admin_audit_log").insert({ admin_id: actor.id, action: "import", entity: "students", details: { section_id: sectionId, created: result.created.length, existing: result.existing.length, errors: result.errors.length } });

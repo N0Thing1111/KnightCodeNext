@@ -1,5 +1,5 @@
 import { createHash, timingSafeEqual } from "node:crypto";
-export const AUTOMATIC_BACKUP_BUCKET = "school-backups";
+export const AUTOMATIC_BACKUP_BUCKET = "platform-backups";
 export const BACKUP_RETENTION = { weekly: 8, manual: 3 } as const;
 export const backupDigest = (file: Buffer | string) => createHash("sha256").update(file).digest("hex");
 export const backupKeyId = (secret: string) => backupDigest(secret).slice(0, 16);

@@ -1,8 +1,6 @@
 import { ClassEnrollment } from "@/components/class-enrollment";
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { requireTeacher } from "@/lib/auth";
 import {
@@ -23,11 +21,10 @@ export default async function Page({
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const [{ id }, q, t, jar] = await Promise.all([
+  const [{ id }, q, t] = await Promise.all([
       params,
       searchParams,
       requireTeacher(),
-      cookies(),
     ]),
     ctx = await getTeacherContext(t.id),
     cls = ctx.classes.find((c) => String(c.id) === id);
@@ -53,10 +50,6 @@ export default async function Page({
     assignments = ctx.assignments
       .filter((a) => a.class_id === cls.id)
       .slice(0, 8);
-  let flash: any = null;
-  try {
-    flash = JSON.parse(jar.get("kc_teacher_flash")?.value || "null");
-  } catch {}
   return (
     <>
       <Hero
@@ -84,22 +77,6 @@ export default async function Page({
         </div>}
       </Hero>
       <Alerts searchParams={q} />
-      {flash && (
-        <div className="teacher-alert success">
-          ✓ {flash.message}
-          {flash.password && (
-            <>
-              {" "}
-              <strong>{flash.password}</strong>{" "}
-              <span className="teacher-note">
-                {flash.emailSent
-                  ? "The temporary password was also emailed to the student."
-                  : "Email delivery failed or is not configured. Copy and share this password securely."}
-              </span>
-            </>
-          )}
-        </div>
-      )}
       <div className="teacher-metric-grid four">
         <Metric label="Students" value={students.length} />
         <Metric label="Active" value={active} />

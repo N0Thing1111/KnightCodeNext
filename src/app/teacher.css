@@ -795,45 +795,6 @@ html[data-theme="light"] .teacher-nav-link.active {
 .class-card-actions form {
   display: contents;
 }
-.teacher-import-box {
-  display: grid;
-  gap: 15px;
-}
-.upload-drop {
-  padding: 30px;
-  border: 1px dashed var(--t-border2);
-  border-radius: 14px;
-  background: rgba(49, 151, 255, 0.04);
-  text-align: center;
-  display: grid;
-  gap: 6px;
-}
-.upload-drop strong {
-  font-size: 13px;
-}
-.upload-drop span {
-  font-size: 9px;
-  color: var(--t-muted);
-}
-.upload-drop input {
-  margin: auto;
-}
-.import-columns {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-}
-.import-columns > * {
-  padding: 6px 8px;
-  border-radius: 7px;
-  background: var(--t-surface2);
-  border: 1px solid var(--t-border);
-  font-size: 8px;
-  color: var(--t-muted);
-}
-.import-columns strong {
-  color: var(--t-text);
-}
 .teacher-table-wrap {
   width: 100%;
   overflow: auto;
@@ -2699,13 +2660,6 @@ body.teacher-body {
 }
 
 /* Import/lesson/announcement content */
-.upload-drop {
-  min-height: 150px;
-  align-content: center;
-}
-.import-columns {
-  align-items: center;
-}
 .teacher-lesson-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }

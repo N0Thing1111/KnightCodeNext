@@ -80,6 +80,7 @@ export default async function DashboardPage() {
           View learning path <span>→</span>
         </Link>
       </section>
+      {learning.scope.independent && <section className="panel"><h2>Learning independently</h2><p>Start with Lesson 1. Complete each lesson&apos;s available games and Python practice to unlock the next. Teacher assignments begin after you join a class.</p><Link href="/lessons">Continue your learning path</Link></section>}
       <div className="quest-stage">
         <article className="panel continue-card">
           <div className="panel-title-row">
@@ -344,12 +345,12 @@ export default async function DashboardPage() {
                 <span>✓</span>
                 <div>
                   <b>Assigned work complete</b>
-                  <small>All assigned levels finished</small>
+                  <small>{learning.scope.independent ? "Available games finished" : "All assigned levels finished"}</small>
                 </div>
               </div>
-              <h3>You&apos;ve completed every assigned challenge.</h3>
+              <h3>{learning.scope.independent ? "Continue with your lesson activities." : "You have completed every assigned challenge."}</h3>
               <p>
-                Review an assigned lesson or replay a completed level whenever
+                Review a lesson or replay a completed level whenever
                 you want to sharpen your skills.
               </p>
               <Link
