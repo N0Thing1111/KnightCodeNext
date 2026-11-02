@@ -4,7 +4,11 @@ import { useLayoutEffect, useMemo, useRef } from "react";
 import { highlightPython } from "@/lib/python-highlight";
 import styles from "@/components/python.module.css";
 
-export function PythonCodeEditor({ value, onChange, readOnly }: {
+export function PythonCodeEditor({
+  value,
+  onChange,
+  readOnly,
+}: {
   value: string;
   onChange: (source: string) => void;
   readOnly: boolean;
@@ -23,8 +27,11 @@ export function PythonCodeEditor({ value, onChange, readOnly }: {
     <div className={styles.codeEditor}>
       <pre ref={colors} className={styles.codeColors} aria-hidden="true">
         {tokens.map((token, index) => (
-          <span key={index} data-token={token.kind}>{token.text}</span>
-        ))}{"\n"}
+          <span key={index} data-token={token.kind}>
+            {token.text}
+          </span>
+        ))}
+        {"\n"}
       </pre>
       <textarea
         ref={input}
@@ -40,10 +47,16 @@ export function PythonCodeEditor({ value, onChange, readOnly }: {
         onScroll={syncScroll}
         onChange={(event) => onChange(event.target.value)}
         onKeyDown={(event) => {
-          if (event.key === "Tab" && !event.shiftKey && !readOnly && !event.nativeEvent.isComposing) {
+          if (
+            event.key === "Tab" &&
+            !event.shiftKey &&
+            !readOnly &&
+            !event.nativeEvent.isComposing
+          ) {
             event.preventDefault();
             const field = event.currentTarget;
-            const start = field.selectionStart, end = field.selectionEnd;
+            const start = field.selectionStart,
+              end = field.selectionEnd;
             if (value.length - (end - start) + 4 > 32768) return;
             onChange(value.slice(0, start) + "    " + value.slice(end));
             requestAnimationFrame(() => {

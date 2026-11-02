@@ -19,7 +19,7 @@ declare global {
         payload: Record<string, unknown>,
       ) => Promise<unknown>,
       sceneName: number,
-      status: (message: string) => void,
+      status: (message: string, canRetry?: boolean) => void,
       saveExecution: (payload: Record<string, unknown>) => Promise<unknown>,
     ) => {
       completeLevel: (payload: Record<string, unknown>) => Promise<unknown>;

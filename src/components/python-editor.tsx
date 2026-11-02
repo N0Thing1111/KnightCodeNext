@@ -2,7 +2,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useSectionArchive } from "@/lib/use-section-archive";
 import { useRouter } from "next/navigation";
-import { pythonRequestSchema, type PythonActivity, type PythonResult } from "@/lib/python-contract";
+import {
+  pythonRequestSchema,
+  type PythonActivity,
+  type PythonResult,
+} from "@/lib/python-contract";
 import { PythonPracticeChecks } from "@/components/python-practice-checks";
 import { PythonCodeEditor } from "@/components/python-code-editor";
 import styles from "@/components/python.module.css";
@@ -15,7 +19,8 @@ async function api(body: unknown, keepalive = false) {
     keepalive,
   });
   const result = await response.json();
-  if (result.code === "SECTION_ARCHIVED") window.dispatchEvent(new Event("knightcode:section-archived"));
+  if (result.code === "SECTION_ARCHIVED")
+    window.dispatchEvent(new Event("knightcode:section-archived"));
   if (!response.ok) throw Error(result.error || "Saving failed.");
   return result;
 }
@@ -60,10 +65,18 @@ export function PythonEditor({
     if (!archived || archiveSaved.current) return;
     archiveSaved.current = true;
     // One final draft save for an editor that was already open. Never submit automatically.
-    void api({ op: "draft", activity: activity.id, source: code }).then(() => {
-      savedSource.current = code;
-      setMessage("Section archived. Your current draft was saved; new runs and submissions are closed.");
-    }).catch(() => setMessage("Section archived. Your draft could not be saved. Copy your code from the editor before leaving."));
+    void api({ op: "draft", activity: activity.id, source: code })
+      .then(() => {
+        savedSource.current = code;
+        setMessage(
+          "Section archived. Your current draft was saved; new runs and submissions are closed.",
+        );
+      })
+      .catch(() =>
+        setMessage(
+          "Section archived. Your draft could not be saved. Copy your code from the editor before leaving.",
+        ),
+      );
   }, [archived, activity.id, code]);
   const worker = useRef<Worker | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -90,29 +103,49 @@ export function PythonEditor({
         const raw = sessionStorage.getItem(recoveryKey);
         if (raw) {
           const restored = JSON.parse(raw);
-          if (typeof restored.source === "string" && restored.source.length <= 32768) {
+          if (
+            typeof restored.source === "string" &&
+            restored.source.length <= 32768
+          ) {
             setCode(restored.source);
             const checked = pythonRequestSchema.safeParse(restored.pending);
             if (checked.success && checked.data.op === "finish") {
               setPending(checked.data);
               const run = restored.lastRun;
-              setLastRun(run?.id === checked.data.id && typeof run.source === "string" && run.source.length <= 32768 ? run : null);
+              setLastRun(
+                run?.id === checked.data.id &&
+                  typeof run.source === "string" &&
+                  run.source.length <= 32768
+                  ? run
+                  : null,
+              );
             }
-            setMessage("Recovered work from this browser tab. Save your draft or retry saving the pending result.");
+            setMessage(
+              "Recovered work from this browser tab. Save your draft or retry saving the pending result.",
+            );
           }
         }
-      } catch { /* A blocked/full browser store does not prevent editing. */ }
+      } catch {
+        /* A blocked/full browser store does not prevent editing. */
+      }
       hydrated.current = true;
     });
     return () => cancelAnimationFrame(frame);
   }, [recoveryKey]);
   useEffect(() => {
-    unsaved.current = code !== savedSource.current || !!pending || saving || busy;
+    unsaved.current =
+      code !== savedSource.current || !!pending || saving || busy;
     if (!hydrated.current) return;
     try {
-      if (code !== savedSource.current || pending) sessionStorage.setItem(recoveryKey, JSON.stringify({ source: code, pending, lastRun }));
+      if (code !== savedSource.current || pending)
+        sessionStorage.setItem(
+          recoveryKey,
+          JSON.stringify({ source: code, pending, lastRun }),
+        );
       else sessionStorage.removeItem(recoveryKey);
-    } catch { /* The exit warning remains available if browser storage is unavailable. */ }
+    } catch {
+      /* The exit warning remains available if browser storage is unavailable. */
+    }
   }, [code, pending, saving, busy, recoveryKey, lastRun]);
   function kill() {
     if (timer.current) clearTimeout(timer.current);
@@ -129,14 +162,40 @@ export function PythonEditor({
       }
     };
     const leave = (event: MouseEvent) => {
-      if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-      const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>("a[href]") : null;
-      if (!link || link.target === "_blank" || link.hasAttribute("download") || !unsaved.current) return;
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        event.altKey
+      )
+        return;
+      const link =
+        event.target instanceof Element
+          ? event.target.closest<HTMLAnchorElement>("a[href]")
+          : null;
+      if (
+        !link ||
+        link.target === "_blank" ||
+        link.hasAttribute("download") ||
+        !unsaved.current
+      )
+        return;
       const url = new URL(link.href, location.href);
-      if (url.pathname === location.pathname && url.search === location.search && url.hash) return;
+      if (
+        url.pathname === location.pathname &&
+        url.search === location.search &&
+        url.hash
+      )
+        return;
       event.preventDefault();
       event.stopPropagation();
-      if (confirm("You have unsaved Python work or a result still waiting to save. Stay here to save it. Leave anyway?")) {
+      if (
+        confirm(
+          "You have unsaved Python work or a result still waiting to save. Stay here to save it. Leave anyway?",
+        )
+      ) {
         allowLeave.current = true;
         location.assign(url.href);
       }
@@ -179,7 +238,9 @@ export function PythonEditor({
       setPending(null);
       router.refresh();
       setMessage(
-        independent ? "Run saved. After a successful execution, select Complete practice to record your progress." : "Run saved. Review the result, revise, or submit this Run to your teacher.",
+        independent
+          ? "Run saved. After a successful execution, select Complete practice to record your progress."
+          : "Run saved. Review the result, revise, or submit this Run to your teacher.",
       );
     } catch (error) {
       if (!mounted.current) return;
@@ -266,7 +327,13 @@ export function PythonEditor({
     setMessage("Saving source code...");
     const id = crypto.randomUUID();
     try {
-      await api({ op: "start", activity: activity.id, revision: activity.revision, id, source: code });
+      await api({
+        op: "start",
+        activity: activity.id,
+        revision: activity.revision,
+        id,
+        source: code,
+      });
       savedSource.current = code;
       if (!mounted.current) {
         void api({ op: "abandon", id }, true).catch(() => {});
@@ -303,7 +370,11 @@ export function PythonEditor({
         if (worker.current !== w || !current.current) return;
         if (data.type === "ready") {
           if (timer.current) clearTimeout(timer.current);
-          setMessage(independent ? "Running. Your practice is saved to your history." : "Running. Your teacher can review this Run.");
+          setMessage(
+            independent
+              ? "Running. Your practice is saved to your history."
+              : "Running. Your teacher can review this Run.",
+          );
           startClock();
           w.postMessage({
             type: "run",
@@ -390,10 +461,15 @@ export function PythonEditor({
     if (!lastRun || lastRun.source !== code) return;
     setSaving(true);
     try {
-      await api({ op: independent ? "complete_practice" : "submit", id: lastRun.id });
+      await api({
+        op: independent ? "complete_practice" : "submit",
+        id: lastRun.id,
+      });
       router.refresh();
       setMessage(
-        independent ? "Practice completed. Return to Lessons to continue your learning path. This is not a teacher assessment." : "Submitted for teacher review. New runs and submissions are closed until your teacher requests a revision.",
+        independent
+          ? "Practice completed. Return to Lessons to continue your learning path. This is not a teacher assessment."
+          : "Submitted for teacher review. New runs and submissions are closed until your teacher requests a revision.",
       );
     } catch (e) {
       setMessage((e as Error).message);
@@ -403,114 +479,166 @@ export function PythonEditor({
   }
   return (
     <>
-    {archived && <section className={styles.card} role="status"><h2>This section is archived</h2><p>New runs and submissions are closed. An existing Run may finish saving. You can copy your code below and view your feedback. Reload this page after the section is restored.</p></section>}
-    <section className={styles.card}>
-      <span className={styles.kicker}>CODING WORKSPACE</span>
-      <h2>Write, run, and improve</h2>
-      <p>
-        Write your program on the left. Output appears on the right. When Python
-        asks for input, enter your answer below the output.
-      </p>
-      <div className={styles.grid}>
-        <div>
-          <label className={styles.paneTitle} htmlFor="python-source">
-            Your Python program
-          </label>
-          <PythonCodeEditor value={code} onChange={setCode} readOnly={busy || archived} />
+      {archived && (
+        <section className={styles.card} role="status">
+          <h2>This section is archived</h2>
+          <p>
+            New runs and submissions are closed. An existing Run may finish
+            saving. You can copy your code below and view your feedback. Reload
+            this page after the section is restored.
+          </p>
+        </section>
+      )}
+      <section className={styles.card}>
+        <span className={styles.kicker}>CODING WORKSPACE</span>
+        <h2>Write, run, and improve</h2>
+        <p>
+          Write your program on the left. Output appears on the right. When
+          Python asks for input, enter your answer below the output.
+        </p>
+        <div className={styles.grid}>
+          <div>
+            <label className={styles.paneTitle} htmlFor="python-source">
+              Your Python program
+            </label>
+            <PythonCodeEditor
+              value={code}
+              onChange={setCode}
+              readOnly={busy || archived}
+            />
+          </div>
+          <div>
+            <h3 className={styles.paneTitle}>Output & input</h3>
+            <pre className={styles.terminal} aria-label="Program output">
+              {transcript || "Run your program to see its output here."}
+            </pre>
+            {prompt !== null && (
+              <form onSubmit={sendAnswer}>
+                <label htmlFor="python-answer">
+                  {prompt || "Enter your answer"}
+                </label>
+                <input
+                  id="python-answer"
+                  autoFocus
+                  value={answer}
+                  maxLength={4096}
+                  onChange={(e) => setAnswer(e.target.value)}
+                />
+                <button className={styles.primary} type="submit">
+                  Enter answer
+                </button>
+              </form>
+            )}
+          </div>
         </div>
-        <div>
-          <h3 className={styles.paneTitle}>Output & input</h3>
-          <pre className={styles.terminal} aria-label="Program output">
-            {transcript || "Run your program to see its output here."}
-          </pre>
-          {prompt !== null && (
-            <form onSubmit={sendAnswer}>
-              <label htmlFor="python-answer">
-                {prompt || "Enter your answer"}
-              </label>
-              <input
-                id="python-answer"
-                autoFocus
-                value={answer}
-                maxLength={4096}
-                onChange={(e) => setAnswer(e.target.value)}
-              />
-              <button className={styles.primary} type="submit">
-                Enter answer
-              </button>
-            </form>
+        <div className={styles.actions} aria-label="Python program actions">
+          <button
+            className={styles.primary}
+            disabled={archived || busy || saving || !!pending}
+            onClick={run}
+          >
+            Run Python
+          </button>
+          <button
+            className={styles.stop}
+            disabled={!canStop}
+            onClick={() => void finish("stopped", "Stopped by the student.")}
+          >
+            Stop
+          </button>
+          <button disabled={busy || saving || !!pending} onClick={draft}>
+            Save draft
+          </button>
+
+          <button
+            disabled={archived || busy || saving || !!pending}
+            className={styles.quiet}
+            onClick={() => {
+              if (
+                confirm(
+                  "Replace your editor contents with the starter code? Saved Runs remain in your history.",
+                )
+              )
+                setCode(activity.content.starter);
+            }}
+          >
+            Reset editor
+          </button>
+          {pending && (
+            <button disabled={saving} onClick={() => void saveResult(pending)}>
+              Retry saving result
+            </button>
           )}
         </div>
-      </div>
-      <div className={styles.actions} aria-label="Python program actions">
-        <button
-          className={styles.primary}
-          disabled={archived || busy || saving || !!pending}
-          onClick={run}
-        >
-          Run Python
-        </button>
-        <button
-          className={styles.stop}
-          disabled={!canStop}
-          onClick={() => void finish("stopped", "Stopped by the student.")}
-        >
-          Stop
-        </button>
-        <button disabled={busy || saving || !!pending} onClick={draft}>
-          Save draft
-        </button>
-
-        <button
-          disabled={archived || busy || saving || !!pending}
-          className={styles.quiet}
-          onClick={() => {
-            if (
-              confirm(
-                "Replace your editor contents with the starter code? Saved Runs remain in your history.",
-              )
-            )
-              setCode(activity.content.starter);
-          }}
-        >
-          Reset editor
-        </button>
-        {pending && (
-          <button disabled={saving} onClick={() => void saveResult(pending)}>
-            Retry saving result
+        <p className={styles.notice} role="status">
+          {message}
+        </p>
+        <p>
+          {independent
+            ? "Run records your practice; Complete practice saves independent progress."
+            : "Run records your coding process; Submit sends that Run for review."}{" "}
+          Save your draft before leaving. Closing during execution stops the
+          Run. If the connection is lost, a pending Run is shown as unfinished
+          after 24 hours without contact from its page.
+        </p>
+      </section>
+      <PythonPracticeChecks
+        cases={activity.content.cases}
+        checks={checks}
+        running={busy}
+        stale={checks.length > 0 && lastRun?.source !== code}
+      />
+      <section
+        className={styles.card + " " + styles.submissionSection}
+        aria-label="Submit your work"
+      >
+        <span className={styles.kicker}>
+          {independent ? "INDEPENDENT PRACTICE" : "SUBMISSION"}
+        </span>
+        <h2>
+          {independent ? "Complete independent practice" : "Submit your work"}
+        </h2>
+        <p>
+          {independent
+            ? "Complete a successful saved run, review the example checks, then record practice completion. This records participation, not a teacher-assessed Passed grade."
+            : "Ready for your teacher to review your approach? Submit your latest saved Run. Practice checks are guidance; you can submit a Run even if some example outputs do not match."}
+        </p>
+        <p>
+          {pending
+            ? "Save the pending result before submitting."
+            : !lastRun
+              ? "Run your program and wait for its result to save first."
+              : lastRun.source !== code
+                ? "Your code has changed. Run it again before submitting this version."
+                : "Your latest saved Run is ready to submit."}
+        </p>
+        <div className={styles.actions}>
+          <button
+            disabled={
+              archived ||
+              busy ||
+              saving ||
+              !!pending ||
+              !lastRun ||
+              lastRun.source !== code
+            }
+            className={styles.submit}
+            onClick={submit}
+          >
+            {independent ? "Complete practice" : "Submit this Run"}
           </button>
-        )}
-      </div>
-      <p className={styles.notice} role="status">
-        {message}
-      </p>
-      <p>
-        {independent ? "Run records your practice; Complete practice saves independent progress." : "Run records your coding process; Submit sends that Run for review."} Save
-        your draft before leaving. Closing during execution stops the Run. If the
-        connection is lost, a pending Run is shown as unfinished after 24 hours
-        without contact from its page.
-      </p>
-    </section>
-    <PythonPracticeChecks cases={activity.content.cases} checks={checks} running={busy} stale={checks.length > 0 && lastRun?.source !== code} />
-    <section className={styles.card + " " + styles.submissionSection} aria-label="Submit your work">
-      <span className={styles.kicker}>{independent ? "INDEPENDENT PRACTICE" : "SUBMISSION"}</span>
-      <h2>{independent ? "Complete independent practice" : "Submit your work"}</h2>
-      <p>{independent ? "Complete a successful saved run, review the example checks, then record practice completion. This records participation, not a teacher-assessed Passed grade." : "Ready for your teacher to review your approach? Submit your latest saved Run. Practice checks are guidance; you can submit a Run even if some example outputs do not match."}</p>
-      <p>{pending ? "Save the pending result before submitting." : !lastRun ? "Run your program and wait for its result to save first." : lastRun.source !== code ? "Your code has changed. Run it again before submitting this version." : "Your latest saved Run is ready to submit."}</p>
-      <div className={styles.actions}>
-        <button
-          disabled={
-            archived || busy || saving || !!pending || !lastRun || lastRun.source !== code
-          }
-          className={styles.submit}
-          onClick={submit}
-        >
-          {independent ? "Complete practice" : "Submit this Run"}
-        </button>
-        <a href="#history">{independent ? "View run history" : "View submissions and teacher feedback"}</a>
-      </div>
-      <p>{independent ? "Once the available games and Python practice are complete, the next lesson unlocks. You can continue practicing here." : "After submitting, the editor closes while you wait for review. Needs revision reopens it for a new attempt; Passed completes the activity."}</p>
-    </section>
+          <a href="#history">
+            {independent
+              ? "View run history"
+              : "View submissions and teacher feedback"}
+          </a>
+        </div>
+        <p>
+          {independent
+            ? "Once the available games and Python practice are complete, the next lesson unlocks. You can continue practicing here."
+            : "After submitting, the editor closes while you wait for review. Needs revision reopens it for a new attempt; Passed completes the activity."}
+        </p>
+      </section>
     </>
   );
 }

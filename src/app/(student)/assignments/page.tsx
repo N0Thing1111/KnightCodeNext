@@ -1,3 +1,4 @@
+import { lessonCompletionLabel } from "@/lib/lesson-completion";
 import { isGameLevelAvailable } from "@/lib/game-build";
 import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
@@ -31,7 +32,7 @@ export default async function AssignmentsPage() {
   const classMap = new Map((classes ?? []).map((row) => [row.id, row]));
   const statusFor = (assignment: (typeof scope.assignments)[number]) => {
     if (assignment.level_id) {
-      const level = learning.levels.find(l => l.id === assignment.level_id);
+      const level = learning.levels.find((l) => l.id === assignment.level_id);
       if (!level || !isGameLevelAvailable(level)) return "unavailable";
       const row = progress.get(assignment.level_id);
       return row?.completed
@@ -42,14 +43,26 @@ export default async function AssignmentsPage() {
     }
     const completion = learning.completion.get(assignment.lesson_id || 0);
     if (!completion) return "unavailable";
-    return completion.complete ? "completed" : completion.started ? "started" : "assigned";
+    return lessonCompletionLabel(completion).toLowerCase().replaceAll(" ", "-");
   };
   const completed = scope.assignments.filter(
     (row) => statusFor(row) === "completed",
   ).length;
   return (
     <main className="page-container lessons-page">
-      {scope.independent && <section className="panel"><h2>No class assignments yet</h2><p>You can learn independently without assignments. Open Lessons to follow your learning path, or join a class to receive work from a teacher.</p><Link className="btn btn-primary" href="/lessons">Continue learning</Link></section>}
+      {scope.independent && (
+        <section className="panel">
+          <h2>No class assignments yet</h2>
+          <p>
+            You can learn independently without assignments. Open Lessons to
+            follow your learning path, or join a class to receive work from a
+            teacher.
+          </p>
+          <Link className="btn btn-primary" href="/lessons">
+            Continue learning
+          </Link>
+        </section>
+      )}
       <section className="page-hero lessons-hero">
         <div>
           <span className="eyebrow">TEACHER ASSIGNMENTS</span>
@@ -72,7 +85,8 @@ export default async function AssignmentsPage() {
             <h2>From your teachers</h2>
             <p>
               Open an assignment to read its lesson or play its selected
-              challenge. Completion counts finished games and submitted Python work; teacher assessment is separate.
+              challenge. Completion requires finished games and a Passed
+              assessment for required Python work.
             </p>
           </div>
         </div>
@@ -94,8 +108,19 @@ export default async function AssignmentsPage() {
             const group = assignment.class_id
               ? classMap.get(assignment.class_id)
               : null;
-            const href = status !== "unavailable" ? (isLevel && level ? `/play/${level.id}` : lesson ? `/lesson/${lesson.id}` : null) : null;
-            const contentLabel = level ? `Level ${level.level_number} · ${level.title}` : lesson ? `Lesson ${lesson.order_number} · ${lesson.title}` : "This content is currently unavailable.";
+            const href =
+              status !== "unavailable"
+                ? isLevel && level
+                  ? `/play/${level.id}`
+                  : lesson
+                    ? `/lesson/${lesson.id}`
+                    : null
+                : null;
+            const contentLabel = level
+              ? `Level ${level.level_number} · ${level.title}`
+              : lesson
+                ? `Lesson ${lesson.order_number} · ${lesson.title}`
+                : "This content is currently unavailable.";
             return (
               <article
                 className="level-modern-row"
@@ -113,13 +138,9 @@ export default async function AssignmentsPage() {
                     {group ? ` · ${sectionLabel(group)}` : " · Individual"}
                   </span>
                   <h3>{assignment.title}</h3>
-                  <p>
-                    {assignment.instructions ||
-                      contentLabel}
-                  </p>
+                  <p>{assignment.instructions || contentLabel}</p>
                   <small>
-                    {contentLabel}{" "}
-                    ·{" "}
+                    {contentLabel} ·{" "}
                     {assignment.due_date
                       ? `Due ${new Date(assignment.due_date).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}`
                       : "No due date"}
@@ -127,14 +148,23 @@ export default async function AssignmentsPage() {
                 </div>
                 <div className={`level-status ${status}`}>
                   <i />
-                  {status === "completed" ? (isLevel ? "Game completed" : "Finished / submitted") : status[0].toUpperCase() + status.slice(1)}
+                  {status === "completed"
+                    ? isLevel
+                      ? "Game completed"
+                      : "Completed"
+                    : status[0].toUpperCase() +
+                      status.slice(1).replaceAll("-", " ")}
                 </div>
-                {href ? <Link
-                  href={href}
-                  className={`btn ${status === "completed" ? "btn-secondary" : "btn-primary"}`}
-                >
-                  {status === "completed" ? "Review" : "Open"} <span>→</span>
-                </Link> : <span className="btn btn-locked">Unavailable</span>}
+                {href ? (
+                  <Link
+                    href={href}
+                    className={`btn ${status === "completed" ? "btn-secondary" : "btn-primary"}`}
+                  >
+                    {status === "completed" ? "Review" : "Open"} <span>→</span>
+                  </Link>
+                ) : (
+                  <span className="btn btn-locked">Unavailable</span>
+                )}
               </article>
             );
           })}

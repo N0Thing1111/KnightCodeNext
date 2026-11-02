@@ -9,10 +9,7 @@ import {
   getTeacherContext,
   teacherStudents,
 } from "@/lib/teacher-data";
-import {
-  addExistingStudent,
-  removeStudent,
-} from "@/app/actions/teacher";
+import { addExistingStudent, removeStudent } from "@/app/actions/teacher";
 import { Alerts, Hero } from "@/components/teacher-ui";
 export default async function Page({
   params,
@@ -59,22 +56,20 @@ export default async function Page({
           cls.subject + " · " + (cls.school_year || "") + " · " + cls.status
         }
       >
-        {cls.status !== "archived" && <div className="hero-actions">
-          <Link
-            prefetch={false}
-            className="teacher-btn"
-            href="#enrollment"
-          >
-            Invite Students
-          </Link>
-          <Link
-            prefetch={false}
-            className="teacher-btn primary"
-            href={"/teacher/assignments?class_id=" + cls.id}
-          >
-            Assign Lesson
-          </Link>
-        </div>}
+        {cls.status !== "archived" && (
+          <div className="hero-actions">
+            <Link prefetch={false} className="teacher-btn" href="#enrollment">
+              Invite Students
+            </Link>
+            <Link
+              prefetch={false}
+              className="teacher-btn primary"
+              href={"/teacher/assignments?class_id=" + cls.id}
+            >
+              Assign Lesson
+            </Link>
+          </div>
+        )}
       </Hero>
       <Alerts searchParams={q} />
       <div className="teacher-metric-grid four">
@@ -121,7 +116,7 @@ export default async function Page({
                         >
                           {s.status}
                         </span>
-                      <p className="teacher-note">{s.status_reason}</p>
+                        <p className="teacher-note">{s.status_reason}</p>
                       </td>
                       <td>
                         <div className="class-card-actions">
@@ -164,34 +159,41 @@ export default async function Page({
         </section>
         <section className="teacher-card">
           <Head eyebrow="ADD STUDENTS" title="Build this roster" />
-          {cls.status === "archived" ? <p className="teacher-note">This section is archived. Restore it before accepting enrollment requests.</p> : <>
-          <p className="teacher-note">
-            Students belong to one section. Moving a student removes the
-            previous membership but keeps their learning history. Transfers from
-            another teacher must be made by an administrator.
-          </p>
-          {available.length > 0 && (
-            <form action={addExistingStudent} className="teacher-form">
-              <input type="hidden" name="class_id" value={cls.id} />
-              <label>
-                Move a student from another of your sections
-                <select name="student_id" required defaultValue="">
-                  <option value="" disabled>
-                    Choose student
-                  </option>
-                  {available.map((s) => (
-                    <option value={s.id} key={s.id}>
-                      {s.name} · {s.username || s.email}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <button className="teacher-btn">Move to Section</button>
-            </form>
+          {cls.status === "archived" ? (
+            <p className="teacher-note">
+              This section is archived. Restore it before accepting enrollment
+              requests.
+            </p>
+          ) : (
+            <>
+              <p className="teacher-note">
+                Students belong to one section. Moving a student removes the
+                previous membership but keeps their learning history. Transfers
+                from another teacher must be made by an administrator.
+              </p>
+              {available.length > 0 && (
+                <form action={addExistingStudent} className="teacher-form">
+                  <input type="hidden" name="class_id" value={cls.id} />
+                  <label>
+                    Move a student from another of your sections
+                    <select name="student_id" required defaultValue="">
+                      <option value="" disabled>
+                        Choose student
+                      </option>
+                      {available.map((s) => (
+                        <option value={s.id} key={s.id}>
+                          {s.name} · {s.username || s.email}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button className="teacher-btn">Move to Section</button>
+                </form>
+              )}
+              <div style={{ height: 14 }} />
+              <ClassEnrollment classId={cls.id} />
+            </>
           )}
-          <div style={{ height: 14 }} />
-          <ClassEnrollment classId={cls.id} />
-          </>}
         </section>
       </div>
       <div className="teacher-grid two">

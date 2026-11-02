@@ -12,7 +12,13 @@ type StudentOption = {
   classIds: number[];
 };
 type LessonOption = { id: number; title: string; pythonTitle?: string };
-type LevelOption = { id: number; lessonId: number; levelNumber: number; title: string; available: boolean };
+type LevelOption = {
+  id: number;
+  lessonId: number;
+  levelNumber: number;
+  title: string;
+  available: boolean;
+};
 
 export function AssignmentForm({
   classes,
@@ -33,7 +39,7 @@ export function AssignmentForm({
   const [studentId, setStudentId] = useState("");
   const [lessonId, setLessonId] = useState(defaultLessonId);
   const [levelId, setLevelId] = useState("0");
-  const chosenLesson = lessons.find(l => l.id === Number(lessonId));
+  const chosenLesson = lessons.find((l) => l.id === Number(lessonId));
   const visibleStudents = useMemo(() => {
     const selectedClass = Number(classId);
     return selectedClass
@@ -115,7 +121,14 @@ export function AssignmentForm({
         </label>
         <label>
           Lesson
-          <select name="lesson_id" value={lessonId} onChange={e => { setLessonId(e.target.value); setLevelId("0"); }}>
+          <select
+            name="lesson_id"
+            value={lessonId}
+            onChange={(e) => {
+              setLessonId(e.target.value);
+              setLevelId("0");
+            }}
+          >
             <option value="0">Choose lesson</option>
             {lessons.map((lesson) => (
               <option key={lesson.id} value={lesson.id}>
@@ -126,13 +139,27 @@ export function AssignmentForm({
         </label>
         <label>
           Specific challenge (optional)
-          <select name="level_id" value={levelId} onChange={e => setLevelId(e.target.value)}>
+          <select
+            name="level_id"
+            value={levelId}
+            onChange={(e) => setLevelId(e.target.value)}
+          >
             <option value="0">No specific challenge</option>
-            {levels.filter(level => !Number(lessonId) || level.lessonId === Number(lessonId)).map((level) => (
-              <option key={level.id} value={level.id} disabled={!level.available}>
-                #{level.levelNumber} · {level.title}{!level.available ? " (Coming Soon)" : ""}
-              </option>
-            ))}
+            {levels
+              .filter(
+                (level) =>
+                  !Number(lessonId) || level.lessonId === Number(lessonId),
+              )
+              .map((level) => (
+                <option
+                  key={level.id}
+                  value={level.id}
+                  disabled={!level.available}
+                >
+                  #{level.levelNumber} · {level.title}
+                  {!level.available ? " (Coming Soon)" : ""}
+                </option>
+              ))}
           </select>
         </label>
         <label className="full">
@@ -145,9 +172,13 @@ export function AssignmentForm({
         </label>
       </div>
       <p className="teacher-note" role="status">
-        {levelId !== "0" ? "This assigns one game challenge only. Python is included with whole-lesson assignments."
-          : chosenLesson?.pythonTitle ? "Includes Python: " + chosenLesson.pythonTitle + ". Complete the playable game levels and submit a Python Run to finish this assignment. Coming Soon levels do not block completion. Teacher review is separate."
-          : "Choose a whole lesson to include its published Python activity automatically."}
+        {levelId !== "0"
+          ? "This assigns one game challenge only. Python is included with whole-lesson assignments."
+          : chosenLesson?.pythonTitle
+            ? "Includes Python: " +
+              chosenLesson.pythonTitle +
+              ". Complete the playable game levels and submit a Python Run to finish this assignment. Coming Soon levels do not block completion. Teacher review is separate."
+            : "Choose a whole lesson to include its published Python activity automatically."}
       </p>
       <p className="teacher-note">
         Select a section to assign everyone in it. To assign only one learner,

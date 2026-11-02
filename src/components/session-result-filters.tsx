@@ -11,10 +11,12 @@ export function SessionResultFilters({
   catalog,
   filters,
   base,
+  showSessionId = true,
 }: {
   catalog: Omit<SessionCatalog, "assignments">;
   filters: SessionFilters;
   base: string;
+  showSessionId?: boolean;
 }) {
   const [section, setSection] = useState(filters.class_id);
   const [student, setStudent] = useState(filters.student);
@@ -90,17 +92,21 @@ export function SessionResultFilters({
           <option value="started">Unfinished</option>
         </select>
       </label>
-      <label>
-        Session ID
-        <input
-          type="number"
-          name="session"
-          min="1"
-          step="1"
-          defaultValue={filters.session}
-          placeholder="Any session"
-        />
-      </label>
+      {showSessionId ? (
+        <label>
+          Session ID
+          <input
+            type="number"
+            name="session"
+            min="1"
+            step="1"
+            defaultValue={filters.session}
+            placeholder="Any session"
+          />
+        </label>
+      ) : filters.session ? (
+        <input type="hidden" name="session" value={filters.session} />
+      ) : null}
       <div className="session-filter-actions">
         <button type="submit" className="teacher-btn primary">
           Search / Filter

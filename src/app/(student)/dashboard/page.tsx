@@ -1,3 +1,4 @@
+import { pythonCompletionLabel } from "@/lib/lesson-completion";
 import { Fragment } from "react";
 import Link from "next/link";
 import { requireStudent } from "@/lib/auth";
@@ -28,16 +29,14 @@ export default async function DashboardPage() {
   ]);
   const progress = new Map(learning.progress.map((row) => [row.level_id, row]));
   const playableLevels = learning.levels.filter(
-    (level) =>
-      learning.playable.has(level.id) &&
-      isGameLevelAvailable(level),
+    (level) => learning.playable.has(level.id) && isGameLevelAvailable(level),
   );
   const nextLevel =
     playableLevels.find((level) => !progress.get(level.id)?.completed) ??
     playableLevels[0];
   const allLevelsComplete = Boolean(
     playableLevels.length &&
-    playableLevels.every((level) => progress.get(level.id)?.completed),
+      playableLevels.every((level) => progress.get(level.id)?.completed),
   );
   const currentLesson = nextLevel
     ? learning.lessons.find((lesson) => lesson.id === nextLevel.lesson_id)
@@ -48,7 +47,9 @@ export default async function DashboardPage() {
   const lessonDone = lessonLevels.filter(
     (level) => progress.get(level.id)?.completed,
   ).length;
-  const lessonPct = currentLesson ? learning.completion.get(currentLesson.id)?.pct || 0 : 0;
+  const lessonPct = currentLesson
+    ? learning.completion.get(currentLesson.id)?.pct || 0
+    : 0;
   const nextIndex = nextLevel
     ? learning.levels.findIndex((level) => level.id === nextLevel.id)
     : 0;
@@ -68,7 +69,6 @@ export default async function DashboardPage() {
   const xpInLevel = stats.xp % 500;
   const xpToNext = xpInLevel ? 500 - xpInLevel : 500;
 
-
   return (
     <main className="page-container dashboard-page quest-dashboard">
       <section className="dashboard-welcome">
@@ -80,7 +80,17 @@ export default async function DashboardPage() {
           View learning path <span>→</span>
         </Link>
       </section>
-      {learning.scope.independent && <section className="panel"><h2>Learning independently</h2><p>Start with Lesson 1. Complete each lesson&apos;s available games and Python practice to unlock the next. Teacher assignments begin after you join a class.</p><Link href="/lessons">Continue your learning path</Link></section>}
+      {learning.scope.independent && (
+        <section className="panel">
+          <h2>Learning independently</h2>
+          <p>
+            Start with Lesson 1. Complete each lesson&apos;s available games and
+            Python practice to unlock the next. Teacher assignments begin after
+            you join a class.
+          </p>
+          <Link href="/lessons">Continue your learning path</Link>
+        </section>
+      )}
       <div className="quest-stage">
         <article className="panel continue-card">
           <div className="panel-title-row">
@@ -151,7 +161,7 @@ export default async function DashboardPage() {
             <span className="crest-orbit orbit-b" aria-hidden="true" />
           </div>
           <div className="hero-level-copy">
-            <h2>{stats.rank}</h2>
+            <h2>Your XP level</h2>
             <strong>Level {stats.level}</strong>
             <p>
               {xpToNext.toLocaleString()} XP to Level {stats.level + 1}
@@ -213,8 +223,14 @@ export default async function DashboardPage() {
                   <span className="path-copy">
                     <b>{lesson.title}</b>
                     <small>
-                      {completion.gamesDone}/{completion.gamesTotal} available levels
-                      {learning.completion.get(lesson.id)?.pythonRequired && (learning.completion.get(lesson.id)?.pythonDone ? " + Python submitted" : " + Python pending")}
+                      {completion.gamesDone}/{completion.gamesTotal} available
+                      levels
+                      {learning.completion.get(lesson.id)?.pythonRequired &&
+                        " + " +
+                          pythonCompletionLabel(
+                            completion.pythonStatus,
+                            learning.scope.independent,
+                          )}
                     </small>
                   </span>
                   <span className="path-percent">{pct}%</span>
@@ -283,15 +299,49 @@ export default async function DashboardPage() {
           <p>{streak.message}</p>
           <details>
             <summary>What counts?</summary>
-            <p>Running nonblank code in the game or finishing a Python run, including errors, counts once per day. Reading lessons, opening or restarting a game, and stopped or timed-out Python runs do not count. Missing a day breaks the streak.</p>
+            <p>
+              Running nonblank code in the game or finishing a Python run,
+              including errors, counts once per day. Reading lessons, opening or
+              restarting a game, and stopped or timed-out Python runs do not
+              count. Missing a day breaks the streak.
+            </p>
           </details>
-          <div className="week-row" aria-label="This week's learning streak, Philippine time">
-            {streak.week.map(day => (
-              <span key={day.date} title={day.date + (day.today ? " - Today" : "") + (day.done ? " - Counted" : day.future ? " - Upcoming" : " - Not counted")}
-                aria-label={day.label + ", " + day.date + (day.today ? ", today" : "") + (day.done ? ", counted" : day.future ? ", upcoming" : ", not counted")}
-                aria-current={day.today ? "date" : undefined}>
+          <div
+            className="week-row"
+            aria-label="This week's learning streak, Philippine time"
+          >
+            {streak.week.map((day) => (
+              <span
+                key={day.date}
+                title={
+                  day.date +
+                  (day.today ? " - Today" : "") +
+                  (day.done
+                    ? " - Counted"
+                    : day.future
+                      ? " - Upcoming"
+                      : " - Not counted")
+                }
+                aria-label={
+                  day.label +
+                  ", " +
+                  day.date +
+                  (day.today ? ", today" : "") +
+                  (day.done
+                    ? ", counted"
+                    : day.future
+                      ? ", upcoming"
+                      : ", not counted")
+                }
+                aria-current={day.today ? "date" : undefined}
+              >
                 <small>{day.label}</small>
-                <i className={`day-dot ${day.done ? "done" : ""}`} aria-hidden="true">{day.done ? "\u2713" : ""}</i>
+                <i
+                  className={`day-dot ${day.done ? "done" : ""}`}
+                  aria-hidden="true"
+                >
+                  {day.done ? "\u2713" : ""}
+                </i>
               </span>
             ))}
           </div>
@@ -320,8 +370,14 @@ export default async function DashboardPage() {
                 </b>
               </div>
               <div>
-                <span>Python submitted</span>
-                <b>{stats.pythonDone}/{stats.pythonTotal}</b>
+                <span>
+                  {learning.scope.independent
+                    ? "Python practice complete"
+                    : "Python passed"}
+                </span>
+                <b>
+                  {stats.pythonDone}/{stats.pythonTotal}
+                </b>
               </div>
               <div>
                 <span>XP</span>
@@ -345,13 +401,21 @@ export default async function DashboardPage() {
                 <span>✓</span>
                 <div>
                   <b>Assigned work complete</b>
-                  <small>{learning.scope.independent ? "Available games finished" : "All assigned levels finished"}</small>
+                  <small>
+                    {learning.scope.independent
+                      ? "Available games finished"
+                      : "All assigned levels finished"}
+                  </small>
                 </div>
               </div>
-              <h3>{learning.scope.independent ? "Continue with your lesson activities." : "You have completed every assigned challenge."}</h3>
+              <h3>
+                {learning.scope.independent
+                  ? "Continue with your lesson activities."
+                  : "You have completed every assigned challenge."}
+              </h3>
               <p>
-                Review a lesson or replay a completed level whenever
-                you want to sharpen your skills.
+                Review a lesson or replay a completed level whenever you want to
+                sharpen your skills.
               </p>
               <Link
                 className="btn btn-primary btn-block"
@@ -390,7 +454,10 @@ export default async function DashboardPage() {
             <div>
               <strong>Today&apos;s saved practice time</strong>
               <small>{todayMinutes} of 30 minutes saved today</small>
-              <small>Game time + Python run time. Typing time is not measured. Days use Philippine time.</small>
+              <small>
+                Game time + Python run time. Typing time is not measured. Days
+                use Philippine time.
+              </small>
             </div>
           </div>
           <div className="goal-progress">
@@ -489,7 +556,11 @@ export default async function DashboardPage() {
                         ? `Level ${levelMap.get(item.level_id)?.level_number} · ${levelMap.get(item.level_id)?.title}`
                         : "Learning session"}
                     </b>
-                    <small>{new Date(item.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}</small>
+                    <small>
+                      {new Date(item.created_at).toLocaleString("en-PH", {
+                        timeZone: "Asia/Manila",
+                      })}
+                    </small>
                   </div>
                   <strong>
                     {item.xp_earned ? `+${item.xp_earned} XP` : ""}

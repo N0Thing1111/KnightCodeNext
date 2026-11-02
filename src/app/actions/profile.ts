@@ -34,12 +34,14 @@ export async function updateProfile(
   let profileImage = student.profile_image;
   let uploadedImage: string | null = null;
   const fail = async (message: string) => {
-    if (uploadedImage) await supabase.storage.from("profile-images").remove([uploadedImage]);
+    if (uploadedImage)
+      await supabase.storage.from("profile-images").remove([uploadedImage]);
     return { error: message };
   };
   const currentPassword = String(form.get("current_password") ?? "");
   const newPassword = String(form.get("new_password") ?? "");
-  if (newPassword && newPassword.length < 8) return { error: "New password must be at least 8 characters." };
+  if (newPassword && newPassword.length < 8)
+    return { error: "New password must be at least 8 characters." };
   const picture = form.get("profile_image");
   if (picture instanceof File && picture.size) {
     if (picture.size > 5 * 1024 * 1024)
@@ -60,7 +62,6 @@ export async function updateProfile(
     profileImage = path;
     uploadedImage = path;
   } else if (form.get("use_custom_picture") === "0") {
-
     profileImage = null;
   }
   if (newPassword) {
@@ -89,7 +90,9 @@ export async function updateProfile(
     .eq("id", student.id);
   if (error) return fail(error.message);
   if (student.profile_image && student.profile_image !== profileImage) {
-    await supabase.storage.from("profile-images").remove([student.profile_image]);
+    await supabase.storage
+      .from("profile-images")
+      .remove([student.profile_image]);
   }
   revalidatePath("/", "layout");
   return {

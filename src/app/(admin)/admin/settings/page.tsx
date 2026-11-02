@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/auth";
 import { getAdminContext, setting } from "@/lib/admin-data";
 import { saveAdminSettings } from "@/app/actions/admin";
 import { AdminHero, Alerts } from "@/components/admin-ui";
+import { PLATFORM_NAME } from "@/lib/platform-identity";
 export default async function Page({
   searchParams,
 }: {
@@ -16,54 +17,70 @@ export default async function Page({
   return (
     <>
       <AdminHero
-        title="Platform settings"
-        description="Manage your profile, personalize KnightCode, and manage your learning platform."
+        title="Platform and account settings"
+        description="Manage support contacts, appearance, and your account."
       >
-        <span className="admin-role-badge">♜ Platform administrator</span>
+        <span className="admin-role-badge">Platform administrator</span>
       </AdminHero>
       <Alerts q={q} />
-      <nav className="admin-settings-nav">
-        <a href="#profile">Your profile</a>
-        <a href="#school">Platform details</a>
+      <nav className="admin-settings-nav" aria-label="Settings sections">
+        <a href="#platform">Platform identity</a>
+        <a href="#support">Support contact</a>
+        <a href="#profile">Your account</a>
         <a href="#theme">Appearance</a>
         <a href="#password">Security</a>
       </nav>
-      <section className="teacher-card admin-settings-summary" aria-label="Administrator profile">
-        <div className="teacher-profile-cover">
-          <div className="teacher-profile-avatar">
-            <span>♞</span>
-          </div>
-          <div>
-            <span className="teacher-eyebrow">PLATFORM ADMINISTRATOR</span>
-            <h2>{admin.name}</h2>
-            <p>{admin.email}</p>
-            <span className="admin-role-badge">
-              {setting(ctx, "platform_name", "KnightCode")}
-            </span>
-          </div>
-        </div>
-        <div className="teacher-mini-stats">
-          {[
-            ["teacher", "Teachers"],
-            ["student", "Students"],
-          ].map(([role, label]) => (
-            <div key={role}>
-              <strong>
-                {ctx.profiles.filter((p) => p.role === role).length}
-              </strong>
-              <span>{label}</span>
-            </div>
-          ))}
-          <div>
-            <strong>{ctx.classes.length}</strong>
-            <span>Sections</span>
-          </div>
-        </div>
-      </section>
       <div className="admin-settings-grid">
         <div className="admin-settings-column">
+          <section className="teacher-card" id="platform">
+            <h3>Platform identity</h3>
+            <p>
+              <strong>{PLATFORM_NAME}</strong>
+            </p>
+            <p className="teacher-note">
+              The platform name is fixed. Support details below are editable.
+            </p>
+          </section>
+          <section className="teacher-card" id="support">
+            <h3>Support contact</h3>
+            <p>Shown on the student support page.</p>
+            <form action={saveAdminSettings} className="teacher-form">
+              <input type="hidden" name="settings_action" value="support" />
+              {[
+                ["support_contact", "Support team or contact"],
+                ["support_email", "Support email"],
+                ["support_phone", "Phone (optional)"],
+                ["support_hours", "Support hours"],
+              ].map(([key, label]) => (
+                <label key={key}>
+                  {label}
+                  <input
+                    name={key}
+                    type={key === "support_email" ? "email" : "text"}
+                    maxLength={200}
+                    defaultValue={setting(ctx, key)}
+                  />
+                </label>
+              ))}
+              <label>
+                Instructions
+                <textarea
+                  name="support_instructions"
+                  maxLength={2000}
+                  rows={4}
+                  defaultValue={setting(ctx, "support_instructions")}
+                />
+              </label>
+              <button className="teacher-btn primary">
+                Save support details
+              </button>
+            </form>
+          </section>
+        </div>
+        <div className="admin-settings-column">
           <section className="teacher-card" id="profile">
-            <h3>Personal information</h3>
+            <h3>Your admin account</h3>
+            <p className="teacher-note">Signed in as {admin.email}.</p>
             <form action={saveAdminSettings} className="teacher-form">
               <input type="hidden" name="settings_action" value="profile" />
               <div className="teacher-form-grid">
@@ -84,39 +101,13 @@ export default async function Page({
               <button className="teacher-btn primary">Save profile</button>
             </form>
           </section>
-          <section className="teacher-card" id="school">
-            <h3>Your learning community</h3>
-            <form action={saveAdminSettings} className="teacher-form">
-              <input type="hidden" name="settings_action" value="school" />
-              <label>
-                Platform name
-                <input
-                  name="platform_name"
-                  defaultValue={setting(ctx, "platform_name", "KnightCode")}
-                  required
-                />
-              </label>
-              <button className="teacher-btn primary">Save platform details</button>
-            </form>
-          </section>
-          <section className="teacher-card" id="support">
-            <h3>Platform contact and support</h3><p>These details appear on this deployment&apos;s student support page.</p>
-            <form action={saveAdminSettings} className="teacher-form">
-              <input type="hidden" name="settings_action" value="support" />
-              {[["support_contact","Contact person or office"],["support_email","Support email"],["support_phone","Phone or extension"],["support_hours","Office hours"]].map(([key,label]) => <label key={key}>{label}<input name={key} type={key === "support_email" ? "email" : "text"} maxLength={200} defaultValue={setting(ctx,key)} /></label>)}
-              <label>Instructions<textarea name="support_instructions" maxLength={2000} rows={4} defaultValue={setting(ctx,"support_instructions")} /></label>
-              <button className="teacher-btn primary">Save support details</button>
-            </form>
-          </section>
-        </div>
-        <div className="admin-settings-column">
           <section className="teacher-card" id="theme">
-            <h3>A look that feels like you</h3>
+            <h3>Appearance</h3>
             <div className="admin-theme-options">
               {[
-                ["dark", "☾", "Dark"],
-                ["light", "☀", "Light"],
-              ].map(([mode, icon, label]) => (
+                ["dark", "Dark"],
+                ["light", "Light"],
+              ].map(([mode, label]) => (
                 <form action={saveAdminSettings} key={mode}>
                   <input type="hidden" name="settings_action" value="theme" />
                   <input type="hidden" name="theme" value={mode} />
@@ -135,12 +126,10 @@ export default async function Page({
                       </span>
                     </span>
                     <span className="admin-theme-caption">
-                      <strong>
-                        {icon} {label}
-                      </strong>
+                      <strong>{label}</strong>
                       <small>
                         {admin.theme_preference === mode
-                          ? "✓ Selected"
+                          ? "Selected"
                           : "Choose theme"}
                       </small>
                     </span>
@@ -150,7 +139,7 @@ export default async function Page({
             </div>
           </section>
           <section className="teacher-card admin-security-card" id="password">
-            <h3>Keep your account protected</h3>
+            <h3>Account security</h3>
             <form action={saveAdminSettings} className="teacher-form">
               <input type="hidden" name="settings_action" value="password" />
               <label>
@@ -160,11 +149,7 @@ export default async function Page({
               <div className="teacher-form-grid">
                 <label>
                   New password
-                  <PasswordInput
-                    name="new_password"
-                    minLength={12}
-                    required
-                  />
+                  <PasswordInput name="new_password" minLength={12} required />
                 </label>
                 <label>
                   Confirm new password
@@ -180,7 +165,7 @@ export default async function Page({
           </section>
           <section className="teacher-card logout-card">
             <div>
-              <h3>Sign out of your workspace</h3>
+              <h3>Sign out of administration</h3>
               <p>Your saved changes will be here when you return.</p>
             </div>
             <form action="/admin-logout" method="post">

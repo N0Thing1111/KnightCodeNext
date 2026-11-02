@@ -9,16 +9,23 @@ export async function GET(request: Request) {
   try {
     const filters = parseReportFilters(Object.fromEntries(url.searchParams));
     const { report } = await getTeacherReport(teacher, filters);
+    if (!report) throw Error("Choose a Python activity before exporting.");
     const pdf = url.searchParams.get("format") === "pdf";
     return new Response(pdf ? await reportPdf(report) : reportCsv(report), {
       headers: {
         "Content-Type": pdf ? "application/pdf" : "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="knightcode-${filters.type}${filters.section ? "-section-" + filters.section : ""}.${pdf ? "pdf" : "csv"}"`,
+        "Content-Disposition": `attachment; filename="knightcode-python-results-${filters.activity}${filters.section ? "-section-" + filters.section : ""}.${pdf ? "pdf" : "csv"}"`,
         "Cache-Control": "private, no-store",
         "X-Content-Type-Options": "nosniff",
       },
     });
   } catch (error) {
-    return Response.json({ error: error instanceof Error ? error.message : "Could not generate report." }, { status: 400, headers: { "Cache-Control": "private, no-store" } });
+    return Response.json(
+      {
+        error:
+          error instanceof Error ? error.message : "Could not generate report.",
+      },
+      { status: 400, headers: { "Cache-Control": "private, no-store" } },
+    );
   }
 }

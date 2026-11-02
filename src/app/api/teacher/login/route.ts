@@ -17,7 +17,8 @@ export async function POST(request: NextRequest) {
     return fail(request, "Please enter your username or email and password.");
   let email = identifier;
   if (!identifier.includes("@")) {
-    if (!/^[a-z0-9._-]{1,80}$/.test(identifier)) return fail(request, "Invalid username/email or password.");
+    if (!/^[a-z0-9._-]{1,80}$/.test(identifier))
+      return fail(request, "Invalid username/email or password.");
     const { data } = await createAdminClient()
       .from("profiles")
       .select("email")
@@ -47,7 +48,13 @@ export async function POST(request: NextRequest) {
     },
   );
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return fail(request, error.code === "email_not_confirmed" ? "Verify your email before signing in. Check your inbox and spam folder." : "Invalid username/email or password.");
+  if (error)
+    return fail(
+      request,
+      error.code === "email_not_confirmed"
+        ? "Verify your email before signing in. Check your inbox and spam folder."
+        : "Invalid username/email or password.",
+    );
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -58,7 +65,12 @@ export async function POST(request: NextRequest) {
     .maybeSingle();
   if (!profile || profile.role !== "teacher" || !profile.active) {
     await supabase.auth.signOut();
-    return fail(request, profile?.onboarding_status === "pending" ? "Verify your email before accessing the teacher portal." : "This account cannot access the teacher portal.");
+    return fail(
+      request,
+      profile?.onboarding_status === "pending"
+        ? "Verify your email before accessing the teacher portal."
+        : "This account cannot access the teacher portal.",
+    );
   }
   return response;
 }

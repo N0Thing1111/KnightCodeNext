@@ -37,22 +37,44 @@ export default async function Page({
           classes={ctx.classes
             .filter((c) => c.status === "active")
             .map((c) => ({ id: c.id, name: c.name, section: c.section }))}
-          students={students.filter(s => ctx.memberships.some(m => m.student_id === s.id && ctx.classes.some(c => c.id === m.class_id && c.status === "active"))).map((s) => ({
-            id: s.id,
-            name: s.name,
-            studentId: s.username || s.email,
-            classIds: ctx.memberships
-              .filter((m) => m.student_id === s.id)
-              .map((m) => m.class_id),
-          }))}
-          lessons={ctx.lessons.map((l) => ({ id: l.id, title: l.title, pythonTitle: ctx.python.activities.some(a => a.lesson_id === l.id && a.published) ? "This lesson's Python activity" : undefined }))}
-          levels={ctx.levels.filter(l => ctx.lessons.some(lesson => lesson.id === l.lesson_id)).map((l) => ({
+          students={students
+            .filter((s) =>
+              ctx.memberships.some(
+                (m) =>
+                  m.student_id === s.id &&
+                  ctx.classes.some(
+                    (c) => c.id === m.class_id && c.status === "active",
+                  ),
+              ),
+            )
+            .map((s) => ({
+              id: s.id,
+              name: s.name,
+              studentId: s.username || s.email,
+              classIds: ctx.memberships
+                .filter((m) => m.student_id === s.id)
+                .map((m) => m.class_id),
+            }))}
+          lessons={ctx.lessons.map((l) => ({
             id: l.id,
-            levelNumber: l.level_number,
-            lessonId: l.lesson_id,
-            available: isGameLevelAvailable(l),
             title: l.title,
+            pythonTitle: ctx.python.activities.some(
+              (a) => a.lesson_id === l.id && a.published,
+            )
+              ? "This lesson's Python activity"
+              : undefined,
           }))}
+          levels={ctx.levels
+            .filter((l) =>
+              ctx.lessons.some((lesson) => lesson.id === l.lesson_id),
+            )
+            .map((l) => ({
+              id: l.id,
+              levelNumber: l.level_number,
+              lessonId: l.lesson_id,
+              available: isGameLevelAvailable(l),
+              title: l.title,
+            }))}
           defaultClassId={q.class_id || "0"}
           defaultLessonId={q.lesson_id || "0"}
         />
@@ -131,7 +153,7 @@ export default async function Page({
                         >
                           {a.due_date
                             ? new Date(a.due_date).toLocaleDateString("en-US", {
-                    timeZone: "Asia/Manila",
+                                timeZone: "Asia/Manila",
                                 month: "short",
                                 day: "numeric",
                                 year: "numeric",
@@ -166,7 +188,15 @@ export default async function Page({
                               }}
                             />
                           </span>
-                          <small>{!a.level_id && ctx.python.activities.some(py => py.lesson_id === a.lesson_id && py.published) ? "games + Python submitted" : "game completed"}</small>
+                          <small>
+                            {!a.level_id &&
+                            ctx.python.activities.some(
+                              (py) =>
+                                py.lesson_id === a.lesson_id && py.published,
+                            )
+                              ? "games + Python passed"
+                              : "game completed"}
+                          </small>
                         </div>
                       </td>
                       <td className="assignment-action-cell">

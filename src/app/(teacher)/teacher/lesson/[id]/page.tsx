@@ -56,7 +56,13 @@ export default async function Page({
           dangerouslySetInnerHTML={{ __html: lesson.content }}
         />
       </section>
-      <TeacherLessonPython activities={activities === null ? null : activities.filter((activity) => activity.lesson_id === lesson.id)} />
+      <TeacherLessonPython
+        activities={
+          activities === null
+            ? null
+            : activities.filter((activity) => activity.lesson_id === lesson.id)
+        }
+      />
       <section className="teacher-card">
         <div className="teacher-card-head">
           <div>
@@ -103,14 +109,19 @@ export default async function Page({
                     }{" "}
                     / {students.length} students
                   </td>
-                  <td><GamePreviewButton level={l} /></td>
+                  <td>
+                    <GamePreviewButton level={l} />
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
         <p className="teacher-note">
-          Preview an available level to try the same game and starter code students see. Preview play does not save learning records. To review an individual student&apos;s results, open their page from Student Monitoring.
+          Preview an available level to try the same game and starter code
+          students see. Preview play does not save learning records. To review
+          an individual student&apos;s results, open their profile from
+          Students.
         </p>
       </section>
     </>

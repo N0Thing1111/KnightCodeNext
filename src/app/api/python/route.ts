@@ -1,4 +1,5 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { pythonRequestSchema } from "@/lib/python-contract";
@@ -56,12 +57,19 @@ export async function POST(request: NextRequest) {
       // The lesson FK and unique lesson_id constraint also protect concurrent requests.
       response = await createAdminClient()
         .from("python_activities")
-        .insert({ lesson_id: p.lesson, content: p.content, published: p.published })
+        .insert({
+          lesson_id: p.lesson,
+          content: p.content,
+          published: p.published,
+        })
         .select("id")
         .single();
       if (response.error?.code === "23505")
         return NextResponse.json(
-          { error: "This lesson already has a Python activity. Refresh the page to edit it." },
+          {
+            error:
+              "This lesson already has a Python activity. Refresh the page to edit it.",
+          },
           { status: 409 },
         );
       if (response.error?.code === "23503")
@@ -134,12 +142,21 @@ export async function POST(request: NextRequest) {
       });
       break;
   }
-  if (response.error?.message.startsWith("SECTION_ARCHIVED:")) return NextResponse.json({ code: "SECTION_ARCHIVED", error: response.error.message.slice(17).trim() }, { status: 403 });
+  if (response.error?.message.startsWith("SECTION_ARCHIVED:"))
+    return NextResponse.json(
+      {
+        code: "SECTION_ARCHIVED",
+        error: response.error.message.slice(17).trim(),
+      },
+      { status: 403 },
+    );
   if (response.error)
     return NextResponse.json(
       { error: response.error.message },
       { status: 400 },
     );
+  if (["submit", "review", "edit_review", "complete_practice"].includes(p.op))
+    revalidatePath("/", "layout");
   return NextResponse.json(
     { ok: true, data: response.data },
     { headers: { "Cache-Control": "no-store" } },

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 import { findStudentAccount } from "@/lib/student-identity";
-import { getSchoolName } from "@/lib/school-name";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -10,7 +9,11 @@ import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { sendStudentPasswordEmail, sendTeacherPasswordEmail } from "@/lib/mail";
-import { requireSectionArchive, requireSectionMembership, setStudentSection } from "@/lib/sections";
+import {
+  requireSectionArchive,
+  requireSectionMembership,
+  setStudentSection,
+} from "@/lib/sections";
 const db = () => createAdminClient(),
   str = (f: FormData, k: string) => String(f.get(k) || "").trim(),
   num = (f: FormData, k: string) => Number(f.get(k) || 0);
@@ -53,15 +56,29 @@ async function finish(path: string, job: (admin: any) => Promise<string>) {
   revalidatePath("/", "layout");
   redirect(url(path, key, msg));
 }
-async function undoNewAccount(client: ReturnType<typeof createAdminClient>, id: string, email: string, cause: unknown): Promise<never> {
-  const message = cause instanceof Error ? cause.message : "Account setup failed.";
+async function undoNewAccount(
+  client: ReturnType<typeof createAdminClient>,
+  id: string,
+  email: string,
+  cause: unknown,
+): Promise<never> {
+  const message =
+    cause instanceof Error ? cause.message : "Account setup failed.";
   try {
     const removed = await client.auth.admin.deleteUser(id);
     if (removed.error) throw Error(removed.error.message);
   } catch {
-    throw Error(message + " The newly created account could not be removed. Ask an administrator to find " + email + " and finish setup/reset its password before retrying.");
+    throw Error(
+      message +
+        " The newly created account could not be removed. Ask an administrator to find " +
+        email +
+        " and finish setup/reset its password before retrying.",
+    );
   }
-  throw Error(message + " The new account was removed; correct the details and try again.");
+  throw Error(
+    message +
+      " The new account was removed; correct the details and try again.",
+  );
 }
 function tempPassword() {
   return "KC-" + crypto.randomUUID().replaceAll("-", "").slice(0, 12) + "!";
@@ -88,7 +105,10 @@ export async function saveAdminEntity(f: FormData) {
         throw Error("Complete the required account fields.");
       if (role === "student") {
         const existingStudent = await findStudentAccount(a, email, id || null);
-        if (existingStudent) throw Error("Email already belongs to an existing student. Edit that account instead of creating a duplicate.");
+        if (existingStudent)
+          throw Error(
+            "Email already belongs to an existing student. Edit that account instead of creating a duplicate.",
+          );
         await requireSectionMembership();
         const sectionId = num(f, "class_id");
         if (sectionId) {
@@ -129,7 +149,7 @@ export async function saveAdminEntity(f: FormData) {
           password,
           email_confirm: true,
           app_metadata: { role: role },
-      user_metadata: {
+          user_metadata: {
             role,
             name,
             student_id: role === "student" ? code : null,
@@ -163,10 +183,21 @@ export async function saveAdminEntity(f: FormData) {
           username,
         });
       try {
-        const { error } = await a.from("profiles").update(patch)
-          .eq("id", userId).eq("role", role).select("id").single();
+        const { error } = await a
+          .from("profiles")
+          .update(patch)
+          .eq("id", userId)
+          .eq("role", role)
+          .select("id")
+          .single();
         if (error) throw Error(error.message);
-        if (role === "student") await setStudentSection(userId, num(f, "class_id") || null, admin.id, true);
+        if (role === "student")
+          await setStudentSection(
+            userId,
+            num(f, "class_id") || null,
+            admin.id,
+            true,
+          );
       } catch (error) {
         if (!id) await undoNewAccount(a, userId, email, error);
         throw error;
@@ -181,7 +212,7 @@ export async function saveAdminEntity(f: FormData) {
             studentId: code,
             username,
             temporaryPassword: password,
-            schoolLabel: await getSchoolName(a),
+
             reason: "welcome",
           });
         else
@@ -190,7 +221,6 @@ export async function saveAdminEntity(f: FormData) {
             name,
             teacherId: code,
             temporaryPassword: password,
-            schoolLabel: await getSchoolName(a),
           });
         const jar = await cookies();
         jar.set(
@@ -265,11 +295,17 @@ export async function saveAdminEntity(f: FormData) {
             "span",
           ],
           allowedAttributes: { "*": ["class"] },
-          allowedClasses: { "*": ["lesson-block", "lesson-block-heading", "code-label"] },
+          allowedClasses: {
+            "*": ["lesson-block", "lesson-block-heading", "code-label"],
+          },
         }),
         order_number: num(f, "order_number"),
       };
-      if (!row.title || !Number.isSafeInteger(row.order_number) || row.order_number < 1)
+      if (
+        !row.title ||
+        !Number.isSafeInteger(row.order_number) ||
+        row.order_number < 1
+      )
         throw Error("Enter a title and a positive whole-number lesson order.");
       if (id && (!Number.isSafeInteger(Number(id)) || Number(id) < 1))
         throw Error("Invalid lesson.");
@@ -277,7 +313,10 @@ export async function saveAdminEntity(f: FormData) {
         ? a.from("lessons").update(row).eq("id", Number(id))
         : a.from("lessons").insert({ ...row, active: true });
       const { data, error } = await q.select("id").single();
-      if (error?.code === "23505") throw Error("That lesson order is already used. Choose a different order number.");
+      if (error?.code === "23505")
+        throw Error(
+          "That lesson order is already used. Choose a different order number.",
+        );
       if (error) throw Error(error.message);
       await audit(admin.id, id ? "update" : "create", entity, id || data.id);
       return id ? "Changes saved." : "Lesson created.";
@@ -334,11 +373,19 @@ export async function setAdminEntityStatus(f: FormData) {
     let q;
     if (entity === "lessons") {
       const lessonId = Number(id);
-      if (!Number.isSafeInteger(lessonId) || lessonId < 1) throw Error("Invalid lesson.");
-      const { error } = await a.from("lessons").update({ active: restore }).eq("id", lessonId).select("id").single();
+      if (!Number.isSafeInteger(lessonId) || lessonId < 1)
+        throw Error("Invalid lesson.");
+      const { error } = await a
+        .from("lessons")
+        .update({ active: restore })
+        .eq("id", lessonId)
+        .select("id")
+        .single();
       if (error) throw Error(error.message);
       await audit(admin.id, restore ? "restore" : "archive", entity, id);
-      return restore ? "Lesson restored." : "Lesson archived. Linked levels, assignments, and learning history are preserved.";
+      return restore
+        ? "Lesson restored."
+        : "Lesson archived. Linked levels, assignments, and learning history are preserved.";
     }
     if (entity === "classes") await requireSectionArchive();
     if (entity === "classes")
@@ -386,10 +433,18 @@ export async function resetManagedPassword(f: FormData) {
         studentId: p.student_id,
         username: p.username,
         temporaryPassword: password,
-        schoolLabel: await getSchoolName(a),
+
         reason: "reset",
       });
-    if (entity === "teachers") emailSent = await sendTeacherPasswordEmail({ email: p.email, name: p.name, teacherId: p.teacher_id || "", temporaryPassword: password, schoolLabel: await getSchoolName(a), reason: "reset" });
+    if (entity === "teachers")
+      emailSent = await sendTeacherPasswordEmail({
+        email: p.email,
+        name: p.name,
+        teacherId: p.teacher_id || "",
+        temporaryPassword: password,
+
+        reason: "reset",
+      });
     await audit(admin.id, "reset_password", entity, id);
     const jar = await cookies();
     jar.set(
@@ -418,22 +473,40 @@ export async function deleteAdminEntity(f: FormData) {
     const a = db();
     if (entity === "levels") {
       const levelId = Number(id);
-      if (!Number.isSafeInteger(levelId) || levelId < 1) throw Error("Invalid level.");
-      if (str(f, "confirm_delete") !== "1") throw Error("Confirm that you want to permanently delete this unused level.");
-      const { error } = await a.rpc("delete_unused_level", { p_admin: admin.id, p_level: levelId });
+      if (!Number.isSafeInteger(levelId) || levelId < 1)
+        throw Error("Invalid level.");
+      if (str(f, "confirm_delete") !== "1")
+        throw Error(
+          "Confirm that you want to permanently delete this unused level.",
+        );
+      const { error } = await a.rpc("delete_unused_level", {
+        p_admin: admin.id,
+        p_level: levelId,
+      });
       if (error?.code === "PGRST202" || error?.code === "42883")
-        throw Error("Safe level deletion is not installed yet. Apply the safe-level-deletion database update first; you can still archive this level.");
+        throw Error(
+          "Safe level deletion is not installed yet. Apply the safe-level-deletion database update first; you can still archive this level.",
+        );
       if (error) throw Error(error.message);
       // Deletion, dependency checks, and the audit entry are one transaction.
       return "Unused level permanently deleted. The Unity build is unchanged.";
     }
     if (entity === "lessons") {
       const lessonId = Number(id);
-      if (!Number.isSafeInteger(lessonId) || lessonId < 1) throw Error("Invalid lesson.");
-      if (str(f, "confirm_delete") !== "1") throw Error("Confirm that you want to permanently delete this unused lesson.");
-      const { error } = await a.rpc("delete_unused_lesson", { p_admin: admin.id, p_lesson: lessonId });
+      if (!Number.isSafeInteger(lessonId) || lessonId < 1)
+        throw Error("Invalid lesson.");
+      if (str(f, "confirm_delete") !== "1")
+        throw Error(
+          "Confirm that you want to permanently delete this unused lesson.",
+        );
+      const { error } = await a.rpc("delete_unused_lesson", {
+        p_admin: admin.id,
+        p_lesson: lessonId,
+      });
       if (error?.code === "PGRST202" || error?.code === "42883")
-        throw Error("Safe lesson deletion is not installed yet. Apply the lesson-management database update first; you can still archive this lesson.");
+        throw Error(
+          "Safe lesson deletion is not installed yet. Apply the lesson-management database update first; you can still archive this lesson.",
+        );
       if (error) throw Error(error.message);
       // The database records deletion and its audit entry in one transaction.
       return "Unused lesson permanently deleted.";
@@ -451,16 +524,26 @@ export async function deleteAdminEntity(f: FormData) {
         throw Error("Account not found.");
       if (entity === "teachers") {
         if (str(f, "confirm_delete") !== "1")
-          throw Error("Confirm that you want to permanently delete this unused teacher account.");
-        const { error } = await a.rpc("assert_teacher_deletable", { p_admin: admin.id, p_teacher: id });
+          throw Error(
+            "Confirm that you want to permanently delete this unused teacher account.",
+          );
+        const { error } = await a.rpc("assert_teacher_deletable", {
+          p_admin: admin.id,
+          p_teacher: id,
+        });
         if (error?.code === "PGRST202" || error?.code === "42883")
-          throw Error("Safe teacher deletion is not installed yet. Archive the account instead.");
+          throw Error(
+            "Safe teacher deletion is not installed yet. Archive the account instead.",
+          );
         if (error) throw Error(error.message);
       }
       const { error } = await a.auth.admin.deleteUser(id);
-      if (error) throw Error(entity === "teachers"
-        ? "Teacher deletion could not be completed. Linked records block deletion; archive the account instead."
-        : error.message);
+      if (error)
+        throw Error(
+          entity === "teachers"
+            ? "Teacher deletion could not be completed. Linked records block deletion; archive the account instead."
+            : error.message,
+        );
     } else throw Error("This record cannot be deleted.");
     await audit(admin.id, "delete", entity, id);
     return "Record deleted.";
@@ -510,21 +593,33 @@ export async function saveAdminSettings(f: FormData) {
         .update({ name, email })
         .eq("id", admin.id);
       if (error) throw Error(error.message);
-    } else if (action === "school") {
-      for (const [key, value] of [
-        ["platform_name", str(f, "platform_name")],
-      ]) {
-        if (!value) throw Error("Complete the platform details.");
-        await a
-          .from("admin_settings")
-          .upsert({ setting_key: key, setting_value: value });
-      }
+    } else if (action === "school" || action === "platform") {
+      throw Error(
+        "KnightCode's platform identity is fixed. You can edit support details below.",
+      );
     } else if (action === "support") {
-      const email = str(f,"support_email");
-      if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw Error("Enter a valid support email.");
-      const keys = ["support_contact","support_email","support_phone","support_hours","support_instructions"];
-      const rows = keys.map(key => ({ setting_key: key, setting_value: str(f,key) }));
-      if (rows.some(r => r.setting_value.length > (r.setting_key === "support_instructions" ? 2000 : 200))) throw Error("Support details are too long.");
+      const email = str(f, "support_email");
+      if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
+        throw Error("Enter a valid support email.");
+      const keys = [
+        "support_contact",
+        "support_email",
+        "support_phone",
+        "support_hours",
+        "support_instructions",
+      ];
+      const rows = keys.map((key) => ({
+        setting_key: key,
+        setting_value: str(f, key),
+      }));
+      if (
+        rows.some(
+          (r) =>
+            r.setting_value.length >
+            (r.setting_key === "support_instructions" ? 2000 : 200),
+        )
+      )
+        throw Error("Support details are too long.");
       const { error } = await a.from("admin_settings").upsert(rows);
       if (error) throw Error(error.message);
       revalidatePath("/support");

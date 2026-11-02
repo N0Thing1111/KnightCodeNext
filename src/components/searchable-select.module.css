@@ -1,0 +1,85 @@
+.field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  align-content: start;
+}
+.field > label {
+  color: var(--t-muted);
+  font-weight: 600;
+}
+.control {
+  position: relative;
+  min-width: 0;
+}
+.control > input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding-right: 48px;
+}
+.control > input::placeholder {
+  color: var(--t-muted);
+  opacity: 1;
+}
+.control > .toggle {
+  position: absolute;
+  inset: 0 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  color: var(--t-muted);
+  cursor: pointer;
+}
+.control > .toggle:disabled {
+  cursor: not-allowed;
+}
+.popup {
+  z-index: 150;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--t-surface);
+  color: var(--t-text);
+  border: 1px solid var(--t-border2);
+  border-radius: 10px;
+  padding: 4px;
+  font-family: Inter, system-ui, sans-serif;
+}
+.popup [role="option"] {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: transparent;
+  color: var(--t-text);
+  text-align: left;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  cursor: pointer;
+}
+.popup [role="option"][data-active="true"],
+.popup [role="option"]:hover {
+  background: var(--t-surface2);
+  outline: 1px solid var(--t-border2);
+  outline-offset: -1px;
+}
+.popup [role="option"][aria-selected="true"] {
+  font-weight: 700;
+}
+.status {
+  margin: 0;
+  padding: 10px 12px;
+  color: var(--t-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}

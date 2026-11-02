@@ -19,28 +19,28 @@ export default async function Page({
           </span>
         </Link>
         <div className="auth-visual-content">
-          <span className="eyebrow">SCHOOL ADMINISTRATION</span>
+          <span className="eyebrow">PLATFORM ADMINISTRATION</span>
           <h1>
-            One school.
+            Manage KnightCode.
             <br />
-            <span>A shared future.</span>
+            <span>Support its users.</span>
           </h1>
           <p>
-            Support your teachers, shape the curriculum, and oversee learning
+            Manage accounts, maintain learning content, and protect records
             across the KnightCode platform.
           </p>
           <div className="auth-feature-grid">
             <div>
-              <b>People</b>
-              <small>Teachers, sections, and students</small>
+              <b>Accounts</b>
+              <small>Teachers and learners</small>
             </div>
             <div>
-              <b>Curriculum</b>
-              <small>Lessons and level organization</small>
+              <b>Learning content</b>
+              <small>Lessons, Python activities, and games</small>
             </div>
             <div>
-              <b>Oversight</b>
-              <small>Session results and audit history</small>
+              <b>Operations</b>
+              <small>Backups, data management, and audit history</small>
             </div>
           </div>
         </div>

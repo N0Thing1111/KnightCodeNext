@@ -1,7 +1,6 @@
 "use client";
 import { PasswordInput } from "@/components/password-input";
 
-
 import { useActionState, useState } from "react";
 import { updateProfile, type ProfileState } from "@/app/actions/profile";
 import { ThemeControls } from "@/components/theme-controls";
@@ -21,7 +20,6 @@ const avatarIcons: Record<string, string> = Object.fromEntries(
 );
 
 type ProfileStats = {
-  rank: string;
   level: number;
   xp: number;
   streak: number;
@@ -81,9 +79,7 @@ export function ProfileForm({
         <div className="profile-cover-copy">
           <span className="eyebrow">KNIGHT PROFILE</span>
           <h1>{student.name}</h1>
-          <p>
-            {stats.rank} · {student.email}
-          </p>
+          <p>{student.email}</p>
           <div className="profile-meta-pills">
             <span>Level {stats.level}</span>
             <span>{stats.xp.toLocaleString()} XP</span>

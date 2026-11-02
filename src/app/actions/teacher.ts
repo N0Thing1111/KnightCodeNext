@@ -6,6 +6,9 @@ import { requireTeacher } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { requireSectionArchive, setStudentSection } from "@/lib/sections";
+import { allRows, rowsForIds } from "@/lib/query-pages";
+import { chunks } from "@/lib/history-pagination";
+import { removeUnusedProfileImage } from "@/lib/profile-images";
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 const num = (f: FormData, k: string) => Number(f.get(k) || 0);
 const admin = () => createAdminClient();
@@ -122,11 +125,6 @@ export async function addExistingStudent(f: FormData) {
   });
 }
 
-export async function manualAddStudent(f: FormData) {
- await requireTeacher();
- redirect("/teacher/class/"+num(f,"class_id")+"?error="+encodeURIComponent("Use the class invitation code. Students register and request enrollment themselves."));
-}
-
 export async function createAssignment(f: FormData) {
   const t = await requireTeacher();
   await finish("/teacher/assignments", async () => {
@@ -172,36 +170,51 @@ export async function createAssignment(f: FormData) {
       .eq("active", true)
       .maybeSingle();
     if (lessonError) throw Error(lessonError.message);
-    if (!activeLesson) throw Error("This lesson is archived or no longer available. Choose an active lesson.");
+    if (!activeLesson)
+      throw Error(
+        "This lesson is archived or no longer available. Choose an active lesson.",
+      );
     const due = str(f, "due_date");
-    if (due && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(due)) throw Error("Enter a valid due date and time.");
+    if (due && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(due))
+      throw Error("Enter a valid due date and time.");
     const dueAt = due ? new Date(due + "+08:00").toISOString() : null;
-    const { data: assignment, error } = await admin()
-      .rpc("create_assignment_for_active_section", { p_teacher: t.id, p_assignment: {
-        class_id: studentId ? null : classId || null,
-        student_id: studentId || null,
-        lesson_id: actualLesson || null,
-        level_id: levelId || null,
-        title,
-        instructions: str(f, "instructions") || null,
-        due_date: dueAt,
-      } });
+    const { data: assignment, error } = await admin().rpc(
+      "create_assignment_for_active_section",
+      {
+        p_teacher: t.id,
+        p_assignment: {
+          class_id: studentId ? null : classId || null,
+          student_id: studentId || null,
+          lesson_id: actualLesson || null,
+          level_id: levelId || null,
+          title,
+          instructions: str(f, "instructions") || null,
+          due_date: dueAt,
+        },
+      },
+    );
     if (error) throw Error(error.message);
     let recipients: string[] = [];
     if (studentId) recipients = [studentId];
     else if (classId) {
-      const { data, error: recipientsError } = await admin()
-        .from("class_students")
-        .select("student_id")
-        .eq("class_id", classId);
-      if (recipientsError) return "Assignment created, but notification recipients could not be loaded. Students can still view it in Assignments.";
-      recipients = (data ?? []).map((x) => x.student_id);
+      try {
+        const members = await allRows(() =>
+          admin()
+            .from("class_students")
+            .select("student_id")
+            .eq("class_id", classId)
+            .order("student_id"),
+        );
+        recipients = [...new Set<string>(members.map((x) => x.student_id))];
+      } catch {
+        return "Assignment created, but notification recipients could not be loaded. Students can still view it in Assignments.";
+      }
     }
-    if (recipients.length) {
+    for (const batch of chunks(recipients, 500)) {
       const { error: notificationError } = await admin()
         .from("student_notifications")
         .upsert(
-          recipients.map((s) => ({
+          batch.map((s) => ({
             student_id: s,
             notification_key: "assignment_" + assignment.id + "_" + s,
             type: "assignment",
@@ -222,9 +235,12 @@ export async function createAssignment(f: FormData) {
           })),
           { onConflict: "student_id,notification_key" },
         );
-      if (notificationError) return "Assignment created, but notifications could not be delivered. Students can still view it in Assignments.";
+      if (notificationError)
+        return "Assignment created, but notifications could not be delivered. Students can still view it in Assignments.";
     }
-    return recipients.length ? "Assignment created and students notified." : "Assignment created. There are no students to notify yet.";
+    return recipients.length
+      ? "Assignment created and students notified."
+      : "Assignment created. There are no students to notify yet.";
   });
 }
 export async function deleteAssignment(f: FormData) {
@@ -247,19 +263,29 @@ export async function saveAnnouncement(f: FormData) {
       title = str(f, "title"),
       body = str(f, "body"),
       draftId = num(f, "draft_id");
-    if (!str(f, "class_id")) throw Error("Choose an audience before publishing.");
-    if (!Number.isSafeInteger(classId) || classId < 0 ||
-        !Number.isSafeInteger(draftId) || draftId < 0)
+    if (!str(f, "class_id"))
+      throw Error("Choose an audience before publishing.");
+    if (
+      !Number.isSafeInteger(classId) ||
+      classId < 0 ||
+      !Number.isSafeInteger(draftId) ||
+      draftId < 0
+    )
       throw Error("Invalid announcement or audience.");
     if (classId) {
-      const { data: section, error } = await admin().from("classes")
-        .select("id").eq("id", classId).eq("teacher_id", t.id)
-        .eq("status", "active").maybeSingle();
+      const { data: section, error } = await admin()
+        .from("classes")
+        .select("id")
+        .eq("id", classId)
+        .eq("teacher_id", t.id)
+        .eq("status", "active")
+        .maybeSingle();
       if (error) throw Error(error.message);
       if (!section) throw Error("Choose an active section you manage.");
     }
     if (!title || !body) throw Error("Title and message are required.");
-    if (title.length > 180) throw Error("Keep the title within 180 characters.");
+    if (title.length > 180)
+      throw Error("Keep the title within 180 characters.");
     const announcement = {
       teacher_id: t.id,
       class_id: classId || null,
@@ -269,29 +295,45 @@ export async function saveAnnouncement(f: FormData) {
       published_at: new Date().toISOString(),
     };
     const query = draftId
-      ? admin().from("announcements").update(announcement)
-          .eq("id", draftId).eq("teacher_id", t.id).eq("status", "draft")
+      ? admin()
+          .from("announcements")
+          .update(announcement)
+          .eq("id", draftId)
+          .eq("teacher_id", t.id)
+          .eq("status", "draft")
       : admin().from("announcements").insert(announcement);
     const { data: row, error } = await query.select().single();
     if (error) throw Error(error.message);
-    const { data: classes } = await admin()
-      .from("classes")
-      .select("id")
-      .eq("teacher_id", t.id).eq("status", "active");
-    const ids = classId ? [classId] : (classes ?? []).map((c) => c.id);
-    const { data: members, error: recipientsError } = ids.length
-      ? await admin()
+    let recipients: string[];
+    try {
+      const classes = classId
+        ? []
+        : await allRows(() =>
+            admin()
+              .from("classes")
+              .select("id")
+              .eq("teacher_id", t.id)
+              .eq("status", "active")
+              .order("id"),
+          );
+      const ids = classId ? [classId] : classes.map((c) => c.id);
+      const members = await rowsForIds(ids, (part) =>
+        admin()
           .from("class_students")
           .select("student_id")
-          .in("class_id", ids)
-      : { data: [], error: null };
-    if (recipientsError) return "Announcement published, but notification recipients could not be loaded. Students can still see it on their dashboard.";
-    const recipients = [...new Set((members ?? []).map((m) => m.student_id))];
-    if (recipients.length) {
+          .in("class_id", part)
+          .order("class_id")
+          .order("student_id"),
+      );
+      recipients = [...new Set<string>(members.map((m) => m.student_id))];
+    } catch {
+      return "Announcement published, but notification recipients could not be loaded. Students can still see it on their dashboard.";
+    }
+    for (const batch of chunks(recipients, 500)) {
       const { error: notificationError } = await admin()
         .from("student_notifications")
         .upsert(
-          recipients.map((s) => ({
+          batch.map((s) => ({
             student_id: s,
             notification_key: "announcement_" + row.id + "_" + s,
             type: "announcement",
@@ -301,9 +343,12 @@ export async function saveAnnouncement(f: FormData) {
           })),
           { onConflict: "student_id,notification_key" },
         );
-      if (notificationError) return "Announcement published, but notifications could not be delivered. Students can still see it on their dashboard.";
+      if (notificationError)
+        return "Announcement published, but notifications could not be delivered. Students can still see it on their dashboard.";
     }
-    return recipients.length ? "Announcement published and students notified." : "Announcement published. There are no students to notify yet.";
+    return recipients.length
+      ? "Announcement published and students notified."
+      : "Announcement published. There are no students to notify yet.";
   });
 }
 export async function deleteAnnouncement(f: FormData) {
@@ -325,18 +370,36 @@ export async function saveTeacherProfile(f: FormData) {
       email = str(f, "email").toLowerCase();
     if (!name || !z.string().email().safeParse(email).success)
       throw Error("Enter a valid name and email.");
-    const a = admin();
-    const { error: authError } = await a.auth.admin.updateUserById(t.id, {
-      email,
-      email_confirm: true,
-    });
-    if (authError) throw Error(authError.message);
-    const { error } = await a
+    const client = await createClient();
+    const emailChanged = email !== t.email.toLowerCase();
+    if (emailChanged) {
+      const base =
+        process.env.NEXT_PUBLIC_APP_URL ||
+        (process.env.VERCEL_PROJECT_PRODUCTION_URL
+          ? "https://" + process.env.VERCEL_PROJECT_PRODUCTION_URL
+          : "http://localhost:3000");
+      const { error: authError } = await client.auth.updateUser(
+        { email },
+        { emailRedirectTo: base.replace(/\/$/, "") + "/auth/callback" },
+      );
+      if (authError) throw Error(authError.message);
+    }
+    // Auth's email-change trigger updates the profile only after confirmation.
+    // Teacher profile writes are server-managed; the self-update RLS policy is
+    // student-only. Never include email here or use the privileged Auth API.
+    const { error } = await admin()
       .from("profiles")
-      .update({ name, email })
+      .update({ name })
       .eq("id", t.id);
-    if (error) throw Error(error.message);
-    return "Profile updated.";
+    if (error)
+      throw Error(
+        emailChanged
+          ? "Email change requested, but your name could not be saved. Follow the confirmation instructions sent to your inboxes, then retry saving your name."
+          : error.message,
+      );
+    return emailChanged
+      ? "Profile saved. Follow the confirmation instructions sent to your current and new email addresses. Your email stays unchanged until confirmed."
+      : "Profile updated.";
   });
 }
 export async function saveTeacherAvatar(f: FormData) {
@@ -350,6 +413,11 @@ export async function saveTeacherAvatar(f: FormData) {
       .update({ avatar_key: key, profile_image: null })
       .eq("id", t.id);
     if (error) throw Error(error.message);
+    if (
+      t.profile_image &&
+      !(await removeUnusedProfileImage(t.id, t.profile_image))
+    )
+      return "Avatar selected, but the old photo could not be removed.";
     return "Avatar selected.";
   });
 }
@@ -385,9 +453,19 @@ export async function uploadTeacherPhoto(f: FormData) {
       .from("profiles")
       .update({ profile_image: key })
       .eq("id", t.id);
-    if (error) throw Error(error.message);
-    if (t.profile_image)
-      await a.storage.from("profile-images").remove([t.profile_image]);
+    if (error) {
+      const cleaned = await removeUnusedProfileImage(t.id, key);
+      throw Error(
+        cleaned
+          ? error.message
+          : "The profile could not be saved and the unused upload could not be removed. Please contact platform support.",
+      );
+    }
+    if (
+      t.profile_image &&
+      !(await removeUnusedProfileImage(t.id, t.profile_image))
+    )
+      return "Profile picture uploaded, but the old photo could not be removed.";
     return "Profile picture uploaded.";
   });
 }
@@ -414,11 +492,20 @@ export async function deleteUnusedClass(f: FormData) {
   const teacher = await requireTeacher();
   await finish("/teacher/classes", async () => {
     const id = num(f, "id");
-    if (!Number.isSafeInteger(id) || id <= 0 || str(f, "confirm_delete") !== "1")
+    if (
+      !Number.isSafeInteger(id) ||
+      id <= 0 ||
+      str(f, "confirm_delete") !== "1"
+    )
       throw Error("Confirm deletion of this unused section.");
-    const { error } = await admin().rpc("delete_unused_teacher_section", { p_teacher: teacher.id, p_section: id });
+    const { error } = await admin().rpc("delete_unused_teacher_section", {
+      p_teacher: teacher.id,
+      p_section: id,
+    });
     if (error?.code === "PGRST202" || error?.code === "42883")
-      throw Error("Section deletion is not available yet. The database update must be installed first.");
+      throw Error(
+        "Section deletion is not available yet. The database update must be installed first.",
+      );
     if (error) throw Error(error.message);
     return "Unused section permanently deleted.";
   });

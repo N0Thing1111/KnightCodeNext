@@ -1,5 +1,4 @@
 "use server";
-import { getSchoolName } from "@/lib/school-name";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -123,7 +122,6 @@ export async function importTeachers(formData: FormData) {
         name: row.name,
         teacherId: row.teacher_id,
         temporaryPassword: row.password,
-        schoolLabel: await getSchoolName(db),
       }),
     })),
   );

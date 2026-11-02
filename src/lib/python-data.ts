@@ -1,7 +1,10 @@
 import { allRows } from "@/lib/query-pages";
-﻿import "server-only";
+import "server-only";
 import { cache } from "react";
-import type { CompletionActivity, CompletionSubmission } from "@/lib/lesson-completion";
+import {
+  pythonCompletionPairs,
+  type CompletionActivity,
+} from "@/lib/lesson-completion";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Profile } from "@/types/database";
@@ -111,9 +114,25 @@ export async function getPythonRoster(actor: Profile) {
 }
 
 export const getPythonCompletion = cache(async () => {
- const db = await createClient();
- const result = await db.from("python_activities").select("id,lesson_id,published");
- if (result.error) throw Error(result.error.message);
- const submissions = await allRows(() => db.rpc("python_completion_pairs").order("student_id").order("activity_id")) as CompletionSubmission[];
- return { activities: (result.data || []) as CompletionActivity[], submissions };
+  const db = await createClient();
+  const result = await db
+    .from("python_activities")
+    .select("id,lesson_id,published");
+  if (result.error) throw Error(result.error.message);
+  const [runs, reviews] = await Promise.all([
+    allRows(() =>
+      db
+        .from("python_submissions")
+        .select("id,student_id,activity_id,submitted_at")
+        .order("id"),
+    ),
+    allRows(() =>
+      db.from("python_reviews").select("id,submission_id,status").order("id"),
+    ),
+  ]);
+  const submissions = pythonCompletionPairs(runs, reviews);
+  return {
+    activities: (result.data || []) as CompletionActivity[],
+    submissions,
+  };
 });

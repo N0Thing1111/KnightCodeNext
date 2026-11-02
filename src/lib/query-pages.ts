@@ -9,11 +9,14 @@ export async function allRows(factory: () => any): Promise<any[]> {
     if (!page.data || page.data.length < 500) return rows;
   }
 }
-export async function rowsForIds(ids: (string | number)[], factory: (ids: (string | number)[]) => any) {
+export async function rowsForIds(
+  ids: (string | number)[],
+  factory: (ids: (string | number)[]) => any,
+) {
   const rows: any[] = [];
   for (let start = 0; start < ids.length; start += 100) {
     const part = ids.slice(start, start + 100);
-    rows.push(...await allRows(() => factory(part)));
+    rows.push(...(await allRows(() => factory(part))));
   }
   return rows;
 }

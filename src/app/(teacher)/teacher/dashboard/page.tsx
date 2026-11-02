@@ -35,8 +35,11 @@ export default async function Page() {
       };
     });
   const activity = ctx.activity.slice(0, 8);
-  const week = activityWeek().map(day => ({ label: day.label, count: Number(ctx.activityDays.find(d => d.day === day.key)?.count || 0) }));
-  const max = Math.max(1, ...week.map(x => x.count));
+  const week = activityWeek().map((day) => ({
+    label: day.label,
+    count: Number(ctx.activityDays.find((d) => d.day === day.key)?.count || 0),
+  }));
+  const max = Math.max(1, ...week.map((x) => x.count));
   return (
     <>
       <section className="teacher-page-hero">
@@ -146,8 +149,8 @@ export default async function Page() {
           <Head
             eyebrow="STUDENT SUPPORT"
             title="Students Needing Attention"
-            href="/teacher/monitoring?status=Needs%20Attention"
-            label="Open monitoring"
+            href="/teacher/students?status=Needs%20Attention"
+            label="View students"
           />
           {attention.length ? (
             attention.map((s) => (
@@ -176,8 +179,8 @@ export default async function Page() {
           <Head
             eyebrow="RECENT EVENTS"
             title="Student Activity"
-            href="/teacher/monitoring"
-            label="View monitoring"
+            href="/teacher/students?sort=activity"
+            label="View student activity"
           />
           <div className="teacher-activity-feed">
             {activity.length ? (
@@ -192,7 +195,9 @@ export default async function Page() {
                       {String(a.action_type).replaceAll("_", " ")}{" "}
                       {lv?.title ?? "KnightCode"}
                       <small>
-                        {new Date(a.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}{" "}
+                        {new Date(a.created_at).toLocaleString("en-PH", {
+                          timeZone: "Asia/Manila",
+                        })}{" "}
                         {a.xp_earned ? "· +" + a.xp_earned + " XP" : ""}
                       </small>
                     </p>

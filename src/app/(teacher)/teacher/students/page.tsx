@@ -3,7 +3,8 @@ import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
 import { requireTeacher } from "@/lib/auth";
 import { avatar, getTeacherContext, teacherStudents } from "@/lib/teacher-data";
-import { Hero } from "@/components/teacher-ui";
+import { MonitoringGuide } from "@/components/monitoring-outcomes";
+import styles from "@/components/teacher-worklists.module.css";
 export default async function Page({
   searchParams,
 }: {
@@ -12,11 +13,12 @@ export default async function Page({
   const q = await searchParams,
     t = await requireTeacher(),
     ctx = await getTeacherContext(t.id);
-  let rows = teacherStudents(ctx);
+  const students = teacherStudents(ctx);
+  let rows = [...students];
   if (q.q) {
     const x = q.q.toLowerCase();
     rows = rows.filter((s) =>
-      (s.name + s.username + s.email + s.email).toLowerCase().includes(x),
+      [s.name, s.username, s.email].join(" ").toLowerCase().includes(x),
     );
   }
   if (q.class_id)
@@ -40,26 +42,44 @@ export default async function Page({
   );
   return (
     <>
-      <Hero
-        eyebrow="ROSTER MANAGEMENT"
-        title="Students"
-        description="Search and manage students who belong to your sections. No private data outside KnightCode is monitored."
-      />
+      <header className={styles.heading}>
+        <div>
+          <h2>Students</h2>
+          <p>
+            Explore each student&apos;s progress, activity, and learning stats.
+          </p>
+        </div>
+        <Link className="teacher-btn" href="/teacher/monitoring">
+          Review submissions
+        </Link>
+      </header>
+      <MonitoringGuide statusesOnly />
       <section className="teacher-card">
-        <Filter q={q} classes={ctx.classes} />
-        <div className="teacher-table-wrap">
-          <table className="teacher-table student-roster-table">
+        <Filter
+          q={q}
+          classes={ctx.classes}
+          levels={[...new Set(students.map((s) => s.level))].sort(
+            (a, b) => a - b,
+          )}
+        />
+        <div
+          className="teacher-table-wrap"
+          role="region"
+          aria-label="Student progress and stats"
+          tabIndex={0}
+        >
+          <table
+            className={`teacher-table student-roster-table ${styles.roster}`}
+          >
             <thead>
               <tr>
                 <th>Student</th>
                 <th>Section</th>
-                <th>Level</th>
-                <th>XP</th>
+                <th>Level / XP</th>
                 <th>Progress</th>
-                <th>Streak</th>
-                <th>Last Activity</th>
+                <th>Activity</th>
                 <th>Status</th>
-                <th />
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -74,15 +94,19 @@ export default async function Page({
                         <span>
                           <strong>{s.name}</strong>
                           <small>
-                            {s.username || s.email} · {s.email}
+                            {s.email}
                             {s.username ? " · @" + s.username : ""}
                           </small>
                         </span>
                       </div>
                     </td>
                     <td>{s.classes}</td>
-                    <td>Lv. {s.level}</td>
-                    <td>{s.xp.toLocaleString()}</td>
+                    <td>
+                      Lv. {s.level}
+                      <small className={styles.secondary}>
+                        {s.xp.toLocaleString()} XP
+                      </small>
+                    </td>
                     <td>
                       <div className="table-progress">
                         <span
@@ -91,11 +115,15 @@ export default async function Page({
                       </div>
                       <small>{Math.round(s.progress_pct)}%</small>
                     </td>
-                    <td>🔥 {s.streak}</td>
                     <td>
                       {s.last_activity
-                        ? new Date(s.last_activity).toLocaleString("en-PH", { timeZone: "Asia/Manila" })
+                        ? new Date(s.last_activity).toLocaleString("en-PH", {
+                            timeZone: "Asia/Manila",
+                          })
                         : "Never"}
+                      <small className={styles.secondary}>
+                        {s.streak}-day streak
+                      </small>
                     </td>
                     <td>
                       <span
@@ -108,20 +136,20 @@ export default async function Page({
                       </span>
                       <p className="teacher-note">{s.status_reason}</p>
                     </td>
-                    <td>
+                    <td className={styles.actionCell}>
                       <Link
                         prefetch={false}
-                        className="table-link"
+                        className="teacher-btn"
                         href={"/teacher/student/" + s.id}
                       >
-                        Open
+                        View student
                       </Link>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={9}>
+                  <td colSpan={7}>
                     <div className="teacher-empty">
                       No students match your filters.
                     </div>
@@ -138,15 +166,21 @@ export default async function Page({
 function Filter({
   q,
   classes,
+  levels,
 }: {
   q: Record<string, string | undefined>;
   classes: any[];
+  levels: number[];
 }) {
   return (
-    <form className="teacher-filterbar">
+    <form className={`teacher-filterbar ${styles.rosterFilters}`}>
       <label>
         Search
-        <input name="q" defaultValue={q.q} placeholder="Name, ID, email..." />
+        <input
+          name="q"
+          defaultValue={q.q}
+          placeholder="Name, username, or email"
+        />
       </label>
       <label>
         Status
@@ -167,9 +201,9 @@ function Filter({
         Level
         <select name="level" defaultValue={q.level || ""}>
           <option value="">All levels</option>
-          {Array.from({ length: 10 }, (_, i) => (
-            <option key={i + 1} value={i + 1}>
-              Level {i + 1}
+          {levels.map((level) => (
+            <option key={level} value={level}>
+              Level {level}
             </option>
           ))}
         </select>
@@ -206,10 +240,12 @@ function Filter({
           <option value="activity">Recent activity</option>
         </select>
       </label>
-      <button className="teacher-btn primary">Filter</button>
-      <Link prefetch={false} className="teacher-btn" href="/teacher/students">
-        Reset
-      </Link>
+      <div className={styles.filterActions}>
+        <button className="teacher-btn primary">Filter</button>
+        <Link prefetch={false} className="teacher-btn" href="/teacher/students">
+          Reset
+        </Link>
+      </div>
     </form>
   );
 }

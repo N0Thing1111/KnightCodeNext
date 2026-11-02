@@ -2,12 +2,17 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getPythonActivities, getPythonRoster } from "@/lib/python-data";
 import { PythonPracticeChecks } from "@/components/python-practice-checks";
-import { displayedPythonRating, pythonRatingBands, pythonRatingCriteria } from "@/lib/python-ratings";
+import {
+  displayedPythonRating,
+  pythonRatingBands,
+  pythonRatingCriteria,
+} from "@/lib/python-ratings";
 import { PythonAssessmentForm } from "@/components/python-assessment-form";
 import type { Profile } from "@/types/database";
 import type { PythonRun } from "@/lib/python-contract";
 import { pythonRunStatusLabel } from "@/lib/python-run-status";
 import styles from "@/components/python.module.css";
+import { chunks, partitionedHistoryPage } from "@/lib/history-pagination";
 const when = (value: string) =>
   new Date(value).toLocaleString("en-PH", { timeZone: "Asia/Manila" });
 export async function PythonHub({
@@ -52,33 +57,55 @@ export async function PythonHub({
       (!section || s.class_id === section) &&
       (!q || `${s.name} ${s.username} ${s.email}`.toLowerCase().includes(q)),
   );
-  const page = Math.max(
+  const requestedPage = Math.max(
     1,
     Math.min(10000, Number.parseInt(params.page || "1", 10) || 1),
   );
-  let query = db
-    .from("python_runs")
-    .select("*", { count: "exact" })
-    .order("sequence", { ascending: false });
-  if (staff && (q || section || params.student))
-    query = query.in(
-      "student_id",
-      params.student
-        ? students.filter((s) => s.id === params.student).map((s) => s.id)
-        : students.length
-          ? students.map((s) => s.id)
-          : ["00000000-0000-0000-0000-000000000000"],
-    );
-  if (params.activity && activities.some((a) => a.id === params.activity))
-    query = query.eq("activity_id", params.activity);
-  if (!staff)
-    query = query.in(
-      "activity_id",
-      activities.map((a) => a.id),
-    );
-  const result = await query.range((page - 1) * 20, page * 20 - 1);
-  if (result.error) throw Error(result.error.message);
-  const runs = (result.data || []) as PythonRun[];
+  const filteredStudents = staff && (q || section || params.student);
+  const partitions: (string[] | null)[] = filteredStudents
+    ? chunks([
+        ...new Set(
+          students
+            .filter((s) => !params.student || s.id === params.student)
+            .map((s) => s.id),
+        ),
+      ])
+    : staff
+      ? [null]
+      : chunks(activities.map((a) => a.id));
+  const queries = partitions.map((ids) => () => {
+    let query = db
+      .from("python_runs")
+      .select("id,sequence", { count: "exact" })
+      .order("sequence", { ascending: false })
+      .order("id", { ascending: false });
+    if (ids) query = query.in(staff ? "student_id" : "activity_id", ids);
+    if (params.activity && activities.some((a) => a.id === params.activity))
+      query = query.eq("activity_id", params.activity);
+    return query;
+  });
+  const result = await partitionedHistoryPage<{ id: string; sequence: number }>(
+    queries,
+    requestedPage,
+    20,
+    (a, b) =>
+      b.sequence - a.sequence || (a.id < b.id ? 1 : a.id > b.id ? -1 : 0),
+  );
+  const page = result.page;
+  const records = result.data.length
+    ? await db
+        .from("python_runs")
+        .select("*")
+        .in(
+          "id",
+          result.data.map((r) => r.id),
+        )
+    : { data: [], error: null };
+  if (records.error) throw Error(records.error.message);
+  const byId = new Map((records.data || []).map((row) => [row.id, row]));
+  const runs = result.data.flatMap((key) =>
+    byId.has(key.id) ? [byId.get(key.id)] : [],
+  ) as PythonRun[];
   // A notification may refer to an older Run outside the current results page.
   let selected: PythonRun | undefined;
   if (
@@ -261,10 +288,7 @@ export async function PythonHub({
                           "Student"}
                       </strong>
                       <small>
-                        {
-                          students.find((s) => s.id === r.student_id)
-                            ?.username
-                        }
+                        {students.find((s) => s.id === r.student_id)?.username}
                       </small>
                     </td>
                   )}
@@ -277,7 +301,9 @@ export async function PythonHub({
                     <span className={styles.status} data-status={r.status}>
                       {pythonRunStatusLabel(r)}
                     </span>
-                    {r.result.history_cleared_at && <small>Code/output cleared</small>}
+                    {r.result.history_cleared_at && (
+                      <small>Code/output cleared</small>
+                    )}
                   </td>
                   <td>
                     {submissions.data?.some((s) => s.run_id === r.id)
@@ -322,131 +348,229 @@ export async function PythonHub({
       </section>
       {selected && (
         <>
-        <section className={styles.card} id="run-review">
-          <h2>{selected.activity_snapshot.content.title}: Run review</h2>
-          {staff && (
+          <section className={styles.card} id="run-review">
+            <h2>{selected.activity_snapshot.content.title}: Run review</h2>
+            {staff && (
+              <p>
+                Student:{" "}
+                {students.find((s) => s.id === selected.student_id)?.name ||
+                  "Student"}{" "}
+                · {students.find((s) => s.id === selected.student_id)?.username}
+              </p>
+            )}
             <p>
-              Student:{" "}
-              {students.find((s) => s.id === selected.student_id)?.name ||
-                "Student"}{" "}
-              · {students.find((s) => s.id === selected.student_id)?.username}
+              {pythonRunStatusLabel(selected)} · Original activity revision{" "}
+              {selected.activity_snapshot.revision}.{" "}
+              {selected.result.elapsed_ms !== undefined
+                ? `Active execution: ${(selected.result.elapsed_ms / 1000).toFixed(2)} seconds (excludes waiting for input).`
+                : ""}
             </p>
-          )}
-          <p>
-            {pythonRunStatusLabel(selected)} · Original activity revision{" "}
-            {selected.activity_snapshot.revision}.{" "}
-            {selected.result.elapsed_ms !== undefined
-              ? `Active execution: ${(selected.result.elapsed_ms / 1000).toFixed(2)} seconds (excludes waiting for input).`
-              : ""}
-          </p>
-          {selected.result.history_cleared_at && <p className={styles.notice}>Code, input answers, output, and example-check details were cleared by an administrator on {when(selected.result.history_cleared_at)}. The submission and teacher feedback below were preserved.</p>}
-          <details>
-            <summary>Instructions used for this Run</summary>
-            <p>{selected.activity_snapshot.content.instructions}</p>
-          </details>
-          {!selected.result.history_cleared_at && <>
-          <div className={styles.grid}>
-            <div>
-              <h3>Previous retained Run</h3>
-              <pre>
-                {previous?.result.history_cleared_at
-                  ? "Code/output for this earlier Run was cleared by an administrator."
-                  : previous?.source || "No earlier retained Run for this activity."}
-              </pre>
-            </div>
-            <div>
-              <h3>This Run</h3>
-              <pre>{selected.source}</pre>
-            </div>
-          </div>
-          {previous && !previous.result.history_cleared_at && (
-            <p>
-              {previous.source === selected.source
-                ? "The source is unchanged from the previous Run."
-                : "The source changed. Compare both versions above."}
-            </p>
-          )}
-          <div className={styles.grid}>
-            <div>
-              <h3>Input answers, in order</h3>
-              <pre>
-                {selected.result.inputs
-                  ?.map((value, i) => `${i + 1}. ${value}`)
-                  .join("\n") || "No saved answers"}
-              </pre>
-            </div>
-            <div>
-              <h3>Printed output</h3>
-              <pre>{selected.result.output || "No saved output"}</pre>
-              {selected.result.error && (
-                <>
-                  <h3>Error / interruption</h3>
-                  <pre>{selected.result.error}</pre>
-                </>
-              )}
-            </div>
-          </div>
-          </>}
+            {selected.result.history_cleared_at && (
+              <p className={styles.notice}>
+                Code, input answers, output, and example-check details were
+                cleared by an administrator on{" "}
+                {when(selected.result.history_cleared_at)}. The submission and
+                teacher feedback below were preserved.
+              </p>
+            )}
+            <details>
+              <summary>Instructions used for this Run</summary>
+              <p>{selected.activity_snapshot.content.instructions}</p>
+            </details>
+            {!selected.result.history_cleared_at && (
+              <>
+                <div className={styles.grid}>
+                  <div>
+                    <h3>Previous retained Run</h3>
+                    <pre>
+                      {previous?.result.history_cleared_at
+                        ? "Code/output for this earlier Run was cleared by an administrator."
+                        : previous?.source ||
+                          "No earlier retained Run for this activity."}
+                    </pre>
+                  </div>
+                  <div>
+                    <h3>This Run</h3>
+                    <pre>{selected.source}</pre>
+                  </div>
+                </div>
+                {previous && !previous.result.history_cleared_at && (
+                  <p>
+                    {previous.source === selected.source
+                      ? "The source is unchanged from the previous Run."
+                      : "The source changed. Compare both versions above."}
+                  </p>
+                )}
+                <div className={styles.grid}>
+                  <div>
+                    <h3>Input answers, in order</h3>
+                    <pre>
+                      {selected.result.inputs
+                        ?.map((value, i) => `${i + 1}. ${value}`)
+                        .join("\n") || "No saved answers"}
+                    </pre>
+                  </div>
+                  <div>
+                    <h3>Printed output</h3>
+                    <pre>{selected.result.output || "No saved output"}</pre>
+                    {selected.result.error && (
+                      <>
+                        <h3>Error / interruption</h3>
+                        <pre>{selected.result.error}</pre>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
           </section>
-          {!selected.result.history_cleared_at && <PythonPracticeChecks
-            cases={selected.activity_snapshot.content.cases}
-            checks={selected.result.checks}
-            saved
-          />}
+          {!selected.result.history_cleared_at && (
+            <PythonPracticeChecks
+              cases={selected.activity_snapshot.content.cases}
+              checks={selected.result.checks}
+              saved
+            />
+          )}
           <section className={styles.card} aria-label="Submission status">
             <span className={styles.kicker}>SUBMISSION</span>
-            <h2>{submission ? "Submitted for teacher review" : "Practice Run — not submitted"}</h2>
-            <p>{submission
-              ? `Submitted ${when(submission.submitted_at)}. The feedback below belongs to this submission. Each new submission has its own feedback.`
-              : "Running code saves practice history. It does not submit your work for marking. Use Submit this Run in the coding workspace when you are ready."}</p>
+            <h2>
+              {submission
+                ? "Submitted for teacher review"
+                : "Practice Run — not submitted"}
+            </h2>
+            <p>
+              {submission
+                ? `Submitted ${when(submission.submitted_at)}. The feedback below belongs to this submission. Each new submission has its own feedback.`
+                : "Running code saves practice history. It does not submit your work for marking. Use Submit this Run in the coding workspace when you are ready."}
+            </p>
           </section>
-          <section className={`${styles.card} ${styles.feedbackSection}`} aria-label="Teacher feedback">
+          <section
+            className={`${styles.card} ${styles.feedbackSection}`}
+            aria-label="Teacher feedback"
+          >
             <span className={styles.kicker}>TEACHER REVIEW</span>
             <h2>Teacher feedback</h2>
-            <p>Your teacher evaluates your programming logic, use of the lesson concept, and correctness. Practice-check results are separate from these ratings.</p>
-            {!submission && <p className={styles.notice}>This Run has not been submitted, so it has no teacher review yet.</p>}
-            {submission && !reviews.data?.length && <p className={styles.notice}>Awaiting teacher review. Your submission is saved; no rating has been given yet.</p>}
+            <p>
+              Your teacher evaluates your programming logic, use of the lesson
+              concept, and correctness. Practice-check results are separate from
+              these ratings.
+            </p>
+            {!submission && (
+              <p className={styles.notice}>
+                This Run has not been submitted, so it has no teacher review
+                yet.
+              </p>
+            )}
+            {submission && !reviews.data?.length && (
+              <p className={styles.notice}>
+                Awaiting teacher review. Your submission is saved; no rating has
+                been given yet.
+              </p>
+            )}
             {reviews.data?.map((r) => (
               <article className={styles.reviewCard} key={r.id}>
                 <div className={styles.reviewHeading}>
                   <h3>Current assessment</h3>
-                  <span className={styles.status}>{r.status === "passed" ? "Passed" : r.status === "needs_revision" ? "Needs revision" : "No outcome recorded"}</span>
+                  <span className={styles.status}>
+                    {r.status === "passed"
+                      ? "Passed"
+                      : r.status === "needs_revision"
+                        ? "Needs revision"
+                        : "No outcome recorded"}
+                  </span>
                 </div>
-                <p>Reviewed by <strong>{r.reviewer_name}</strong> ({r.reviewer_role === "admin" ? "Administrator" : "Teacher"}) &middot; {when(r.updated_at || r.created_at)}</p>
-                {r.version > 1 && <p>This feedback has been edited. The current assessment is shown above.</p>}
+                <p>
+                  Reviewed by <strong>{r.reviewer_name}</strong> (
+                  {r.reviewer_role === "admin" ? "Administrator" : "Teacher"})
+                  &middot; {when(r.updated_at || r.created_at)}
+                </p>
+                {r.version > 1 && (
+                  <p>
+                    This feedback has been edited. The current assessment is
+                    shown above.
+                  </p>
+                )}
                 <div className={styles.ratings}>
                   {pythonRatingCriteria.map(({ key, label }) => (
                     <div className={styles.rating} key={key}>
                       <span>{label}</span>
-                      <strong>{displayedPythonRating(r[key])}<small> / 5</small></strong>
+                      <strong>
+                        {displayedPythonRating(r[key])}
+                        <small> / 5</small>
+                      </strong>
                       <small>{pythonRatingBands[r[key]]}</small>
                     </div>
                   ))}
                 </div>
-                <p>Rubric total: <strong>{displayedPythonRating(r.logic) + displayedPythonRating(r.application) + displayedPythonRating(r.correctness)} / 15</strong>. Each criterion uses a 1–5 rating; the review outcome is set by your teacher.</p>
+                <p>
+                  Rubric total:{" "}
+                  <strong>
+                    {displayedPythonRating(r.logic) +
+                      displayedPythonRating(r.application) +
+                      displayedPythonRating(r.correctness)}{" "}
+                    / 15
+                  </strong>
+                  . Each criterion uses a 1–5 rating; the review outcome is set
+                  by your teacher.
+                </p>
                 <div className={styles.writtenFeedback}>
                   <h3>Teacher&apos;s comments</h3>
                   <p>{r.feedback}</p>
                 </div>
               </article>
             ))}
-            {staff && submission && selected.result.history_cleared_at && <p className={styles.notice}>Existing feedback is retained. New reviews are unavailable here because the original code has been cleared.</p>}
-            {staff && submission && !selected.result.history_cleared_at && (
-              reviews.data?.length ? (
-                <div className={styles.reviewForm}>
-                  <p>This submission has been assessed. Its code is fixed; any student revision must be a new run and submission.</p>
-                  {actor.role === "admin" || (reviews.data[0].reviewer_id === actor.id && reviews.data[0].reviewer_role === "teacher") ? <details key={`${reviews.data[0].id}:${reviews.data[0].version}`}>
-                    <summary>Edit feedback</summary>
-                    {actor.role === "admin" && <p>After an administrator saves an edit, this feedback is read-only for teachers.</p>}
-                    <PythonAssessmentForm submissionId={submission.id} previous={reviews.data[0]} />
-                  </details> : <p>{reviews.data[0].reviewer_role === "admin" ? "This feedback was saved by an administrator and is read-only for teachers." : "Only the reviewing teacher or an administrator can edit this feedback."}</p>}
-                </div>
-              ) : <div className={styles.reviewForm}>
-                <h3>Assess this submission</h3>
-                <p>Save one assessment for this submission. Choose Needs revision to let the student submit a new attempt, or Passed to complete the activity.</p>
-                <PythonAssessmentForm submissionId={submission.id} />
-              </div>
+            {staff && submission && selected.result.history_cleared_at && (
+              <p className={styles.notice}>
+                Existing feedback is retained. New reviews are unavailable here
+                because the original code has been cleared.
+              </p>
             )}
+            {staff &&
+              submission &&
+              !selected.result.history_cleared_at &&
+              (reviews.data?.length ? (
+                <div className={styles.reviewForm}>
+                  <p>
+                    This submission has been assessed. Its code is fixed; any
+                    student revision must be a new run and submission.
+                  </p>
+                  {actor.role === "admin" ||
+                  (reviews.data[0].reviewer_id === actor.id &&
+                    reviews.data[0].reviewer_role === "teacher") ? (
+                    <details
+                      key={`${reviews.data[0].id}:${reviews.data[0].version}`}
+                    >
+                      <summary>Edit feedback</summary>
+                      {actor.role === "admin" && (
+                        <p>
+                          After an administrator saves an edit, this feedback is
+                          read-only for teachers.
+                        </p>
+                      )}
+                      <PythonAssessmentForm
+                        submissionId={submission.id}
+                        previous={reviews.data[0]}
+                      />
+                    </details>
+                  ) : (
+                    <p>
+                      {reviews.data[0].reviewer_role === "admin"
+                        ? "This feedback was saved by an administrator and is read-only for teachers."
+                        : "Only the reviewing teacher or an administrator can edit this feedback."}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className={styles.reviewForm}>
+                  <h3>Assess this submission</h3>
+                  <p>
+                    Save one assessment for this submission. Choose Needs
+                    revision to let the student submit a new attempt, or Passed
+                    to complete the activity.
+                  </p>
+                  <PythonAssessmentForm submissionId={submission.id} />
+                </div>
+              ))}
           </section>
         </>
       )}

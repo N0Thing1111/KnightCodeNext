@@ -21,6 +21,7 @@ export function SessionResults({
         catalog={{ students, classes, memberships, levels }}
         filters={filters}
         base={base}
+        showSessionId={role === "admin"}
       />
       <p className="teacher-note session-result-count" role="status">
         {total
@@ -30,7 +31,9 @@ export function SessionResults({
       </p>
       <p className="teacher-note">
         Open Review Runs to see each submitted program. Scroll the table
-        sideways on smaller screens. Unfinished means this session has no recorded completion; it does not mean the student is still playing. Separate visits can create separate sessions.
+        sideways on smaller screens. Unfinished means this session has no
+        recorded completion; it does not mean the student is still playing.
+        Separate visits can create separate sessions.
       </p>
       <div
         className="teacher-table-wrap session-table-wrap"
@@ -42,7 +45,7 @@ export function SessionResults({
           <thead>
             <tr>
               {[
-                "Session ID",
+                ...(role === "admin" ? ["Session ID"] : []),
                 "Started",
                 "Student",
                 "Section",
@@ -75,7 +78,7 @@ export function SessionResults({
                 const date = new Date(s.started_at);
                 return (
                   <tr key={s.id}>
-                    <td>#{s.id}</td>
+                    {role === "admin" && <td>#{s.id}</td>}
                     <td>
                       <time dateTime={s.started_at}>
                         {date.toLocaleDateString("en-PH", {
@@ -140,7 +143,7 @@ export function SessionResults({
               })
             ) : (
               <tr>
-                <td colSpan={12}>
+                <td colSpan={role === "admin" ? 12 : 11}>
                   <div className="teacher-empty">No matching sessions.</div>
                 </td>
               </tr>

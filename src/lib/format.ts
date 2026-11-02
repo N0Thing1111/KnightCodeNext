@@ -19,11 +19,3 @@ export function formatDate(value: string | null | undefined) {
     year: "numeric",
   }).format(new Date(value));
 }
-
-export function rankForLevel(level: number) {
-  if (level >= 10) return "Legendary Knight";
-  if (level >= 7) return "Code Champion";
-  if (level >= 4) return "Logic Knight";
-  if (level >= 2) return "Code Apprentice";
-  return "Novice Knight";
-}

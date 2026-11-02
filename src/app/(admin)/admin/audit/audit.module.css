@@ -3,11 +3,21 @@
   min-width: 860px;
   table-layout: fixed;
 }
-.table th:nth-child(1) { width: 18%; }
-.table th:nth-child(2) { width: 18%; }
-.table th:nth-child(3) { width: 16%; }
-.table th:nth-child(4) { width: 18%; }
-.table th:nth-child(5) { width: 30%; }
+.table th:nth-child(1) {
+  width: 18%;
+}
+.table th:nth-child(2) {
+  width: 18%;
+}
+.table th:nth-child(3) {
+  width: 16%;
+}
+.table th:nth-child(4) {
+  width: 18%;
+}
+.table th:nth-child(5) {
+  width: 30%;
+}
 .table.table td {
   vertical-align: top;
   white-space: normal;

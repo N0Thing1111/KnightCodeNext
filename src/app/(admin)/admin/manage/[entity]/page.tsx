@@ -20,32 +20,28 @@ import { sectionLabel } from "@/lib/section-label";
 import { AdminHero, Alerts } from "@/components/admin-ui";
 const configs: any = {
   teachers: {
-    label: "Teachers",
-    description:
-      "Create accounts, edit details, or archive access while preserving history.",
+    label: "Teacher accounts",
+    singular: "teacher account",
+    description: "Create, edit, or archive accounts. History is preserved.",
     fields: ["teacher_id", "name", "email"],
   },
   students: {
-    label: "Students",
-    description:
-      "Create accounts, edit details, or archive access while preserving history.",
-    fields: [
-      "name",
-      "email",
-      "username",
-      "class_id",
-    ],
+    label: "Student accounts",
+    singular: "student account",
+    description: "Create, edit, or archive accounts. History is preserved.",
+    fields: ["name", "email", "username", "class_id"],
   },
   classes: {
     label: "Sections",
-    description:
-      "Organize your school’s learning environment and assign an active teacher.",
+    singular: "section",
+    description: "Manage sections, teachers, and memberships.",
     fields: ["name", "subject", "school_year", "description", "teacher_id"],
   },
   lessons: {
-    label: "Lessons",
+    label: "Lessons and Python activities",
+    singular: "lesson",
     description:
-      "Create and edit lessons, archive them while preserving history, or permanently delete an unused lesson.",
+      "Edit lessons and Python activities for classes and independent learners.",
     fields: [
       "title",
       "description",
@@ -55,9 +51,10 @@ const configs: any = {
     ],
   },
   levels: {
-    label: "Levels",
+    label: "Game levels",
+    singular: "game level",
     description:
-      "Manage lesson placement, descriptions, difficulty, visibility, and starter code. Delete unused levels or archive levels with history. Playable maps remain in Unity.",
+      "Organize and preview game levels. Archive used levels or delete unused records. Edit playable maps in Unity.",
     fields: [
       "lesson_id",
       "level_number",
@@ -88,22 +85,38 @@ export default async function Page({
   const sections = [...ctx.classes].sort((a, b) =>
     sectionLabel(a).localeCompare(sectionLabel(b)),
   );
-  const teachers = ctx.profiles.filter((p) => p.role === "teacher")
+  const teachers = ctx.profiles
+    .filter((p) => p.role === "teacher")
     .sort((a, b) => String(a.name).localeCompare(String(b.name)));
-  const schoolYears = [...new Set<string>(sections
-    .map((section) => String(section.school_year || ""))
-    .filter(Boolean))].sort().reverse();
-  const sectionFilter = ["students", "teachers"].includes(entity) &&
-    (q.section === "assigned" || q.section === "unassigned" ||
+  const schoolYears = [
+    ...new Set<string>(
+      sections
+        .map((section) => String(section.school_year || ""))
+        .filter(Boolean),
+    ),
+  ]
+    .sort()
+    .reverse();
+  const sectionFilter =
+    ["students", "teachers"].includes(entity) &&
+    (q.section === "assigned" ||
+      q.section === "unassigned" ||
       sections.some((section) => String(section.id) === q.section))
-    ? q.section! : "all";
-  const teacherFilter = entity === "classes" &&
-    (q.teacher === "unassigned" || teachers.some((teacher) => String(teacher.id) === q.teacher))
-    ? q.teacher! : "all";
-  const yearFilter = entity === "classes" &&
+      ? q.section!
+      : "all";
+  const teacherFilter =
+    entity === "classes" &&
+    (q.teacher === "unassigned" ||
+      teachers.some((teacher) => String(teacher.id) === q.teacher))
+      ? q.teacher!
+      : "all";
+  const yearFilter =
+    entity === "classes" &&
     (q.year === "unspecified" || schoolYears.includes(q.year || ""))
-    ? q.year! : "all";
-  const hasExtraFilters = sectionFilter !== "all" || teacherFilter !== "all" || yearFilter !== "all";
+      ? q.year!
+      : "all";
+  const hasExtraFilters =
+    sectionFilter !== "all" || teacherFilter !== "all" || yearFilter !== "all";
   const studentSections = new Map<string, Set<string>>();
   for (const membership of ctx.class_students) {
     const studentId = String(membership.student_id);
@@ -136,20 +149,41 @@ export default async function Page({
       : "all",
     term = (q.search || "").trim().toLowerCase(),
     rows = all.filter((r: any) => {
-      if (statusFilter !== "all" && displayStatus(r, entity) !== statusFilter) return false;
-      if (term && !Object.values(r).some((v) =>
-        String(v ?? "").toLowerCase().includes(term),
-      )) return false;
+      if (statusFilter !== "all" && displayStatus(r, entity) !== statusFilter)
+        return false;
+      if (
+        term &&
+        !Object.values(r).some((v) =>
+          String(v ?? "")
+            .toLowerCase()
+            .includes(term),
+        )
+      )
+        return false;
       if (sectionFilter !== "all") {
-        const assigned = (entity === "students" ? studentSections : teacherSections).get(String(r.id));
+        const assigned = (
+          entity === "students" ? studentSections : teacherSections
+        ).get(String(r.id));
         if (sectionFilter === "assigned" && !assigned?.size) return false;
         if (sectionFilter === "unassigned" && assigned?.size) return false;
-        if (!["assigned", "unassigned"].includes(sectionFilter) && !assigned?.has(sectionFilter)) return false;
+        if (
+          !["assigned", "unassigned"].includes(sectionFilter) &&
+          !assigned?.has(sectionFilter)
+        )
+          return false;
       }
       if (teacherFilter === "unassigned" && r.teacher_id) return false;
-      if (!["all", "unassigned"].includes(teacherFilter) && String(r.teacher_id) !== teacherFilter) return false;
+      if (
+        !["all", "unassigned"].includes(teacherFilter) &&
+        String(r.teacher_id) !== teacherFilter
+      )
+        return false;
       if (yearFilter === "unspecified" && r.school_year) return false;
-      if (!["all", "unspecified"].includes(yearFilter) && String(r.school_year) !== yearFilter) return false;
+      if (
+        !["all", "unspecified"].includes(yearFilter) &&
+        String(r.school_year) !== yearFilter
+      )
+        return false;
       return true;
     }),
     editing = q.edit
@@ -183,8 +217,7 @@ export default async function Page({
             className="teacher-btn primary"
             href={"/admin/manage/" + entity + "?edit=new"}
           >
-            Create{" "}
-            {entity === "classes" ? "Section" : config.label.slice(0, -1)}
+            Create {config.singular}
           </Link>
         </div>
       </AdminHero>
@@ -208,7 +241,9 @@ export default async function Page({
         <Editor entity={entity} config={config} record={editing} ctx={ctx} />
       )}
       {entity === "lessons" && editing && !editing.id && (
-        <p className="teacher-alert">Save the lesson first, then open Edit to add its Python activity.</p>
+        <p className="teacher-alert">
+          Save the lesson first, then open Edit to add its Python activity.
+        </p>
       )}
       {entity === "lessons" && editing?.id && (
         <div className={pythonStyles.root}>
@@ -226,8 +261,14 @@ export default async function Page({
               />
             ) : (
               <>
-                <p>This lesson has no Python activity yet. Add its instructions, starter code, and practice examples below.</p>
-                <PythonActivitySettings key={"new:" + editing.id} lessonId={editing.id} />
+                <p>
+                  This lesson has no Python activity yet. Add its instructions,
+                  starter code, and practice examples below.
+                </p>
+                <PythonActivitySettings
+                  key={"new:" + editing.id}
+                  lessonId={editing.id}
+                />
               </>
             )}
           </section>
@@ -235,7 +276,14 @@ export default async function Page({
       )}
       <section className="teacher-card">
         <form
-          key={JSON.stringify([entity, statusFilter, sectionFilter, teacherFilter, yearFilter, q.search])}
+          key={JSON.stringify([
+            entity,
+            statusFilter,
+            sectionFilter,
+            teacherFilter,
+            yearFilter,
+            q.search,
+          ])}
           className="teacher-filterbar"
           method="get"
           action={"/admin/manage/" + entity}
@@ -267,7 +315,8 @@ export default async function Page({
                 <option value="unassigned">No section assigned</option>
                 {sections.map((section) => (
                   <option key={section.id} value={String(section.id)}>
-                    {sectionLabel(section)}{section.school_year ? " - " + section.school_year : ""}
+                    {sectionLabel(section)}
+                    {section.school_year ? " - " + section.school_year : ""}
                     {section.status === "archived" ? " (archived)" : ""}
                   </option>
                 ))}
@@ -283,7 +332,8 @@ export default async function Page({
                   <option value="unassigned">No teacher assigned</option>
                   {teachers.map((teacher) => (
                     <option key={teacher.id} value={String(teacher.id)}>
-                      {teacher.name}{teacher.teacher_id ? " - " + teacher.teacher_id : ""}
+                      {teacher.name}
+                      {teacher.teacher_id ? " - " + teacher.teacher_id : ""}
                       {!teacher.active ? " (archived)" : ""}
                     </option>
                   ))}
@@ -295,7 +345,9 @@ export default async function Page({
                   <option value="all">All school years</option>
                   <option value="unspecified">Not specified</option>
                   {schoolYears.map((year) => (
-                    <option key={year} value={year}>{year}</option>
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
                   ))}
                 </select>
               </label>
@@ -304,14 +356,21 @@ export default async function Page({
           <button type="submit" className="teacher-btn">
             {supportsStatusFilter ? "Apply filters" : "Search"}
           </button>
-          {(q.search || hasExtraFilters || (supportsStatusFilter && statusFilter !== "active")) && (
+          {(q.search ||
+            hasExtraFilters ||
+            (supportsStatusFilter && statusFilter !== "active")) && (
             <Link className="teacher-btn" href={"/admin/manage/" + entity}>
               Clear
             </Link>
           )}
         </form>
         <div className="teacher-table-wrap">
-          <table className={"teacher-table admin-record-table" + (entity === "levels" ? " admin-level-table" : "")}>
+          <table
+            className={
+              "teacher-table admin-record-table" +
+              (entity === "levels" ? " admin-level-table" : "")
+            }
+          >
             <thead>
               <tr>
                 <th>Name / Title</th>
@@ -329,7 +388,11 @@ export default async function Page({
                 ))
               ) : (
                 <tr>
-                  <td colSpan={entity === "levels" || entity === "students" ? 5 : 4}>
+                  <td
+                    colSpan={
+                      entity === "levels" || entity === "students" ? 5 : 4
+                    }
+                  >
                     <div className="teacher-empty">
                       {supportsStatusFilter
                         ? "No records match these filters. Change your filters or use Clear to reset them."
@@ -362,8 +425,7 @@ function Editor({
         <div>
           <span className="teacher-eyebrow">RECORD DETAILS</span>
           <h3>
-            {record.id ? "Edit" : "Create"}{" "}
-            {entity === "classes" ? "Section" : config.label.slice(0, -1)}
+            {record.id ? "Edit" : "Create"} {config.singular}
           </h3>
         </div>
         <Link href={"/admin/manage/" + entity}>Cancel</Link>
@@ -458,7 +520,22 @@ function Field({
                 .replaceAll("_", " ")
                 .replace(/\b\w/g, (x) => x.toUpperCase()),
     wide = ["content", "description", "learning_objective"].includes(field);
-  if (field === "build_available") return <label><input type="checkbox" name={field} value="1" defaultChecked={value === true} />Included in the current game build<small>Enable only after deploying this Unity scene. Otherwise it shows Coming Soon and does not block Python.</small></label>;
+  if (field === "build_available")
+    return (
+      <label>
+        <input
+          type="checkbox"
+          name={field}
+          value="1"
+          defaultChecked={value === true}
+        />
+        Included in the current game build
+        <small>
+          Enable only after deploying this Unity scene. Otherwise it shows
+          Coming Soon and does not block Python.
+        </small>
+      </label>
+    );
   if (field === "class_id")
     return (
       <label>
@@ -543,7 +620,8 @@ function Field({
         Visible to learners
       </label>
     );
-  if (entity === "lessons" && field === "content") return <LessonEditor initialContent={String(value || "")} />;
+  if (entity === "lessons" && field === "content")
+    return <LessonEditor initialContent={String(value || "")} />;
   if (wide)
     return (
       <label className="wide">
@@ -571,9 +649,7 @@ function Field({
         name={field}
         type={field === "email" ? "email" : numeric ? "number" : "text"}
         min={numeric ? 1 : undefined}
-        defaultValue={
-          value ?? ""
-        }
+        defaultValue={value ?? ""}
         readOnly={field === "level_number" && editing}
         required={
           ![
@@ -625,21 +701,45 @@ function RecordRow({
       <td>
         {entity === "lessons" && detail.length > 140 ? (
           <details className="admin-record-description">
-            <summary>{detail.slice(0, 140).trimEnd()}... <span>Read more</span></summary>
+            <summary>
+              {detail.slice(0, 140).trimEnd()}... <span>Read more</span>
+            </summary>
             <p>{detail}</p>
           </details>
-        ) : detail}
+        ) : (
+          detail
+        )}
       </td>
-      {entity === "students" && <td>{(() => { const membership = ctx.class_students.find((m: any) => m.student_id === row.id); const section = membership && ctx.classes.find((c: any) => c.id === membership.class_id); return section ? sectionLabel(section) + (section.status === "archived" ? " (archived)" : "") : membership ? "Section unavailable" : "Independent learner"; })()}</td>}
+      {entity === "students" && (
+        <td>
+          {(() => {
+            const membership = ctx.class_students.find(
+              (m: any) => m.student_id === row.id,
+            );
+            const section =
+              membership &&
+              ctx.classes.find((c: any) => c.id === membership.class_id);
+            return section
+              ? sectionLabel(section) +
+                  (section.status === "archived" ? " (archived)" : "")
+              : membership
+                ? "Section unavailable"
+                : "Independent learner";
+          })()}
+        </td>
+      )}
       <td>
         <span className={"admin-status " + (archived ? "is-archived" : "")}>
           {status}
         </span>
       </td>
-      {entity === "levels" && <td className="admin-level-preview"><GamePreviewButton level={row} /></td>}
+      {entity === "levels" && (
+        <td className="admin-level-preview">
+          <GamePreviewButton level={row} />
+        </td>
+      )}
       <td>
         <div className="admin-actions admin-record-actions">
-
           <Link
             className="teacher-btn admin-edit"
             href={"/admin/manage/" + entity + "?edit=" + row.id}
@@ -651,68 +751,104 @@ function RecordRow({
               Roster
             </Link>
           )}
-          {entity !== "levels" && (<form action={setAdminEntityStatus}>
-            <input type="hidden" name="entity" value={entity} />
-            <input type="hidden" name="id" value={row.id} />
-            <input
-              type="hidden"
-              name="restore"
-              value={archived ? "1" : "0"}
-            />
-            {entity === "classes" ? <SectionArchiveButton archived={archived} name={String(name)} className="teacher-btn" /> : <button className="teacher-btn">{archived ? "Restore" : "Archive"}</button>}
-          </form>)}
-          {["teachers", "students", "classes", "lessons", "levels"].includes(entity) && (
+          {entity !== "levels" && (
+            <form action={setAdminEntityStatus}>
+              <input type="hidden" name="entity" value={entity} />
+              <input type="hidden" name="id" value={row.id} />
+              <input
+                type="hidden"
+                name="restore"
+                value={archived ? "1" : "0"}
+              />
+              {entity === "classes" ? (
+                <SectionArchiveButton
+                  archived={archived}
+                  name={String(name)}
+                  className="teacher-btn"
+                />
+              ) : (
+                <button className="teacher-btn">
+                  {archived ? "Restore" : "Archive"}
+                </button>
+              )}
+            </form>
+          )}
+          {["teachers", "students", "classes", "lessons", "levels"].includes(
+            entity,
+          ) && (
             <AdminRecordActions name={String(name)}>
-                {entity === "levels" && (
-                  <form action={setAdminEntityStatus}>
+              {entity === "levels" && (
+                <form action={setAdminEntityStatus}>
+                  <input type="hidden" name="entity" value={entity} />
+                  <input type="hidden" name="id" value={row.id} />
+                  <input
+                    type="hidden"
+                    name="restore"
+                    value={archived ? "1" : "0"}
+                  />
+                  <button className="teacher-btn">
+                    {archived ? "Restore" : "Archive"}
+                  </button>
+                </form>
+              )}
+              {["teachers", "students"].includes(entity) && (
+                <details>
+                  <summary>Reset password</summary>
+                  <form action={resetManagedPassword} className="admin-form">
                     <input type="hidden" name="entity" value={entity} />
                     <input type="hidden" name="id" value={row.id} />
-                    <input type="hidden" name="restore" value={archived ? "1" : "0"} />
-                    <button className="teacher-btn">{archived ? "Restore" : "Archive"}</button>
+                    <button className="teacher-btn">
+                      Generate temporary password
+                    </button>
                   </form>
-                )}
-                {["teachers", "students"].includes(entity) && (
-                  <details>
-                    <summary>Reset password</summary>
-                    <form action={resetManagedPassword} className="admin-form">
-                      <input type="hidden" name="entity" value={entity} />
-                      <input type="hidden" name="id" value={row.id} />
-                      <button className="teacher-btn">
-                        Generate temporary password
-                      </button>
-                    </form>
-                  </details>
-                )}
-                {["teachers", "students", "classes", "lessons", "levels"].includes(entity) && (
-                  <details>
-                    <summary>Delete permanently</summary>
-                    <form
-                      action={deleteAdminEntity}
-                      className="admin-form admin-confirm"
-                    >
-                      <input type="hidden" name="entity" value={entity} />
-                      <input type="hidden" name="id" value={row.id} />
-                      <small>
-                        {entity === "lessons"
-                          ? "Only unused lessons can be deleted. Linked levels, assignments, Python activities, or recorded lesson visits block deletion. Archive the lesson to preserve these records."
+                </details>
+              )}
+              {[
+                "teachers",
+                "students",
+                "classes",
+                "lessons",
+                "levels",
+              ].includes(entity) && (
+                <details>
+                  <summary>Delete permanently</summary>
+                  <form
+                    action={deleteAdminEntity}
+                    className="admin-form admin-confirm"
+                  >
+                    <input type="hidden" name="entity" value={entity} />
+                    <input type="hidden" name="id" value={row.id} />
+                    <small>
+                      {entity === "lessons"
+                        ? "Only unused lessons can be deleted. Linked levels, assignments, Python activities, or recorded lesson visits block deletion. Archive the lesson to preserve these records."
+                        : entity === "levels"
+                          ? "Only unused levels can be deleted. Level or whole-lesson assignments and student history block deletion. Archive the level to preserve these records. Deleting this record does not remove its Unity scene."
+                          : entity === "teachers"
+                            ? "Teachers with sections, assignments, announcements, Python reviews, or other linked records cannot be deleted. Archive the account to preserve these records."
+                            : "This also removes linked records."}
+                    </small>
+                    {["lessons", "levels", "teachers"].includes(entity) && (
+                      <label className="admin-check">
+                        <input
+                          type="checkbox"
+                          name="confirm_delete"
+                          value="1"
+                          required
+                        />
+                        Permanently delete this unused{" "}
+                        {entity === "teachers"
+                          ? "teacher account"
                           : entity === "levels"
-                            ? "Only unused levels can be deleted. Level or whole-lesson assignments and student history block deletion. Archive the level to preserve these records. Deleting this record does not remove its Unity scene."
-                            : entity === "teachers"
-                              ? "Teachers with sections, assignments, announcements, Python reviews, or other linked records cannot be deleted. Archive the account to preserve these records."
-                              : "This also removes linked records."}
-                      </small>
-                      {["lessons", "levels", "teachers"].includes(entity) && (
-                        <label className="admin-check">
-                          <input type="checkbox" name="confirm_delete" value="1" required />
-                          Permanently delete this unused {entity === "teachers" ? "teacher account" : entity === "levels" ? "level" : "lesson"}
-                        </label>
-                      )}
-                      <button className="teacher-btn admin-delete">
-                        Confirm delete
-                      </button>
-                    </form>
-                  </details>
-                )}
+                            ? "level"
+                            : "lesson"}
+                      </label>
+                    )}
+                    <button className="teacher-btn admin-delete">
+                      Confirm delete
+                    </button>
+                  </form>
+                </details>
+              )}
             </AdminRecordActions>
           )}
         </div>

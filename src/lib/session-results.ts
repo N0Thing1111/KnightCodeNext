@@ -13,6 +13,12 @@ import {
   type SessionAssignment,
 } from "@/lib/session-result-filters";
 import type { LearningSession } from "@/lib/execution-history";
+import { rowsForIds } from "@/lib/query-pages";
+import {
+  chunks,
+  partitionedHistoryPage,
+  sessionScopeFilters,
+} from "@/lib/history-pagination";
 
 export type ResultSession = LearningSession & { code_mode: string | null };
 const PAGE_SIZE = 50;
@@ -67,30 +73,34 @@ export async function getSessionResults(
       : Promise.resolve([]),
   ]);
   const memberships = classes.length
-    ? await readAll<Membership>((from, to) =>
-        db
-          .from("class_students")
-          .select("class_id,student_id")
-          .in(
-            "class_id",
-            classes.map((c) => c.id),
-          )
-          .order("class_id")
-          .order("student_id")
-          .range(from, to),
-      )
+    ? ((await rowsForIds(
+        classes.map((c) => c.id),
+        (ids) =>
+          db
+            .from("class_students")
+            .select("class_id,student_id")
+            .in("class_id", ids)
+            .order("class_id")
+            .order("student_id"),
+      )) as Membership[])
     : [];
   const memberIds = [...new Set(memberships.map((m) => m.student_id))];
-  const students =
-    role === "teacher" && !memberIds.length
-      ? []
+  const students: SessionStudent[] =
+    role === "teacher"
+      ? await rowsForIds(memberIds, (ids) =>
+          db
+            .from("profiles")
+            .select("id,name,username,email")
+            .eq("role", "student")
+            .in("id", ids)
+            .order("id"),
+        )
       : await readAll<SessionStudent>((from, to) => {
-          let q = db
+          const q = db
             .from("profiles")
             .select("id,name,username,email")
             .eq("role", "student")
             .order("id");
-          if (role === "teacher") q = q.in("id", memberIds);
           return q.range(from, to);
         });
   students.sort((a, b) => a.name.localeCompare(b.name));
@@ -125,53 +135,57 @@ export async function getSessionResults(
   )
     return empty;
 
-  // Filter in the database before pagination, so old matching sessions remain searchable.
-  const makeQuery = () => {
-    let q = db.from("student_level_sessions").select("*", { count: "exact" });
-    if (role === "admin")
-      q = q.in(
-        "student_id",
-        selected.map((s) => s.id),
-      );
-    else
-      q = q.or(
-        scopes
-          .map(
-            (s) =>
-              `and(student_id.eq.${s.studentId},level_id.in.(${s.levelIds.join(",")}))`,
-          )
-          .join(","),
-      );
+  // Keep student/assigned-level pairs intact across disjoint bounded queries.
+  const partitions =
+    role === "admin"
+      ? chunks(selected.map((s) => s.id))
+      : sessionScopeFilters(scopes);
+  const queries = partitions.map((partition) => () => {
+    let q = db
+      .from("student_level_sessions")
+      .select("id,started_at", { count: "exact" });
+    q = Array.isArray(partition)
+      ? q.in("student_id", partition)
+      : q.or(partition);
     if (filters.level) q = q.eq("level_id", filters.level);
     if (filters.session) q = q.eq("id", filters.session);
     if (filters.status) q = q.eq("completed", filters.status === "completed");
     return q
       .order("started_at", { ascending: false })
       .order("id", { ascending: false });
-  };
-  let result = await makeQuery().range(
-    (filters.page - 1) * PAGE_SIZE,
-    filters.page * PAGE_SIZE - 1,
-  );
-  // PostgREST reports an out-of-range page as 416 rather than an empty list.
-  // Recover the count before moving to the last valid page.
-  if (result.error?.code === "PGRST103") result = await makeQuery().range(0, 0);
-  if (result.error) throw new Error("Unable to load session results.");
-  const total = result.count || 0;
-  const last = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  if (filters.page > last) {
-    filters.page = last;
-    result = await makeQuery().range(
-      (last - 1) * PAGE_SIZE,
-      last * PAGE_SIZE - 1,
+  });
+  const result = await partitionedHistoryPage<{
+    id: number;
+    started_at: string;
+  }>(queries, filters.page, PAGE_SIZE, (a, b) => {
+    // PostgreSQL timestamps retain microseconds; Date.parse alone loses them.
+    const micros = (value: string) =>
+      Number((value.match(/\.(\d+)/)?.[1] || "").padEnd(6, "0").slice(3, 6));
+    return (
+      Date.parse(b.started_at) - Date.parse(a.started_at) ||
+      micros(b.started_at) - micros(a.started_at) ||
+      b.id - a.id
     );
-    if (result.error) throw new Error("Unable to load session results.");
-  }
+  });
+  filters.page = result.page;
+  const records = result.data.length
+    ? await db
+        .from("student_level_sessions")
+        .select("*")
+        .in(
+          "id",
+          result.data.map((r) => r.id),
+        )
+    : { data: [], error: null };
+  if (records.error) throw new Error("Unable to load session results.");
+  const byId = new Map((records.data || []).map((row) => [row.id, row]));
   return {
     catalog,
     filters,
-    rows: (result.data || []) as ResultSession[],
-    total,
+    rows: result.data.flatMap((key) =>
+      byId.has(key.id) ? [byId.get(key.id)] : [],
+    ) as ResultSession[],
+    total: result.count,
     pageSize: PAGE_SIZE,
   };
 }

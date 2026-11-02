@@ -1,3 +1,4 @@
+import { pythonCompletionLabel } from "@/lib/lesson-completion";
 import { getStudentSection } from "@/lib/student-section";
 import Link from "next/link";
 import { getPythonActivities } from "@/lib/python-data";
@@ -37,13 +38,18 @@ export default async function LessonPage({
   );
   const completion = data.completion.get(id)!;
   const db = await createClient();
-  const [access, workflow] = activity ? await Promise.all([
-    db.rpc("python_can_start", { p_activity: activity.id }),
-    db.rpc("python_activity_state", { p_activity: activity.id }),
-  ]) : [null, null];
-  if (access?.error || workflow?.error) throw Error("Unable to load activity status.");
+  const [access, workflow] = activity
+    ? await Promise.all([
+        db.rpc("python_can_start", { p_activity: activity.id }),
+        db.rpc("python_activity_state", { p_activity: activity.id }),
+      ])
+    : [null, null];
+  if (access?.error || workflow?.error)
+    throw Error("Unable to load activity status.");
   const activityState = workflow?.data?.state;
-  const reviewOnly = !data.scope.independent && (activityState === "passed" || activityState === "awaiting_review");
+  const reviewOnly =
+    !data.scope.independent &&
+    (activityState === "passed" || activityState === "awaiting_review");
   return (
     <main className="page-container lesson-page">
       <LessonViewBeacon lessonId={id} />
@@ -70,7 +76,17 @@ export default async function LessonPage({
             <span style={{ width: `${pct}%` }} />
           </div>
           <small>
-            {completion.gamesDone} of {completion.gamesTotal} playable game levels complete{completion.pythonRequired ? (completion.pythonDone ? (data.scope.independent ? "; Python practice complete" : "; Python submitted") : (data.scope.independent ? "; Python practice pending" : "; Python submission pending")) : ""}
+            {completion.gamesDone} of {completion.gamesTotal} playable game
+            levels complete
+            {completion.pythonRequired
+              ? "; " +
+                (data.scope.independent && !completion.pythonDone
+                  ? "Python practice pending"
+                  : pythonCompletionLabel(
+                      completion.pythonStatus,
+                      data.scope.independent,
+                    ))
+              : ""}
           </small>
           {nextLevel && !section.archived && (
             <Link
@@ -137,18 +153,21 @@ export default async function LessonPage({
           {levels.map((level) => {
             const row = progress.get(level.id),
               buildAvailable = isGameLevelAvailable(level),
-              canPlay = !section.archived && data.playable.has(level.id) && buildAvailable,
+              canPlay =
+                !section.archived &&
+                data.playable.has(level.id) &&
+                buildAvailable,
               status = row?.completed
                 ? "Completed"
                 : section.archived
                   ? "Archived"
                   : !buildAvailable
-                  ? "Coming Soon"
-                  : !canPlay
-                    ? "Locked"
-                    : row?.attempts
-                      ? "In Progress"
-                      : "Not Started";
+                    ? "Coming Soon"
+                    : !canPlay
+                      ? "Locked"
+                      : row?.attempts
+                        ? "In Progress"
+                        : "Not Started";
             return (
               <article className="level-modern-row" key={level.id}>
                 <div
@@ -176,7 +195,12 @@ export default async function LessonPage({
                   </Link>
                 ) : (
                   <span className="btn btn-locked">
-                    {section.archived ? "Section archived" : buildAvailable ? "Locked" : "Coming Soon"} <span>🔒</span>
+                    {section.archived
+                      ? "Section archived"
+                      : buildAvailable
+                        ? "Locked"
+                        : "Coming Soon"}{" "}
+                    <span>🔒</span>
                   </span>
                 )}
               </article>
@@ -191,7 +215,10 @@ export default async function LessonPage({
               <span className="panel-kicker">AFTER THE GAME</span>
               <h2>Apply the lesson in Python</h2>
               <p>
-                This activity is included with your lesson. Complete its available game levels to unlock it. Coming Soon levels do not block Python; if no game is available yet, you can start Python now.
+                This activity is included with your lesson. Complete its
+                available game levels to unlock it. Coming Soon levels do not
+                block Python; if no game is available yet, you can start Python
+                now.
               </p>
             </div>
           </div>
@@ -205,12 +232,18 @@ export default async function LessonPage({
               <span className="muted-kicker">{activity.content.concept}</span>
               <h3>{activity.content.title}</h3>
               <p>
-                {reviewOnly ? (activityState === "passed" ? "Activity passed. View your submitted code and teacher feedback." : "Your submission is awaiting teacher review. View your submitted code below.") : access?.data
-                  ? data.scope.independent ? "Write a program, run it successfully, then complete practice to continue your learning path." : "Write a program, try it, and submit your work for teacher feedback."
-                  : completion.gamesDone +
-                    " of " +
-                    completion.gamesTotal +
-                    " playable game levels complete. Your progress is saved."}
+                {reviewOnly
+                  ? activityState === "passed"
+                    ? "Activity passed. View your submitted code and teacher feedback."
+                    : "Your submission is awaiting teacher review. View your submitted code below."
+                  : access?.data
+                    ? data.scope.independent
+                      ? "Write a program, run it successfully, then complete practice to continue your learning path."
+                      : "Write a program, try it, and submit your work for teacher feedback."
+                    : completion.gamesDone +
+                      " of " +
+                      completion.gamesTotal +
+                      " playable game levels complete. Your progress is saved."}
               </p>
             </div>
             <div
@@ -219,11 +252,42 @@ export default async function LessonPage({
               }
             >
               <i />
-              {section.archived ? "Section archived" : activityState === "passed" ? "Passed" : activityState === "awaiting_review" ? "Awaiting review" : activityState === "needs_revision" ? "Needs revision" : access?.data ? "Ready to code" : "Locked"}
+              {section.archived
+                ? "Section archived"
+                : activityState === "passed"
+                  ? "Passed"
+                  : activityState === "awaiting_review"
+                    ? "Awaiting review"
+                    : activityState === "needs_revision"
+                      ? "Needs revision"
+                      : access?.data
+                        ? "Ready to code"
+                        : "Locked"}
             </div>
-            {section.archived ? (<a className="btn btn-secondary" href={"/lesson/" + id + "/python"}>View previous work</a>) : reviewOnly ? (<a className="btn btn-secondary" href={"/lesson/" + id + "/python"}>View submission and feedback</a>) : access?.data ? (
+            {section.archived ? (
+              <a
+                className="btn btn-secondary"
+                href={"/lesson/" + id + "/python"}
+              >
+                View previous work
+              </a>
+            ) : reviewOnly ? (
+              <a
+                className="btn btn-secondary"
+                href={"/lesson/" + id + "/python"}
+              >
+                View submission and feedback
+              </a>
+            ) : access?.data ? (
               <a className="btn btn-primary" href={"/lesson/" + id + "/python"}>
-                {completion.pythonDone ? "Open Python" : "Start Python"} <span>→</span>
+                {completion.pythonStatus === "needs_revision"
+                  ? "Revise Python activity"
+                  : completion.pythonStatus === "awaiting_review"
+                    ? "View submission"
+                    : completion.pythonDone
+                      ? "Open Python"
+                      : "Start Python"}{" "}
+                <span>→</span>
               </a>
             ) : (
               <span className="btn btn-locked">Finish game levels</span>

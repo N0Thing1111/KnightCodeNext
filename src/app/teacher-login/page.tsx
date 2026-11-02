@@ -1,5 +1,5 @@
 import { PasswordInput } from "@/components/password-input";
-﻿import Link from "next/link";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentTeacher } from "@/lib/auth";
 export default async function Page({
@@ -97,8 +97,12 @@ export default async function Page({
               Enter Teacher Portal <span>→</span>
             </button>
           </form>
-          <p><Link href="/forgot-password">Forgot password?</Link></p>
-          <p><Link href="/register?role=teacher">Create an account</Link></p>
+          <p>
+            <Link href="/forgot-password">Forgot password?</Link>
+          </p>
+          <p>
+            <Link href="/register?role=teacher">Create an account</Link>
+          </p>
           <div className="auth-trust-row">
             <span>✓ Secure sign-in</span>
             <span>✓ Teacher account</span>

@@ -1,3 +1,4 @@
+import { pythonCompletionLabel } from "@/lib/lesson-completion";
 import Link from "next/link";
 import { isGameLevelAvailable } from "@/lib/game-build";
 import styles from "./progress.module.css";
@@ -19,22 +20,46 @@ export default async function ProgressPage() {
     getAchievements(student.id),
     supabase
       .from("student_activity")
-      .select("id,action_type,xp_earned,duration_seconds,created_at,level_id,metadata")
+      .select(
+        "id,action_type,xp_earned,duration_seconds,created_at,level_id,metadata",
+      )
       .eq("student_id", student.id)
       .order("created_at", { ascending: false })
       .limit(20),
   ]);
-  if (activityResult.error) throw Error("Unable to load your learning history. Please try again.");
-  const { gamesTotal, gamesDone, pythonTotal, pythonDone, tasksTotal, tasksDone, overallPct } = stats;
-  const availableIds = new Set(learning.levels.filter(isGameLevelAvailable).map(l => l.id));
-  const gamesStarted = learning.progress.filter(p => availableIds.has(p.level_id) && !p.completed && (p.attempts > 0 || p.play_time_seconds > 0)).length;
+  if (activityResult.error)
+    throw Error("Unable to load your learning history. Please try again.");
+  const {
+    gamesTotal,
+    gamesDone,
+    pythonTotal,
+    pythonDone,
+    tasksTotal,
+    tasksDone,
+    overallPct,
+  } = stats;
+  const availableIds = new Set(
+    learning.levels.filter(isGameLevelAvailable).map((l) => l.id),
+  );
+  const gamesStarted = learning.progress.filter(
+    (p) =>
+      availableIds.has(p.level_id) &&
+      !p.completed &&
+      (p.attempts > 0 || p.play_time_seconds > 0),
+  ).length;
   const comingSoon = learning.levels.length - availableIds.size;
-  const nextLesson = learning.lessons.find(l => {
+  const nextLesson = learning.lessons.find((l) => {
     const c = learning.completion.get(l.id)!;
     return c.total > 0 && !c.complete;
   });
-  const nextCompletion = nextLesson ? learning.completion.get(nextLesson.id)! : null;
-  const nextIsPython = !!nextCompletion && nextCompletion.gamesDone === nextCompletion.gamesTotal && nextCompletion.pythonRequired && !nextCompletion.pythonDone;
+  const nextCompletion = nextLesson
+    ? learning.completion.get(nextLesson.id)!
+    : null;
+  const nextIsPython =
+    !!nextCompletion &&
+    nextCompletion.gamesDone === nextCompletion.gamesTotal &&
+    nextCompletion.pythonRequired &&
+    !nextCompletion.pythonDone;
   const levelMap = new Map(learning.levels.map((level) => [level.id, level])),
     history = activityResult.data ?? [],
     earnedCount = achievements.filter((a) => a.earned_at).length,
@@ -53,7 +78,11 @@ export default async function ProgressPage() {
         </div>
         <div className="page-hero-stat">
           <strong>{overallPct}%</strong>
-          <span>{tasksTotal ? "games finished / Python submitted" : "no available tasks yet"}</span>
+          <span>
+            {tasksTotal
+              ? "games and Python completed"
+              : "no available tasks yet"}
+          </span>
           <small>
             {tasksDone} of {tasksTotal} assigned tasks
           </small>
@@ -66,14 +95,15 @@ export default async function ProgressPage() {
           <div className="progress-track">
             <span style={{ width: `${overallPct}%` }} />
           </div>
-          <small>{gamesDone} games completed · {pythonDone} Python activities submitted</small>
+          <small>
+            {gamesDone} games completed · {pythonDone} Python activities
+            completed
+          </small>
         </article>
         <article className="metric-card">
           <span>XP Earned</span>
           <strong>{stats.xp.toLocaleString()}</strong>
-          <small>
-            Level {stats.level} · {stats.rank}
-          </small>
+          <small>Level {stats.level}</small>
         </article>
         <article className="metric-card">
           <span>Current Streak</span>
@@ -93,40 +123,121 @@ export default async function ProgressPage() {
         <article className="panel">
           <span className="panel-kicker">GAME PRACTICE</span>
           <h2>Available game levels</h2>
-          <p className={styles.total}><strong>{gamesDone} / {gamesTotal}</strong> completed</p>
-          <div className="progress-track" role="progressbar" aria-label="Available games completed" aria-valuenow={gamesDone} aria-valuemin={0} aria-valuemax={gamesTotal || 1}>
-            <span style={{ width: (gamesTotal ? gamesDone / gamesTotal * 100 : 0) + "%" }} />
+          <p className={styles.total}>
+            <strong>
+              {gamesDone} / {gamesTotal}
+            </strong>{" "}
+            completed
+          </p>
+          <div
+            className="progress-track"
+            role="progressbar"
+            aria-label="Available games completed"
+            aria-valuenow={gamesDone}
+            aria-valuemin={0}
+            aria-valuemax={gamesTotal || 1}
+          >
+            <span
+              style={{
+                width: (gamesTotal ? (gamesDone / gamesTotal) * 100 : 0) + "%",
+              }}
+            />
           </div>
           <dl className={styles.stats}>
-            <div><dt>Practicing</dt><dd>{gamesStarted}</dd></div>
-            <div><dt>Not started</dt><dd>{Math.max(0, gamesTotal - gamesDone - gamesStarted)}</dd></div>
-            <div><dt>Coming Soon</dt><dd>{comingSoon}</dd></div>
+            <div>
+              <dt>Practicing</dt>
+              <dd>{gamesStarted}</dd>
+            </div>
+            <div>
+              <dt>Not started</dt>
+              <dd>{Math.max(0, gamesTotal - gamesDone - gamesStarted)}</dd>
+            </div>
+            <div>
+              <dt>Coming Soon</dt>
+              <dd>{comingSoon}</dd>
+            </div>
           </dl>
-          <p className={styles.note}>Coming Soon levels are excluded from completion. Practicing means saved progress without a completion; it is not a live status.</p>
+          <p className={styles.note}>
+            Coming Soon levels are excluded from completion. Practicing means
+            saved progress without a completion; it is not a live status.
+          </p>
         </article>
         <article className="panel">
           <span className="panel-kicker">PYTHON APPLICATION</span>
           <h2>Python activities</h2>
-          <p className={styles.total}><strong>{pythonDone} / {pythonTotal}</strong> submitted</p>
-          <div className="progress-track" role="progressbar" aria-label="Python activities submitted" aria-valuenow={pythonDone} aria-valuemin={0} aria-valuemax={pythonTotal || 1}>
-            <span style={{ width: (pythonTotal ? pythonDone / pythonTotal * 100 : 0) + "%" }} />
+          <p className={styles.total}>
+            <strong>
+              {pythonDone} / {pythonTotal}
+            </strong>{" "}
+            completed
+          </p>
+          <div
+            className="progress-track"
+            role="progressbar"
+            aria-label="Python activities completed"
+            aria-valuenow={pythonDone}
+            aria-valuemin={0}
+            aria-valuemax={pythonTotal || 1}
+          >
+            <span
+              style={{
+                width:
+                  (pythonTotal ? (pythonDone / pythonTotal) * 100 : 0) + "%",
+              }}
+            />
           </div>
           <dl className={styles.stats}>
-            <div><dt>Not submitted</dt><dd>{pythonTotal - pythonDone}</dd></div>
-            <div><dt>Lessons finished/submitted</dt><dd>{stats.lessonsCompleted} / {learning.lessons.length}</dd></div>
+            <div>
+              <dt>Not yet complete</dt>
+              <dd>{pythonTotal - pythonDone}</dd>
+            </div>
+            <div>
+              <dt>Lessons completed</dt>
+              <dd>
+                {stats.lessonsCompleted} / {learning.lessons.length}
+              </dd>
+            </div>
           </dl>
-          <p className={styles.note}>{pythonTotal ? "Each activity counts once, even after resubmission. Submission counts toward completion; your teacher’s review and rating are separate." : "No published Python activities are included in your current whole-lesson assignments."}</p>
+          <p className={styles.note}>
+            {pythonTotal
+              ? "Class activities count after a Passed assessment. Independent practice counts when completed. Awaiting review and Needs revision are not complete."
+              : "No published Python activities are included in your current whole-lesson assignments."}
+          </p>
         </article>
       </section>
-      <section className={"panel " + styles.next} aria-label="Next learning step">
+      <section
+        className={"panel " + styles.next}
+        aria-label="Next learning step"
+      >
         <div>
           <span className="panel-kicker">NEXT STEP</span>
-          <h2>{nextLesson ? nextLesson.title : tasksTotal ? "Your required games are finished and Python work is submitted" : "Ready when your lessons are available"}</h2>
-          <p className={styles.note}>{nextLesson
-            ? nextIsPython ? "Your available games are complete. Open the lesson to continue its Python activity and submit your work." : "Continue the available game levels in this lesson, then complete its Python activity if assigned."
-            : tasksTotal ? "You can revisit your lessons, practice again, or check your teacher’s feedback." : "Your teacher’s available lesson tasks will appear here. Coming Soon games do not count against your progress."}</p>
+          <h2>
+            {nextLesson
+              ? nextLesson.title
+              : tasksTotal
+                ? "Your available lesson activities are complete"
+                : "Ready when your lessons are available"}
+          </h2>
+          <p className={styles.note}>
+            {nextLesson
+              ? nextIsPython
+                ? nextCompletion?.pythonStatus === "awaiting_review"
+                  ? "Your Python submission is awaiting review. You do not need to resubmit while waiting."
+                  : nextCompletion?.pythonStatus === "needs_revision"
+                    ? "Read your feedback, revise your code, and submit a new run."
+                    : "Your available games are complete. Open the lesson to continue its Python activity."
+                : "Continue the available game levels in this lesson, then complete its Python activity if assigned."
+              : tasksTotal
+                ? "You can revisit your lessons, practice again, or check your teacher’s feedback."
+                : "Your teacher’s available lesson tasks will appear here. Coming Soon games do not count against your progress."}
+          </p>
         </div>
-        <Link className="btn btn-secondary" href={nextLesson ? "/lesson/" + nextLesson.id : "/lessons"}>{nextLesson ? "Continue lesson" : "View lessons"}</Link>
+        <Link
+          className="btn btn-secondary"
+          href={nextLesson ? "/lesson/" + nextLesson.id : "/lessons"}
+        >
+          {nextLesson ? "Continue lesson" : "View lessons"}
+        </Link>
       </section>
       <section className="progress-content-grid">
         <article className="panel lesson-progress-panel">
@@ -148,10 +259,19 @@ export default async function ProgressPage() {
             {learning.lessons.map((lesson) => {
               const completion = learning.completion.get(lesson.id)!;
               const pct = completion.pct;
-              const lessonLevelIds = new Set(learning.levels.filter(l => l.lesson_id === lesson.id).map(l => l.id));
-              const practice = learning.progress.filter(p => lessonLevelIds.has(p.level_id));
+              const lessonLevelIds = new Set(
+                learning.levels
+                  .filter((l) => l.lesson_id === lesson.id)
+                  .map((l) => l.id),
+              );
+              const practice = learning.progress.filter((p) =>
+                lessonLevelIds.has(p.level_id),
+              );
               const attempts = practice.reduce((sum, p) => sum + p.attempts, 0);
-              const seconds = practice.reduce((sum, p) => sum + p.play_time_seconds, 0);
+              const seconds = practice.reduce(
+                (sum, p) => sum + p.play_time_seconds,
+                0,
+              );
               return (
                 <Link
                   href={`/lesson/${lesson.id}`}
@@ -164,17 +284,33 @@ export default async function ProgressPage() {
                       {lesson.title}
                     </span>
                     <strong>
-                      {completion.gamesTotal ? `${completion.gamesDone}/${completion.gamesTotal} games` : "No available games"}
+                      {completion.gamesTotal
+                        ? `${completion.gamesDone}/${completion.gamesTotal} games`
+                        : "No available games"}
                     </strong>
                   </div>
                   <div className="progress-track">
                     <span style={{ width: `${pct}%` }} />
                   </div>
                   <div className={styles.lessonDetails}>
-                    <span>{completion.total ? pct + "% finished/submitted" : "Waiting for available content"}</span>
-                    {completion.pythonRequired && <span className={styles.tag}>{completion.pythonDone ? "Python submitted" : "Python not submitted"}</span>}
+                    <span>
+                      {completion.total
+                        ? pct + "% complete"
+                        : "Waiting for available content"}
+                    </span>
+                    {completion.pythonRequired && (
+                      <span className={styles.tag}>
+                        {pythonCompletionLabel(
+                          completion.pythonStatus,
+                          learning.scope.independent,
+                        )}
+                      </span>
+                    )}
                   </div>
-                  <small>{attempts} game attempts · {formatDuration(seconds)} game practice</small>
+                  <small>
+                    {attempts} game attempts · {formatDuration(seconds)} game
+                    practice
+                  </small>
                 </Link>
               );
             })}
@@ -196,7 +332,6 @@ export default async function ProgressPage() {
               <small>XP Level</small>
             </div>
           </div>
-          <h3>{stats.rank}</h3>
           <p>{xpToNext.toLocaleString()} XP until the next level.</p>
           <div className="progress-track">
             <span style={{ width: `${stats.xpPct}%` }} />
@@ -219,7 +354,12 @@ export default async function ProgressPage() {
             No activity yet. Start your first challenge from the Lessons page.
           </div>
         ) : (
-          <div className="history-table-wrap" role="region" aria-label="Recent learning activity" tabIndex={0}>
+          <div
+            className="history-table-wrap"
+            role="region"
+            aria-label="Recent learning activity"
+            tabIndex={0}
+          >
             <table className="history-table">
               <thead>
                 <tr>
@@ -232,9 +372,20 @@ export default async function ProgressPage() {
               </thead>
               <tbody>
                 {history.map((item) => {
-                  const lessonId = Number((item.metadata as { lesson_id?: number } | null)?.lesson_id);
-                  const viewedLesson = learning.lessons.find(l => l.id === lessonId);
-                  const actionLabel = item.action_type === "level_completed" ? "Completed" : item.action_type === "lesson_viewed" ? "Lesson viewed" : item.action_type === "level_attempted" ? "Game practice" : "Learning activity";
+                  const lessonId = Number(
+                    (item.metadata as { lesson_id?: number } | null)?.lesson_id,
+                  );
+                  const viewedLesson = learning.lessons.find(
+                    (l) => l.id === lessonId,
+                  );
+                  const actionLabel =
+                    item.action_type === "level_completed"
+                      ? "Completed"
+                      : item.action_type === "lesson_viewed"
+                        ? "Lesson viewed"
+                        : item.action_type === "level_attempted"
+                          ? "Game practice"
+                          : "Learning activity";
                   const level = item.level_id
                     ? levelMap.get(item.level_id)
                     : undefined;
@@ -249,10 +400,14 @@ export default async function ProgressPage() {
                         {actionLabel}
                       </td>
                       <td data-label="Content">
-                        {level?.title ?? viewedLesson?.title ?? "Learning session"}
+                        {level?.title ??
+                          viewedLesson?.title ??
+                          "Learning session"}
                         {level && <small>Level {level.level_number}</small>}
                       </td>
-                      <td data-label="XP">{item.xp_earned ? `+${item.xp_earned}` : "—"}</td>
+                      <td data-label="XP">
+                        {item.xp_earned ? `+${item.xp_earned}` : "—"}
+                      </td>
                       <td data-label="Time">
                         {item.duration_seconds
                           ? formatDuration(item.duration_seconds)

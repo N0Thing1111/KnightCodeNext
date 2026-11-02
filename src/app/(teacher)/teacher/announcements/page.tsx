@@ -18,12 +18,15 @@ export default async function Page({
       .select("*")
       .eq("teacher_id", t.id)
       .order("created_at", { ascending: false });
-  const draft = list?.find((announcement) =>
-    String(announcement.id) === q.draft && announcement.status === "draft",
+  const draft = list?.find(
+    (announcement) =>
+      String(announcement.id) === q.draft && announcement.status === "draft",
   );
-  const draftSectionUnavailable = draft?.class_id && !ctx.classes.some((section) =>
-    section.id === draft.class_id && section.status === "active",
-  );
+  const draftSectionUnavailable =
+    draft?.class_id &&
+    !ctx.classes.some(
+      (section) => section.id === draft.class_id && section.status === "active",
+    );
   return (
     <>
       <Hero
@@ -37,11 +40,22 @@ export default async function Page({
           <div className="teacher-card-head">
             <div>
               <span className="teacher-eyebrow">NEW MESSAGE</span>
-              <h3>{draft ? "Publish saved announcement" : "Create announcement"}</h3>
+              <h3>
+                {draft ? "Publish saved announcement" : "Create announcement"}
+              </h3>
             </div>
           </div>
-          {draft && <p>This previously saved message is unpublished. Review it, then publish now.</p>}
-          <form key={draft?.id || "new"} action={saveAnnouncement} className="teacher-form">
+          {draft && (
+            <p>
+              This previously saved message is unpublished. Review it, then
+              publish now.
+            </p>
+          )}
+          <form
+            key={draft?.id || "new"}
+            action={saveAnnouncement}
+            className="teacher-form"
+          >
             {draft && <input type="hidden" name="draft_id" value={draft.id} />}
             <label>
               Title
@@ -55,9 +69,17 @@ export default async function Page({
             </label>
             <label>
               Audience
-              <select name="class_id" required defaultValue={draftSectionUnavailable ? "" : String(draft?.class_id || 0)}>
+              <select
+                name="class_id"
+                required
+                defaultValue={
+                  draftSectionUnavailable ? "" : String(draft?.class_id || 0)
+                }
+              >
                 {draftSectionUnavailable && (
-                  <option value="" disabled>Previous section unavailable - choose an audience</option>
+                  <option value="" disabled>
+                    Previous section unavailable - choose an audience
+                  </option>
                 )}
                 <option value="0">All my students</option>
                 {ctx.classes
@@ -79,7 +101,9 @@ export default async function Page({
                 placeholder="Write your announcement..."
               />
             </label>
-            <button type="submit" className="teacher-btn primary">Publish now</button>
+            <button type="submit" className="teacher-btn primary">
+              Publish now
+            </button>
             {draft && <Link href="/teacher/announcements">Cancel</Link>}
           </form>
         </section>
@@ -109,11 +133,19 @@ export default async function Page({
                     </div>
                     <h4>{a.title}</h4>
                     <p>{a.body}</p>
-                    <time>{new Date(a.published_at || a.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}</time>
+                    <time>
+                      {new Date(a.published_at || a.created_at).toLocaleString(
+                        "en-PH",
+                        { timeZone: "Asia/Manila" },
+                      )}
+                    </time>
                   </div>
                   <div>
                     {a.status === "draft" && (
-                      <Link className="teacher-btn" href={"/teacher/announcements?draft=" + a.id}>
+                      <Link
+                        className="teacher-btn"
+                        href={"/teacher/announcements?draft=" + a.id}
+                      >
                         Open to publish
                       </Link>
                     )}

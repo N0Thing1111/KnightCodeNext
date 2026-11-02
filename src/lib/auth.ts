@@ -16,9 +16,7 @@ const getCurrentProfile = cache(async () => {
     .eq("id", userId)
     .eq("active", true)
     .maybeSingle();
-  return data as
-    | (Profile & { teacher_id?: string | null })
-    | null;
+  return data as (Profile & { teacher_id?: string | null }) | null;
 });
 export const getCurrentStudent = cache(async () => {
   const p = await getCurrentProfile();

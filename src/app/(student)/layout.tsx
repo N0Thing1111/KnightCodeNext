@@ -20,7 +20,6 @@ export default async function StudentLayout({
       student={student}
       stats={{
         level: stats.level,
-        rank: stats.rank,
         xp: stats.xp,
         xpPct: stats.xpPct,
         streak: stats.streak,

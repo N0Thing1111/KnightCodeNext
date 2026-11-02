@@ -1,3 +1,4 @@
+import { PLATFORM_NAME } from "@/lib/platform-identity";
 import "server-only";
 import nodemailer from "nodemailer";
 
@@ -7,7 +8,6 @@ type StudentPasswordMail = {
   studentId: string;
   username?: string | null;
   temporaryPassword: string;
-  schoolLabel?: string | null;
   reason: "welcome" | "reset" | "restore";
 };
 
@@ -36,16 +36,11 @@ function loginUrl(path = "/login") {
   return "http://localhost:3000" + path;
 }
 
-export function isPasswordEmailConfigured() {
-  return mailConfig() !== null;
-}
-
 export async function sendStudentPasswordEmail(
   input: StudentPasswordMail,
 ): Promise<boolean> {
   const config = mailConfig();
   if (!config) return false;
-  const school = input.schoolLabel?.trim() || "KnightCode";
   const subject =
     input.reason === "restore"
       ? "Your KnightCode account has been restored"
@@ -57,17 +52,16 @@ export async function sendStudentPasswordEmail(
     "",
     input.reason === "restore"
       ? "Your platform administrator has recreated your KnightCode account while restoring a platform save at " +
-        school +
+        PLATFORM_NAME +
         ". Use the new temporary password below."
       : input.reason === "welcome"
         ? "Your KnightCode account has been created by the platform administrator at " +
-          school +
+          PLATFORM_NAME +
           "."
         : "Your KnightCode password was reset by the platform administrator at " +
-          school +
+          PLATFORM_NAME +
           ".",
     "",
-
   ];
   if (input.username) lines.push("Username: " + input.username);
   lines.push(
@@ -78,7 +72,7 @@ export async function sendStudentPasswordEmail(
     "Use your username or email with the temporary password above.",
     "After signing in, open Profile and change the temporary password in the Security section.",
     "",
-    "- " + school,
+    "- " + PLATFORM_NAME,
   );
   return deliverPasswordEmail(input, subject, lines.join("\n"));
 }
@@ -89,20 +83,21 @@ export async function sendTeacherPasswordEmail(input: {
   teacherId: string;
   reason?: "welcome" | "restore" | "reset";
   temporaryPassword: string;
-  schoolLabel?: string | null;
 }): Promise<boolean> {
-  const school = input.schoolLabel?.trim() || "KnightCode";
   const lines = [
     "Hi " + input.name + ",",
     "",
     input.reason === "restore"
       ? "Your platform administrator has recreated your KnightCode teacher account while restoring a platform save at " +
-        school +
+        PLATFORM_NAME +
         ". Use the new temporary password below."
-      : input.reason === "reset" ? "Your platform administrator reset your KnightCode teacher password at " + school + "."
-      : "Your KnightCode teacher account has been created by your platform administrator at " +
-        school +
-        ".",
+      : input.reason === "reset"
+        ? "Your platform administrator reset your KnightCode teacher password at " +
+          PLATFORM_NAME +
+          "."
+        : "Your KnightCode teacher account has been created by your platform administrator at " +
+          PLATFORM_NAME +
+          ".",
     "",
     "Teacher ID: " + input.teacherId,
     "Email: " + input.email,
@@ -112,13 +107,15 @@ export async function sendTeacherPasswordEmail(input: {
     "Use your Teacher ID or email with the temporary password above.",
     "After signing in, open Teacher Profile and use Change password to set your own password.",
     "",
-    "- " + school,
+    "- " + PLATFORM_NAME,
   ];
   return deliverPasswordEmail(
     input,
     input.reason === "restore"
       ? "Your KnightCode teacher account has been restored"
-      : input.reason === "reset" ? "Your KnightCode teacher password was reset" : "Your KnightCode teacher account is ready",
+      : input.reason === "reset"
+        ? "Your KnightCode teacher password was reset"
+        : "Your KnightCode teacher account is ready",
     lines.join("\n"),
   );
 }

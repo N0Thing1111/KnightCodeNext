@@ -19,8 +19,8 @@ export default async function Page({
   return (
     <>
       <AdminHero
-        title="Session Results"
-        description="Review game sessions and Python runs. Search for a student, inspect their code, and follow their progress."
+        title="Learning records"
+        description="Inspect game sessions and Python runs. Teachers manage routine assessment."
       />
       <nav
         className="teacher-card"

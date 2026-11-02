@@ -23,7 +23,21 @@ export function storedPythonRating(displayed: number): number {
 }
 
 export const pythonRatingCriteria = [
-  { key: "logic", label: "Programming logic", description: "Plans a sensible sequence and uses decisions or repetition appropriately." },
-  { key: "application", label: "Applying the concept", description: "Uses the lesson's programming concept to solve the activity." },
-  { key: "correctness", label: "Correctness", description: "Handles the required inputs and produces the requested results." },
+  {
+    key: "logic",
+    label: "Programming logic",
+    description:
+      "Plans a sensible sequence and uses decisions or repetition appropriately.",
+  },
+  {
+    key: "application",
+    label: "Applying the concept",
+    description: "Uses the lesson's programming concept to solve the activity.",
+  },
+  {
+    key: "correctness",
+    label: "Correctness",
+    description:
+      "Handles the required inputs and produces the requested results.",
+  },
 ] as const;

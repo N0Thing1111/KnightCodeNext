@@ -1,221 +1,266 @@
-import { sectionLabel } from "@/lib/section-label";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
-import { getAdminContext, getAdminSessionOverview, setting } from "@/lib/admin-data";
-import { CardHead } from "@/components/admin-ui";
+import { getAdminContext, getAdminSessionOverview } from "@/lib/admin-data";
+import { getStoredBackupOverview } from "@/lib/automatic-backups";
+import { isGameLevelAvailable } from "@/lib/game-build";
+import { formatSchoolDateTime } from "@/lib/school-time";
+
 export default async function Page() {
-  const admin = await requireAdmin(),
-    ctx = await getAdminContext(),
-    sessionOverview = await getAdminSessionOverview(),
-    students = ctx.profiles.filter((p) => p.role === "student"),
-    teachers = ctx.profiles.filter((p) => p.role === "teacher"),
-    classes = ctx.classes.filter((c) => c.status === "active"),
-    recent = sessionOverview.recent,
-    week = sessionOverview.week,
-    max = Math.max(1, ...week.map((x) => x.count));
+  await requireAdmin();
+  const [ctx, sessions, backups] = await Promise.all([
+    getAdminContext(),
+    getAdminSessionOverview(),
+    getStoredBackupOverview().catch(() => null),
+  ]);
+  const students = ctx.profiles.filter((p) => p.role === "student");
+  const teachers = ctx.profiles.filter((p) => p.role === "teacher");
+  const activeStudents = students.filter((p) => p.active);
+  const members = new Set(ctx.class_students.map((m) => m.student_id));
+  const enrolled = activeStudents.filter((p) => members.has(p.id)).length;
+  const independent = activeStudents.length - enrolled;
+  const pendingTeachers = teachers.filter(
+    (p) => p.onboarding_status === "pending",
+  ).length;
+  const latestSave = backups?.latestSave;
+  const weeklyAttempt = backups?.weeklyAttempt;
+  const weeklyStatus = !backups
+    ? "Unavailable"
+    : !weeklyAttempt
+      ? "No weekly attempt recorded"
+      : weeklyAttempt.status === "ready"
+        ? "Completed"
+        : weeklyAttempt.status === "running"
+          ? "In progress"
+          : weeklyAttempt.status === "failed"
+            ? "Failed — check backup history"
+            : "Expired under retention policy";
+  const max = Math.max(1, ...sessions.week.map((day) => day.count));
   return (
-    <>
-      <section className="teacher-page-hero admin-welcome">
+    <div className="admin-platform-overview">
+      <header className="admin-platform-heading">
         <div>
-          <span className="teacher-eyebrow">YOUR SCHOOL COMMAND CENTER</span>
-          <h2>Good day, {admin.name.split(" ")[0]}.</h2>
-          <p>
-            A little guidance goes a long way. Here&apos;s what&apos;s happening
-            across your KnightCode community.
+          <h2>Platform overview</h2>
+          <p>Manage accounts, learning content, and platform records.</p>
+        </div>
+        <Link className="teacher-btn" href="/admin/audit">
+          View audit history
+        </Link>
+      </header>
+      <dl className="admin-platform-totals" aria-label="Platform totals">
+        <div>
+          <dt>Active learners</dt>
+          <dd>{activeStudents.length}</dd>
+          <small>{students.length} student accounts in total</small>
+        </div>
+        <div>
+          <dt>Active teachers</dt>
+          <dd>{teachers.filter((p) => p.active).length}</dd>
+          <small>{teachers.length} teacher accounts in total</small>
+        </div>
+        <div>
+          <dt>Active sections</dt>
+          <dd>{ctx.classes.filter((c) => c.status === "active").length}</dd>
+          <small>Managed by teachers</small>
+        </div>
+        <div>
+          <dt>Game sessions over seven days</dt>
+          <dd>{sessions.week.reduce((sum, day) => sum + day.count, 0)}</dd>
+          <small>Starts, including unfinished sessions</small>
+        </div>
+      </dl>
+      <div className="admin-platform-columns">
+        <section
+          className="teacher-card admin-platform-panel"
+          aria-labelledby="participation-title"
+        >
+          <h3 id="participation-title">Accounts and participation</h3>
+          <p className="teacher-note">
+            Active learners, with or without a section.
+          </p>
+          <dl className="admin-platform-facts">
+            <div>
+              <dt>Learners in a section</dt>
+              <dd>{enrolled}</dd>
+            </div>
+            <div>
+              <dt>Independent learners</dt>
+              <dd>{independent}</dd>
+            </div>
+            <div>
+              <dt>Teacher accounts awaiting email verification</dt>
+              <dd>{pendingTeachers}</dd>
+            </div>
+          </dl>
+          <p className="teacher-note">
+            Active accounts only; section memberships include archived sections.
           </p>
           <div className="admin-actions">
-            <Link
-              className="teacher-btn primary"
-              href="/admin/manage/teachers?edit=new"
-            >
-              + Welcome a teacher
+            <Link className="teacher-btn" href="/admin/manage/students">
+              Student accounts
             </Link>
-            <Link className="teacher-btn" href="/admin/results">
-              Explore session results →
+            <Link className="teacher-btn" href="/admin/manage/teachers">
+              Teacher accounts
             </Link>
           </div>
-        </div>
-        <div className="admin-welcome-art">
-          <span className="admin-art-orbit" />
-          <img src="/assets/img/knight-logo.png" alt="" />
-          <span className="admin-art-code">&lt;learn /&gt;</span>
-        </div>
-      </section>
-      <div className="teacher-metric-grid">
-        {[
-          [
-            students.length,
-            "♙",
-            "Students",
-            "Learning across KnightCode",
-            "students",
-          ],
-          [
-            teachers.length,
-            "♜",
-            "Teachers",
-            "Guiding the next generation",
-            "teachers",
-          ],
-          [
-            classes.length,
-            "▦",
-            "Sections",
-            "Spaces for shared learning",
-            "classes",
-          ],
-          [
-            ctx.lessons.length,
-            "▤",
-            "Lessons",
-            ctx.levels.length + " level challenges",
-            "lessons",
-          ],
-        ].map(([n, icon, label, note, path]) => (
-          <Link
-            key={String(label)}
-            className="teacher-metric admin-metric-link"
-            href={"/admin/manage/" + path}
-          >
-            <span>{icon}</span>
-            <div>
-              <small>{label}</small>
-              <strong>{n}</strong>
-              <em>{note}</em>
-            </div>
-          </Link>
-        ))}
-      </div>
-      <div className="teacher-grid two">
-        <section className="teacher-card">
-          <CardHead eyebrow="LEARNING PULSE" title="A week of discovery" />
-          <div className="teacher-bars">
-            {week.map((w) => (
-              <div key={w.label}>
-                <span
-                  style={{
-                    height:
-                      Math.max(2, Math.round((w.count / max) * 100)) + "%",
-                  }}
-                />
-                <small>{w.label}</small>
-                <b>{w.count}</b>
-              </div>
-            ))}
-          </div>
+        </section>
+        <section
+          className="teacher-card admin-platform-panel"
+          aria-labelledby="backups-title"
+        >
+          <h3 id="backups-title">Backups and recovery</h3>
           <p className="teacher-note">
-            Game sessions started over the last seven days, including unfinished
-            sessions.
+            Stored recovery points for platform records.
+          </p>
+          {backups ? (
+            <>
+              <dl className="admin-platform-facts">
+                <div>
+                  <dt>Latest available save</dt>
+                  <dd>
+                    {latestSave
+                      ? formatSchoolDateTime(latestSave.snapshot_at)
+                      : "No saved backups yet"}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Latest weekly attempt</dt>
+                  <dd
+                    className={
+                      weeklyAttempt?.status === "failed"
+                        ? "admin-platform-warning"
+                        : undefined
+                    }
+                  >
+                    {weeklyStatus}
+                  </dd>
+                </div>
+              </dl>
+              {weeklyAttempt && (
+                <p className="teacher-note">
+                  Attempt started{" "}
+                  {formatSchoolDateTime(weeklyAttempt.started_at)} (UTC+8).
+                  Check history for backup issues.
+                </p>
+              )}
+              {!latestSave && (
+                <p className="teacher-note">
+                  Create a backup before making changes you may need to undo.
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="teacher-alert error" role="status">
+              Backup status could not be loaded. Open backup history to retry
+              and check the connection.
+            </p>
+          )}
+          <Link className="teacher-btn primary" href="/admin/backup">
+            Open backups
+          </Link>
+        </section>
+        <section
+          className="teacher-card admin-platform-panel"
+          aria-labelledby="usage-title"
+        >
+          <div className="teacher-card-head">
+            <h3 id="usage-title">Game activity over seven days</h3>
+            <Link href="/admin/results">Inspect learning records</Link>
+          </div>
+          {sessions.week.some((day) => day.count > 0) ? (
+            <div
+              className="teacher-bars admin-platform-bars"
+              aria-label="Game sessions started each day"
+            >
+              {sessions.week.map((day) => (
+                <div key={day.label}>
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      height:
+                        Math.max(2, Math.round((day.count / max) * 100)) + "%",
+                    }}
+                  />
+                  <small>{day.label}</small>
+                  <b>{day.count}</b>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="teacher-empty">
+              No game sessions were started in the last seven days.
+            </p>
+          )}
+          <p className="teacher-note">
+            Game starts only, including unfinished sessions. Excludes Python
+            runs; not a measure of mastery.
           </p>
         </section>
-        <section className="teacher-card">
-          <CardHead
-            eyebrow="YOUR COMMUNITY"
-            title="Inside the classroom"
-            href="/admin/manage/classes"
-            label="All sections →"
-          />
-          {classes.slice(0, 4).map((c) => {
-            const t = teachers.find((x) => x.id === c.teacher_id),
-              count = ctx.class_students.filter(
-                (x) => x.class_id === c.id,
-              ).length;
-            return (
-              <Link
-                className="admin-community-row"
-                key={c.id}
-                href={"/admin/classes/" + c.id}
-              >
-                <span className="admin-section-icon">▦</span>
-                <span>
-                  <strong>{sectionLabel(c)}</strong>
-                  <small>
-                    {c.subject} · {t?.name}
-                  </small>
-                </span>
-                <span className="admin-role-badge">{count} students</span>
-              </Link>
-            );
-          })}
-        </section>
-      </div>
-      <div className="teacher-grid two">
-        <section className="teacher-card">
-          <CardHead
-            eyebrow="RECENT LEARNING"
-            title="Every attempt tells a story"
-            href="/admin/results"
-            label="View results →"
-          />
-          <div className="teacher-activity-feed">
-            {recent.length ? (
-              recent.map((s) => {
-                const p = students.find((x) => x.id === s.student_id),
-                  l = ctx.levels.find((x) => x.id === s.level_id);
-                return (
-                  <div key={s.id}>
-                    <span>{s.completed ? "✓" : "◷"}</span>
-                    <p>
-                      <strong>{p?.name ?? "Student"}</strong>{" "}
-                      {s.completed ? "completed" : "started"} Level{" "}
-                      {l?.level_number}
-                      <small>
-                        {new Date(s.started_at).toLocaleString("en-PH", { timeZone: "Asia/Manila" })} ·{" "}
-                        {s.completed
-                          ? s.play_time_seconds + " seconds"
-                          : "Session started"}
-                      </small>
-                    </p>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="teacher-empty">
-                Ready for the first adventure.
-              </div>
-            )}
+        <section
+          className="teacher-card admin-platform-panel"
+          aria-labelledby="content-title"
+        >
+          <h3 id="content-title">Shared learning content</h3>
+          <p className="teacher-note">
+            Content for class assignments and independent learning.
+          </p>
+          <div className="admin-platform-links">
+            <Link href="/admin/manage/lessons">
+              <span>
+                <strong>Lessons and Python activities</strong>
+                <small>
+                  {ctx.lessons.filter((l) => l.active).length} active lessons.
+                  Edit Python activities inside each lesson.
+                </small>
+              </span>
+              <span aria-hidden="true">→</span>
+            </Link>
+            <Link href="/admin/manage/levels">
+              <span>
+                <strong>Game levels</strong>
+                <small>
+                  {
+                    ctx.levels.filter(
+                      (l) => l.active && isGameLevelAvailable(l),
+                    ).length
+                  }{" "}
+                  active, available levels out of {ctx.levels.length} level
+                  records.
+                </small>
+              </span>
+              <span aria-hidden="true">→</span>
+            </Link>
+            <Link href="/admin/manage/classes">
+              <span>
+                <strong>Section oversight</strong>
+                <small>Manage teachers and section memberships.</small>
+              </span>
+              <span aria-hidden="true">→</span>
+            </Link>
           </div>
         </section>
-        <section className="teacher-card admin-next-card">
-          <CardHead
-            eyebrow="KEEP THINGS MOVING"
-            title={
-              "What’s next for " +
-              setting(ctx, "platform_name", "KnightCode") +
-              "?"
-            }
-          />
-          {[
-            [
-              "/admin/manage/lessons",
-              "▤",
-              "Shape the next lesson",
-              "Build the path from curiosity to confidence.",
-            ],
-            [
-              "/admin/manage/teachers?edit=new",
-              "♧",
-              "Bring your teachers aboard",
-              "Create an account and share its one-time password.",
-            ],
-            [
-              "/admin/settings",
-              "◐",
-              "Make KnightCode yours",
-              "Your school, your profile, your preferred look.",
-            ],
-          ].map((x) => (
-            <Link className="admin-community-row" href={x[0]} key={x[0]}>
-              <span className="admin-section-icon">{x[1]}</span>
-              <span>
-                <strong>{x[2]}</strong>
-                <small>{x[3]}</small>
-              </span>
-              <b>→</b>
-            </Link>
-          ))}
-        </section>
       </div>
-    </>
+      <section
+        className="teacher-card admin-platform-tools"
+        aria-labelledby="operations-title"
+      >
+        <div>
+          <h3 id="operations-title">Platform operations</h3>
+          <p className="teacher-note">
+            Audit activity, clear records, and update support details.
+          </p>
+        </div>
+        <div className="admin-actions">
+          <Link className="teacher-btn" href="/admin/audit">
+            Audit history
+          </Link>
+          <Link className="teacher-btn" href="/admin/data">
+            Data management
+          </Link>
+          <Link className="teacher-btn" href="/admin/settings#support">
+            Support settings
+          </Link>
+        </div>
+      </section>
+    </div>
   );
 }

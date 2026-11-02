@@ -1,3 +1,7 @@
+import {
+  pythonCompletionLabel,
+  lessonCompletionLabel,
+} from "@/lib/lesson-completion";
 import Link from "next/link";
 import { requireStudent } from "@/lib/auth";
 import { getStudentLearningData, getViewedLessonIds } from "@/lib/student-data";
@@ -36,9 +40,15 @@ export default async function LessonsPage() {
       <section className="section-heading-row" id="lessons">
         <div>
           <span className="panel-kicker">YOUR CURRICULUM</span>
-          <h2>{data.scope.independent ? "Your independent learning path" : "Lessons assigned by your teacher."}</h2>
+          <h2>
+            {data.scope.independent
+              ? "Your independent learning path"
+              : "Lessons assigned by your teacher."}
+          </h2>
           <p>
-            {data.scope.independent ? "Start with the first lesson. Complete its available games and Python practice to unlock the next lesson." : "Your available lessons and challenges appear here when a teacher assigns them to you or your section."}
+            {data.scope.independent
+              ? "Start with the first lesson. Complete its available games and Python practice to unlock the next lesson."
+              : "Your available lessons and challenges appear here when a teacher assigns them to you or your section."}
           </p>
         </div>
       </section>
@@ -64,8 +74,10 @@ export default async function LessonsPage() {
               (level) => (progress.get(level.id)?.attempts ?? 0) > 0,
             ) ||
             viewed.has(lesson.id);
-          const status =
-            pct === 100 ? "Completed" : started ? "In Progress" : "Not Started";
+          const status = lessonCompletionLabel({
+            ...completion,
+            started: completion.started || started,
+          });
           return (
             <article className="lesson-modern-card" key={lesson.id}>
               <div className="lesson-card-top">
@@ -91,7 +103,15 @@ export default async function LessonsPage() {
               <div className="card-progress">
                 <div>
                   <span>
-                    {completion.gamesDone} / {completion.gamesTotal} available game levels{completion.pythonRequired ? (completion.pythonDone ? " + Python submitted" : " + Python pending") : ""}
+                    {completion.gamesDone} / {completion.gamesTotal} available
+                    game levels
+                    {completion.pythonRequired
+                      ? " + " +
+                        pythonCompletionLabel(
+                          completion.pythonStatus,
+                          data.scope.independent,
+                        )
+                      : ""}
                   </span>
                   <b>{pct}%</b>
                 </div>
@@ -101,13 +121,22 @@ export default async function LessonsPage() {
               </div>
               <Link
                 className={`btn ${started ? "btn-secondary" : "btn-primary"} btn-block`}
-                href={`/lesson/${lesson.id}`}
+                href={
+                  completion.pythonStatus === "needs_revision" ||
+                  completion.pythonStatus === "awaiting_review"
+                    ? `/lesson/${lesson.id}/python`
+                    : `/lesson/${lesson.id}`
+                }
               >
-                {pct === 100
-                  ? "Review Lesson"
-                  : started
-                    ? "Continue Lesson"
-                    : "Start Lesson"}{" "}
+                {completion.pythonStatus === "needs_revision"
+                  ? "Revise Python activity"
+                  : completion.pythonStatus === "awaiting_review"
+                    ? "View submission"
+                    : pct === 100
+                      ? "Review Lesson"
+                      : started
+                        ? "Continue Lesson"
+                        : "Start Lesson"}{" "}
                 <span>→</span>
               </Link>
             </article>

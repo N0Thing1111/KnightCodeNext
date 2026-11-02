@@ -5,7 +5,11 @@ import Link from "next/link";
 import { requireTeacher } from "@/lib/auth";
 import { getTeacherContext } from "@/lib/teacher-data";
 import { Alerts, Hero } from "@/components/teacher-ui";
-import { saveClass, setClassStatus, deleteUnusedClass } from "@/app/actions/teacher";
+import {
+  saveClass,
+  setClassStatus,
+  deleteUnusedClass,
+} from "@/app/actions/teacher";
 export default async function Page({
   searchParams,
 }: {
@@ -149,13 +153,19 @@ export default async function Page({
                         name="status"
                         value={c.status === "active" ? "archived" : "active"}
                       />
-                      <SectionArchiveButton archived={c.status === "archived"} name={sectionLabel(c)} className="teacher-btn small danger" />
+                      <SectionArchiveButton
+                        archived={c.status === "archived"}
+                        name={sectionLabel(c)}
+                        className="teacher-btn small danger"
+                      />
                     </form>
-                    {count === 0 && <form action={deleteUnusedClass}>
-                      <input type="hidden" name="id" value={c.id} />
-                      <input type="hidden" name="confirm_delete" value="1" />
-                      <SectionDeleteButton name={sectionLabel(c)} />
-                    </form>}
+                    {count === 0 && (
+                      <form action={deleteUnusedClass}>
+                        <input type="hidden" name="id" value={c.id} />
+                        <input type="hidden" name="confirm_delete" value="1" />
+                        <SectionDeleteButton name={sectionLabel(c)} />
+                      </form>
+                    )}
                   </div>
                 </article>
               );
@@ -165,8 +175,33 @@ export default async function Page({
           )}
         </div>
       </section>
-      {q.import && (ctx.classes.some(c => String(c.id) === q.import && c.status === "active") ? <ImportBox classId={q.import} /> : <p className="teacher-note">Restore the section before importing students.</p>)}
+      {q.import &&
+        (ctx.classes.some(
+          (c) => String(c.id) === q.import && c.status === "active",
+        ) ? (
+          <ImportBox classId={q.import} />
+        ) : (
+          <p className="teacher-note">
+            Restore the section before importing students.
+          </p>
+        ))}
     </>
   );
 }
-function ImportBox({ classId }: { classId: string }) { return <section className="teacher-card"><h3>Invite students to your class</h3><p>Students now register with their own email and password. Share your class code, then approve their enrollment requests.</p><Link className="teacher-btn" href={"/teacher/class/"+classId+"#enrollment"}>Open invitations</Link></section>; }
+function ImportBox({ classId }: { classId: string }) {
+  return (
+    <section className="teacher-card">
+      <h3>Invite students to your class</h3>
+      <p>
+        Students now register with their own email and password. Share your
+        class code, then approve their enrollment requests.
+      </p>
+      <Link
+        className="teacher-btn"
+        href={"/teacher/class/" + classId + "#enrollment"}
+      >
+        Open invitations
+      </Link>
+    </section>
+  );
+}

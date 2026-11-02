@@ -2,20 +2,39 @@ import Link from "next/link";
 import { AdminHero } from "@/components/admin-ui";
 
 const views = [
-  { key: "history", label: "Run history cleanup", href: "/admin/data?scope=history" },
-  { key: "learning", label: "Learning reset", href: "/admin/data?scope=learning" },
-  { key: "school", label: "Platform reset", href: "/admin/data?scope=platform" },
+  {
+    key: "history",
+    label: "Run history cleanup",
+    href: "/admin/data?scope=history",
+  },
+  {
+    key: "learning",
+    label: "Learning reset",
+    href: "/admin/data?scope=learning",
+  },
+  {
+    key: "school",
+    label: "Platform reset",
+    href: "/admin/data?scope=platform",
+  },
   { key: "backup", label: "Backups & restore", href: "/admin/backup" },
 ] as const;
 
-export function AdminDataNavigation({ active }: { active: typeof views[number]["key"] }) {
+export function AdminDataNavigation({
+  active,
+}: {
+  active: (typeof views)[number]["key"];
+}) {
   return (
     <>
       <AdminHero
         title="Data Management"
-        description="Save or restore platform data, clean up run history, or reset learning and platform records."
+        description="Back up, restore, or clear platform records."
       />
-      <nav className="teacher-card admin-data-navigation" aria-label="Data management sections">
+      <nav
+        className="teacher-card admin-data-navigation"
+        aria-label="Data management sections"
+      >
         <div className="admin-data-links">
           {views.map(({ key, label, href }) => (
             <Link
@@ -28,7 +47,10 @@ export function AdminDataNavigation({ active }: { active: typeof views[number]["
             </Link>
           ))}
         </div>
-        <p className="admin-note">Run history cleanup preserves learning progress and feedback. The reset sections can erase those records. Save a backup before clearing data.</p>
+        <p className="admin-note">
+          Cleanup keeps progress and feedback. Resets can erase them. Back up
+          first.
+        </p>
       </nav>
     </>
   );

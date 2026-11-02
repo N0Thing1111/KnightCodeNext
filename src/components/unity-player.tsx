@@ -17,14 +17,20 @@ export function UnityPlayer({
   const archived = useSectionArchive();
   const closeForArchive = useRef<(() => Promise<void>) | null>(null);
   const archiveRejected = useRef(false);
-  useEffect(() => { if (archived) void closeForArchive.current?.(); }, [archived]);
+  useEffect(() => {
+    if (archived) void closeForArchive.current?.();
+  }, [archived]);
   const [fullscreen, setFullscreen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [viewMessage, setViewMessage] = useState("");
 
   useEffect(() => {
-    const changed = () => setFullscreen((document.fullscreenElement === shell.current || document.fullscreenElement === document.documentElement));
+    const changed = () =>
+      setFullscreen(
+        document.fullscreenElement === shell.current ||
+          document.fullscreenElement === document.documentElement,
+      );
     document.addEventListener("fullscreenchange", changed);
     return () => {
       document.removeEventListener("fullscreenchange", changed);
@@ -40,34 +46,57 @@ export function UnityPlayer({
   }, []);
 
   async function toggleFullscreen() {
-    if ((document.fullscreenElement === shell.current || document.fullscreenElement === document.documentElement)) {
-      try { await document.exitFullscreen(); } catch { setViewMessage("Use your browser's fullscreen exit control to return."); }
+    if (
+      document.fullscreenElement === shell.current ||
+      document.fullscreenElement === document.documentElement
+    ) {
+      try {
+        await document.exitFullscreen();
+      } catch {
+        setViewMessage("Use your browser's fullscreen exit control to return.");
+      }
       return;
     }
-    if (expanded) { setExpanded(false); setViewMessage(""); return; }
+    if (expanded) {
+      setExpanded(false);
+      setViewMessage("");
+      return;
+    }
     setShowDetails(false);
     setViewMessage("");
     try {
-      if (!document.documentElement.requestFullscreen) throw Error("Fullscreen unavailable");
+      if (!document.documentElement.requestFullscreen)
+        throw Error("Fullscreen unavailable");
       // Unity creates its mobile input under body before focusing it. The whole
       // document must be in fullscreen so that initial focus is permitted.
       await document.documentElement.requestFullscreen();
     } catch {
       setExpanded(true);
-      setViewMessage("Game expanded to fit this browser window. Browser fullscreen is unavailable here.");
+      setViewMessage(
+        "Game expanded to fit this browser window. Browser fullscreen is unavailable here.",
+      );
     }
   }
 
   async function toggleDetails() {
-    if ((document.fullscreenElement === shell.current || document.fullscreenElement === document.documentElement)) {
-      try { await document.exitFullscreen(); } catch { setViewMessage("Exit fullscreen first to view the level details."); return; }
+    if (
+      document.fullscreenElement === shell.current ||
+      document.fullscreenElement === document.documentElement
+    ) {
+      try {
+        await document.exitFullscreen();
+      } catch {
+        setViewMessage("Exit fullscreen first to view the level details.");
+        return;
+      }
     }
     setExpanded(false);
     setViewMessage("");
-    setShowDetails(value => !value);
+    setShowDetails((value) => !value);
   }
 
   const [status, setStatus] = useState("Loading game…");
+  const [canRetry, setCanRetry] = useState(false);
   const [levelStats, setLevelStats] = useState(initial);
   const [session, setSession] = useState<Record<
     string,
@@ -91,7 +120,7 @@ export function UnityPlayer({
     };
 
     const bridge = document.createElement("script");
-    bridge.src = "/assets/js/performance-bridge.js?v=20261019-section-archive";
+    bridge.src = "/assets/js/performance-bridge.js?v=20261102-save-status";
     bridge.async = true;
     bridge.dataset.knightcodeRuntime = "bridge";
 
@@ -108,9 +137,15 @@ export function UnityPlayer({
           keepalive: true,
         });
         const data = await response.json();
-        if (data.code === "SECTION_ARCHIVED") { archiveRejected.current = true; window.dispatchEvent(new Event("knightcode:section-archived")); }
+        if (data.code === "SECTION_ARCHIVED") {
+          archiveRejected.current = true;
+          window.dispatchEvent(new Event("knightcode:section-archived"));
+        }
         if (!response.ok || !data.ok)
-          throw Object.assign(new Error(data.message || "Unable to save progress."), { status: response.status, code: data.code });
+          throw Object.assign(
+            new Error(data.message || "Unable to save progress."),
+            { status: response.status, code: data.code },
+          );
         if (!disposed) {
           setLevelStats(data.level);
           setSession(data.session);
@@ -121,8 +156,11 @@ export function UnityPlayer({
       window.KnightCodeGame = window.createPerformanceBridge(
         save,
         level.level_number,
-        (message) => {
-          if (!disposed) setStatus(message);
+        (message, retryable) => {
+          if (!disposed) {
+            setStatus(message);
+            setCanRetry(retryable === true);
+          }
         },
         async (payload) => {
           const body = JSON.stringify({ ...payload, level_id: level.id });
@@ -134,16 +172,21 @@ export function UnityPlayer({
             keepalive: new TextEncoder().encode(body).byteLength < 60000,
           });
           const data = await response.json();
-        if (data.code === "SECTION_ARCHIVED") { archiveRejected.current = true; window.dispatchEvent(new Event("knightcode:section-archived")); }
+          if (data.code === "SECTION_ARCHIVED") {
+            archiveRejected.current = true;
+            window.dispatchEvent(new Event("knightcode:section-archived"));
+          }
           if (!response.ok || !data.ok)
-            throw Object.assign(new Error(data.message || "Unable to save Run history."), { status: response.status, code: data.code });
+            throw Object.assign(
+              new Error(data.message || "Unable to save Run history."),
+              { status: response.status, code: data.code },
+            );
           return data;
         },
       );
 
       loader = document.createElement("script");
-      loader.src =
-        `/game_build/Build/game_build.loader.js?v=${process.env.NEXT_PUBLIC_UNITY_BUILD_VERSION}`;
+      loader.src = `/game_build/Build/game_build.loader.js?v=${process.env.NEXT_PUBLIC_UNITY_BUILD_VERSION}`;
       loader.async = true;
       loader.dataset.knightcodeRuntime = "loader";
       loader.onload = async () => {
@@ -154,12 +197,9 @@ export function UnityPlayer({
           const created = await window.createUnityInstance(
             canvas,
             {
-              dataUrl:
-                `/game_build/Build/game_build.data?v=${process.env.NEXT_PUBLIC_UNITY_BUILD_VERSION}`,
-              frameworkUrl:
-                `/game_build/Build/game_build.framework.js?v=${process.env.NEXT_PUBLIC_UNITY_BUILD_VERSION}`,
-              codeUrl:
-                `/game_build/Build/game_build.wasm?v=${process.env.NEXT_PUBLIC_UNITY_BUILD_VERSION}`,
+              dataUrl: `/game_build/Build/game_build.data?v=${process.env.NEXT_PUBLIC_UNITY_BUILD_VERSION}`,
+              frameworkUrl: `/game_build/Build/game_build.framework.js?v=${process.env.NEXT_PUBLIC_UNITY_BUILD_VERSION}`,
+              codeUrl: `/game_build/Build/game_build.wasm?v=${process.env.NEXT_PUBLIC_UNITY_BUILD_VERSION}`,
               streamingAssetsUrl: "/game_build/StreamingAssets",
               companyName: "DefaultCompany",
               productName: "KnightCode",
@@ -198,6 +238,7 @@ export function UnityPlayer({
 
     const shutdown = () => {
       if (shutdownPromise) return shutdownPromise;
+      setCanRetry(false);
       disposed = true;
       window.removeEventListener("beforeunload", beforeUnload);
       document.removeEventListener("click", leaveGamePage, true);
@@ -224,12 +265,34 @@ export function UnityPlayer({
     };
 
     closeForArchive.current = async () => {
-      if (document.activeElement instanceof HTMLElement && shell.current?.contains(document.activeElement)) document.activeElement.blur();
-      setStatus("Section archived. Saving existing progress before closing the game...");
-      const saved = await Promise.race([window.KnightCodeGame?.flush() ?? Promise.resolve(true), new Promise<boolean>(resolve => setTimeout(() => resolve(false), 10000))]);
-      if (!saved) { setStatus("Section archived. Some progress is still waiting to save. Use Retry saving; existing work has a 15-minute save window."); return; }
+      setCanRetry(false);
+      if (
+        document.activeElement instanceof HTMLElement &&
+        shell.current?.contains(document.activeElement)
+      )
+        document.activeElement.blur();
+      setStatus(
+        "Section archived. Saving existing progress before closing the game...",
+      );
+      const saved = await Promise.race([
+        window.KnightCodeGame?.flush() ?? Promise.resolve(true),
+        new Promise<boolean>((resolve) =>
+          setTimeout(() => resolve(false), 10000),
+        ),
+      ]);
+      if (!saved) {
+        setCanRetry(true);
+        setStatus(
+          "Section archived. Some progress is still waiting to save. Use Retry saving; existing work has a 15-minute save window.",
+        );
+        return;
+      }
       await shutdown();
-      setStatus(archiveRejected.current ? "Section archived. New or late records were rejected; previously saved progress is preserved." : "Section archived. Pending progress saved. Return to your lesson to view your records.");
+      setStatus(
+        archiveRejected.current
+          ? "Section archived. New or late records were rejected; previously saved progress is preserved."
+          : "Section archived. Pending progress saved. Return to your lesson to view your records.",
+      );
     };
     const leaveGamePage = (event: MouseEvent) => {
       if (
@@ -268,6 +331,7 @@ export function UnityPlayer({
           ),
         ]);
         if (!saved) {
+          setCanRetry(true);
           setStatus(
             "Progress is still waiting to save. Keep this page open, use Retry saving, then try leaving again.",
           );
@@ -297,48 +361,98 @@ export function UnityPlayer({
         data-view={showDetails ? "details" : "game"}
         data-expanded={expanded || fullscreen}
         aria-label="KnightCode game area"
-        onKeyDown={event => { if (event.key === "Escape" && expanded) { setExpanded(false); setViewMessage(""); } }}
+        onKeyDown={(event) => {
+          if (event.key === "Escape" && expanded) {
+            setExpanded(false);
+            setViewMessage("");
+          }
+        }}
       >
         <div className={"game-toolbar " + styles.toolbar}>
           <div className={styles.title}>
             <a href={"/lesson/" + level.lesson_id}>Back to lesson</a>
-            <strong>Level {level.level_number} · {level.title}</strong>
+            <strong>
+              Level {level.level_number} · {level.title}
+            </strong>
           </div>
           <div className={styles.controls}>
-            <button type="button" className={styles.detailsToggle} onClick={() => void toggleDetails()}>{showDetails ? "Back to game" : "Level details"}</button>
-            <button type="button" onClick={() => void toggleFullscreen()} aria-pressed={fullscreen || expanded}>{fullscreen ? "Exit fullscreen" : expanded ? "Exit expanded view" : "Fullscreen"}</button>
+            <button
+              type="button"
+              className={styles.detailsToggle}
+              onClick={() => void toggleDetails()}
+            >
+              {showDetails ? "Back to game" : "Level details"}
+            </button>
+            <button
+              type="button"
+              onClick={() => void toggleFullscreen()}
+              aria-pressed={fullscreen || expanded}
+            >
+              {fullscreen
+                ? "Exit fullscreen"
+                : expanded
+                  ? "Exit expanded view"
+                  : "Fullscreen"}
+            </button>
           </div>
         </div>
-        {viewMessage && <p className={styles.viewMessage} role="status">{viewMessage}</p>}
-        {archived && <p className={styles.viewMessage} role="status">This section is archived. New attempts are closed. Return to your lesson after saving; reload after the section is restored.</p>}
-        <div className={styles.viewport} style={archived ? { pointerEvents: "none", visibility: "hidden" } : undefined}>
-        <div className={"game-stage " + styles.stage} id="unity-container">
-          <canvas
-            id="unity-canvas"
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              background: "#000",
-              display: "block",
-            }}
-          />
-        </div>
-        <div className={styles.rotate}>
-          <span className={styles.rotateIcon} aria-hidden="true">↻</span>
-          <h2>Turn your phone sideways</h2>
-          <p>Landscape gives the puzzle and code editor more room. Rotate your phone to play, or open Level details above.</p>
-        </div>
+        {viewMessage && (
+          <p className={styles.viewMessage} role="status">
+            {viewMessage}
+          </p>
+        )}
+        {archived && (
+          <p className={styles.viewMessage} role="status">
+            This section is archived. New attempts are closed. Return to your
+            lesson after saving; reload after the section is restored.
+          </p>
+        )}
+        <div
+          className={styles.viewport}
+          style={
+            archived
+              ? { pointerEvents: "none", visibility: "hidden" }
+              : undefined
+          }
+        >
+          <div className={"game-stage " + styles.stage} id="unity-container">
+            <canvas
+              id="unity-canvas"
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                background: "#000",
+                display: "block",
+              }}
+            />
+          </div>
+          <div className={styles.rotate}>
+            <span className={styles.rotateIcon} aria-hidden="true">
+              ↻
+            </span>
+            <h2>Turn your phone sideways</h2>
+            <p>
+              Landscape gives the puzzle and code editor more room. Rotate your
+              phone to play, or open Level details above.
+            </p>
+          </div>
         </div>
         <div className={"game-statusbar " + styles.statusbar}>
           <span role="status">{status}</span>
-          <button
-            type="button"
-            onClick={() => archived ? void closeForArchive.current?.() : window.KnightCodeGame?.retryPending()}
-          >
-            Retry saving
-          </button>
+          {canRetry && (
+            <button
+              type="button"
+              onClick={() =>
+                archived
+                  ? void closeForArchive.current?.()
+                  : window.KnightCodeGame?.retryPending()
+              }
+            >
+              Retry saving
+            </button>
+          )}
         </div>
       </section>
       <section className="play-bottom-grid">

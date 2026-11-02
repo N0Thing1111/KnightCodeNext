@@ -29,7 +29,6 @@ export function StudentShell({
   student: Profile;
   stats: {
     level: number;
-    rank: string;
     xp: number;
     xpPct: number;
     streak: number;
@@ -41,7 +40,11 @@ export function StudentShell({
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
-  const { items, setItems, refreshNotifications } = useNotifications(notifications, "/api/notifications", pathname);
+  const { items, setItems, refreshNotifications } = useNotifications(
+    notifications,
+    "/api/notifications",
+    pathname,
+  );
   const unread = useMemo(
     () => items.filter((item) => !item.is_read).length,
     [items],
@@ -149,7 +152,27 @@ export function StudentShell({
               onClick={() => setMobileOpen(false)}
               className={`sidebar-link ${active(href) ? "active" : ""}`}
             >
-              <span className="nav-icon">{href === "/join" ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3" /><path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M21 21v-2a6 6 0 0 0-4-5.65" /></svg> : icon}</span>
+              <span className="nav-icon">
+                {href === "/join" ? (
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    <circle cx="9" cy="8" r="3" />
+                    <path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M21 21v-2a6 6 0 0 0-4-5.65" />
+                  </svg>
+                ) : (
+                  icon
+                )}
+              </span>
               <span>{label}</span>
             </Link>
           ))}
@@ -192,7 +215,7 @@ export function StudentShell({
           )}
           <span>
             <strong>{student.name}</strong>
-            <small>{stats.rank}</small>
+            <small>Level {stats.level}</small>
           </span>
           <b>›</b>
         </Link>
@@ -220,11 +243,25 @@ export function StudentShell({
           <div className="notification-wrap">
             <button
               className={`icon-btn notification-trigger ${unread ? "has-unread" : ""}`}
-              onClick={() => { setNoticeOpen(!noticeOpen); if (!noticeOpen) void refreshNotifications(); }}
+              onClick={() => {
+                setNoticeOpen(!noticeOpen);
+                if (!noticeOpen) void refreshNotifications();
+              }}
               aria-label="Notifications"
               aria-expanded={noticeOpen}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                focusable="false"
+              >
                 <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
                 <path d="M10 21h4" />
               </svg>
@@ -277,7 +314,9 @@ export function StudentShell({
                         <strong>{notice.title}</strong>
                         <small>{notice.message}</small>
                         <time>
-                          {new Date(notice.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}
+                          {new Date(notice.created_at).toLocaleString("en-PH", {
+                            timeZone: "Asia/Manila",
+                          })}
                         </time>
                       </span>
                       {!notice.is_read && <em aria-label="Unread" />}
@@ -305,7 +344,7 @@ export function StudentShell({
             )}
             <span className="profile-copy">
               <strong>{student.name}</strong>
-              <small>{stats.rank}</small>
+              <small>Level {stats.level}</small>
             </span>
             <span className="chevron">⌄</span>
           </Link>

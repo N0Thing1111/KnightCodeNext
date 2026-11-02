@@ -44,7 +44,7 @@ const created = await supabase.auth.admin.createUser({
   password,
   email_confirm: true,
   app_metadata: { role: "admin" },
-      user_metadata: { role: "admin", name },
+  user_metadata: { role: "admin", name },
 });
 if (created.error || !created.data.user)
   throw created.error || new Error("Admin creation failed.");

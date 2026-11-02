@@ -41,15 +41,13 @@ export async function POST(r: NextRequest) {
       .maybeSingle();
   if (!p || p.role !== "admin" || !p.active) {
     await s.auth.signOut();
-    return fail(r, "This account cannot access school administration.");
+    return fail(r, "This account cannot access platform administration.");
   }
-  await createAdminClient()
-    .from("admin_audit_log")
-    .insert({
-      admin_id: user!.id,
-      action: "sign_in",
-      entity: "admin",
-      record_id: user!.id,
-    });
+  await createAdminClient().from("admin_audit_log").insert({
+    admin_id: user!.id,
+    action: "sign_in",
+    entity: "admin",
+    record_id: user!.id,
+  });
   return response;
 }

@@ -15,7 +15,10 @@ import {
 } from "@/lib/teacher-data";
 import { Back } from "@/components/teacher-ui";
 import { StudentPythonRuns } from "@/components/student-python-runs";
-import { MonitoringOutcomes, MonitoringGuide } from "@/components/monitoring-outcomes";
+import {
+  MonitoringOutcomes,
+  MonitoringGuide,
+} from "@/components/monitoring-outcomes";
 export default async function Page({
   params,
   searchParams,
@@ -48,11 +51,22 @@ export default async function Page({
       )
       .slice(0, 10);
   const [activityResult, achievementResult] = await Promise.all([
-    createAdminClient().from("student_activity").select("*").eq("student_id", id).order("created_at", { ascending: false }).order("id").limit(30),
-    createAdminClient().from("student_achievements").select("*,achievements(*)").eq("student_id", id),
+    createAdminClient()
+      .from("student_activity")
+      .select("*")
+      .eq("student_id", id)
+      .order("created_at", { ascending: false })
+      .order("id")
+      .limit(30),
+    createAdminClient()
+      .from("student_achievements")
+      .select("*,achievements(*)")
+      .eq("student_id", id),
   ]);
-  if (activityResult.error || achievementResult.error) throw Error("Unable to load student activity.");
-  const activity = activityResult.data || [], ach = achievementResult.data || [];
+  if (activityResult.error || achievementResult.error)
+    throw Error("Unable to load student activity.");
+  const activity = activityResult.data || [],
+    ach = achievementResult.data || [];
   const sessionPage = Math.max(
     1,
     Math.min(100000, Math.floor(Number(q.sessions)) || 1),
@@ -71,12 +85,34 @@ export default async function Page({
     .range((sessionPage - 1) * 50, sessionPage * 50 - 1);
   if (sessionError) throw new Error("Unable to load student sessions.");
   const sessions = savedSessions ?? [];
-  const pythonPage = Math.max(1, Math.min(10000, Math.floor(Number(q.pythonPage)) || 1));
-  const assignedLessons = new Set(ctx.assignments.filter(a => !a.level_id && (a.student_id === id || cls.some(c => c!.id === a.class_id))).map(a => Number(a.lesson_id)));
-  const completedLessons = ctx.lessons.filter(l => assignedLessons.has(Number(l.id)) && lessonCompletion(Number(l.id), id, ctx.levels, ctx.progress, ctx.python.activities, ctx.python.submissions).complete).length;
+  const pythonPage = Math.max(
+    1,
+    Math.min(10000, Math.floor(Number(q.pythonPage)) || 1),
+  );
+  const assignedLessons = new Set(
+    ctx.assignments
+      .filter(
+        (a) =>
+          !a.level_id &&
+          (a.student_id === id || cls.some((c) => c!.id === a.class_id)),
+      )
+      .map((a) => Number(a.lesson_id)),
+  );
+  const completedLessons = ctx.lessons.filter(
+    (l) =>
+      assignedLessons.has(Number(l.id)) &&
+      lessonCompletion(
+        Number(l.id),
+        id,
+        ctx.levels,
+        ctx.progress,
+        ctx.python.activities,
+        ctx.python.submissions,
+      ).complete,
+  ).length;
   return (
     <>
-      <Back href="/teacher/monitoring" label="Back to monitoring" />
+      <Back href="/teacher/students" label="Back to students" />
       {q.error && <div className="teacher-alert error">{q.error}</div>}
       <section className="student-hero">
         <div className="student-profile-large">
@@ -117,20 +153,25 @@ export default async function Page({
         </div>
       </section>
       <section className="teacher-card">
-        <h3>Monitoring status: {summary.status}</h3>
+        <h3>Student status: {summary.status}</h3>
         <p>{summary.status_reason}</p>
       </section>
       <MonitoringGuide />
       <nav className="run-session-links" aria-label="Student run history">
-        <Link className="teacher-btn" href="#level-sessions">Game sessions</Link>
-        <Link className="teacher-btn" href="#python-runs">Python runs</Link>
+        <Link className="teacher-btn" href="#level-sessions">
+          Game sessions
+        </Link>
+        <Link className="teacher-btn" href="#python-runs">
+          Python runs
+        </Link>
       </nav>
       <section className="teacher-card">
         <Head eyebrow="ACCOUNT ACCESS" title="Sign-in credentials" />
         <p className="teacher-note">
-          Students sign in with their username or email. If they forget their password,
-          they can select <strong>Forgot password?</strong> on the student sign-in page
-          and recover their account through their own email. Teachers cannot reset student passwords.
+          Students sign in with their username or email. If they forget their
+          password, they can select <strong>Forgot password?</strong> on the
+          student sign-in page and recover their account through their own
+          email. Teachers cannot reset student passwords.
         </p>
       </section>
       <div className="teacher-grid three">
@@ -139,15 +180,26 @@ export default async function Page({
           <div className="detail-stat-list">
             <Row a="Lessons completed" b={completedLessons} />
             <Row a="Challenges completed" b={summary.completed_levels} />
-            <Row a="Game level attempts (starts/restarts)" b={summary.attempts} />
-            <Row a="Game code runs" b={<MonitoringOutcomes outcomes={summary.game_outcomes} />} />
-            <Row a="Python executions" b={<MonitoringOutcomes outcomes={summary.python_outcomes} />} />
+            <Row
+              a="Game level attempts (starts/restarts)"
+              b={summary.attempts}
+            />
+            <Row
+              a="Game code runs"
+              b={<MonitoringOutcomes outcomes={summary.game_outcomes} />}
+            />
+            <Row
+              a="Python executions"
+              b={<MonitoringOutcomes outcomes={summary.python_outcomes} />}
+            />
             <Row a="Mistakes" b={summary.mistakes} />
             <Row
               a="Last activity"
               b={
                 summary.last_activity
-                  ? new Date(summary.last_activity).toLocaleString("en-PH", { timeZone: "Asia/Manila" })
+                  ? new Date(summary.last_activity).toLocaleString("en-PH", {
+                      timeZone: "Asia/Manila",
+                    })
                   : "Never"
               }
             />
@@ -171,7 +223,7 @@ export default async function Page({
             <div className="teacher-empty">No achievements earned yet.</div>
           )}
         </section>
-        <section className="teacher-card">
+        <section className="teacher-card" id="assigned-work">
           <Head eyebrow="ASSIGNMENTS" title="Recent" />
           {assignments.length ? (
             assignments.map((a) => {
@@ -218,7 +270,11 @@ export default async function Page({
               return (
                 <div className="timeline-item" key={a.id}>
                   <span />
-                  <time>{new Date(a.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}</time>
+                  <time>
+                    {new Date(a.created_at).toLocaleString("en-PH", {
+                      timeZone: "Asia/Manila",
+                    })}
+                  </time>
                   <div>
                     <strong>
                       {String(a.action_type).replaceAll("_", " ")}
@@ -295,7 +351,9 @@ export default async function Page({
                   <td>{p.xp_earned ?? 0}</td>
                   <td>
                     {p.completed_at
-                      ? new Date(p.completed_at).toLocaleDateString("en-PH", { timeZone: "Asia/Manila" })
+                      ? new Date(p.completed_at).toLocaleDateString("en-PH", {
+                          timeZone: "Asia/Manila",
+                        })
                       : "—"}
                   </td>
                 </tr>
@@ -343,7 +401,11 @@ export default async function Page({
                       <td>{formatTime(s.play_time_seconds)}</td>
                       <td>{s.completed_lines ?? s.lines_used}</td>
                       <td>{s.code_mode ?? "—"}</td>
-                      <td>{new Date(s.started_at).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}</td>
+                      <td>
+                        {new Date(s.started_at).toLocaleString("en-PH", {
+                          timeZone: "Asia/Manila",
+                        })}
+                      </td>
                       <td>
                         <Link
                           className="teacher-btn"
@@ -391,7 +453,11 @@ export default async function Page({
           </nav>
         )}
       </section>
-      <StudentPythonRuns studentId={id} page={pythonPage} sessionPage={sessionPage} />
+      <StudentPythonRuns
+        studentId={id}
+        page={pythonPage}
+        sessionPage={sessionPage}
+      />
     </>
   );
 }

@@ -6,7 +6,15 @@ import path from "node:path";
 // Recomputed at startup/build time: replacing the Unity export changes all asset URLs together.
 const unityBuildHash = createHash("sha256");
 for (const extension of ["loader.js", "framework.js", "data", "wasm"]) {
-  unityBuildHash.update(readFileSync(path.join(process.cwd(), "public/game_build/Build", `game_build.${extension}`)));
+  unityBuildHash.update(
+    readFileSync(
+      path.join(
+        process.cwd(),
+        "public/game_build/Build",
+        `game_build.${extension}`,
+      ),
+    ),
+  );
 }
 const unityBuildVersion = unityBuildHash.digest("hex").slice(0, 16);
 

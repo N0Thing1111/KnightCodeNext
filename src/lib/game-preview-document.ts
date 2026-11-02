@@ -1,12 +1,30 @@
 import type { Level } from "@/types/database";
 
-export type PreviewLevel = Pick<Level, "level_number" | "title" | "build_available" | "starter_code_enabled" | "starter_code_locked" | "starter_code_template">;
+export type PreviewLevel = Pick<
+  Level,
+  | "level_number"
+  | "title"
+  | "build_available"
+  | "starter_code_enabled"
+  | "starter_code_locked"
+  | "starter_code_template"
+>;
 
 // Rendered only inside the staff preview iframe. There is no student recording bridge.
-export function gamePreviewDocument(level: PreviewLevel, origin: string, version: string) {
+export function gamePreviewDocument(
+  level: PreviewLevel,
+  origin: string,
+  version: string,
+) {
   const base = new URL("/game_build/", origin).href;
-  const json = (value: unknown) => JSON.stringify(value).replaceAll("<", "\\u003c");
-  const asset = (extension: string) => base + "Build/game_build." + extension + "?v=" + encodeURIComponent(version);
+  const json = (value: unknown) =>
+    JSON.stringify(value).replaceAll("<", "\\u003c");
+  const asset = (extension: string) =>
+    base +
+    "Build/game_build." +
+    extension +
+    "?v=" +
+    encodeURIComponent(version);
   const settings = {
     levelNumber: level.level_number,
     enabled: level.starter_code_enabled,

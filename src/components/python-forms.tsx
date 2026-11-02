@@ -32,7 +32,9 @@ export function PythonForm({
         try {
           // Convert the visible 1–5 rubric to the unchanged 0–4 API contract.
           // This preserves existing database reviews and backup compatibility.
-          const body = { ...data, op,
+          const body = {
+            ...data,
+            op,
             logic: storedPythonRating(Number(data.logic)),
             application: storedPythonRating(Number(data.application)),
             correctness: storedPythonRating(Number(data.correctness)),
@@ -67,15 +69,18 @@ export function PythonActivitySettings({
 }:
   | { activity: PythonActivity; lessonId?: never }
   | { activity?: never; lessonId: number }) {
-  const [content, setContent] = useState<PythonContent>(() => activity?.content ?? {
-    title: "",
-    concept: "",
-    instructions: "",
-    guide: "",
-    starter: "",
-    extension: "",
-    cases: [{ label: "Example 1", inputs: [], expected: "" }],
-  });
+  const [content, setContent] = useState<PythonContent>(
+    () =>
+      activity?.content ?? {
+        title: "",
+        concept: "",
+        instructions: "",
+        guide: "",
+        starter: "",
+        extension: "",
+        cases: [{ label: "Example 1", inputs: [], expected: "" }],
+      },
+  );
   const [published, setPublished] = useState(activity?.published ?? false);
   const [createdId, setCreatedId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
@@ -112,11 +117,13 @@ export function PythonActivitySettings({
           const j = await r.json();
           if (!r.ok) throw Error(j.error);
           if (!activityId) setCreatedId(j.data.id);
-          setMessage(activityId
-            ? "Saved a new activity revision. Earlier Runs keep their original instructions."
-            : published
-              ? "Python activity added and published for this lesson."
-              : "Python activity added as unpublished. Publish it when it is ready for students.");
+          setMessage(
+            activityId
+              ? "Saved a new activity revision. Earlier Runs keep their original instructions."
+              : published
+                ? "Python activity added and published for this lesson."
+                : "Python activity added as unpublished. Publish it when it is ready for students.",
+          );
           router.refresh();
         } catch (e) {
           setMessage((e as Error).message);
@@ -191,16 +198,33 @@ export function PythonActivitySettings({
           <button
             type="button"
             disabled={busy || content.cases.length <= 1}
-            onClick={() => setContent({ ...content, cases: content.cases.filter((_, i) => i !== index) })}
-          >Remove example {index + 1}</button>
+            onClick={() =>
+              setContent({
+                ...content,
+                cases: content.cases.filter((_, i) => i !== index),
+              })
+            }
+          >
+            Remove example {index + 1}
+          </button>
         </fieldset>
       ))}
       <button
         type="button"
         disabled={busy || content.cases.length >= 10}
-        onClick={() => setContent({ ...content, cases: [...content.cases, { label: "", inputs: [], expected: "" }] })}
-      >Add practice example</button>
-      <p>Include 1–10 examples. Leave answers empty for programs that do not use input(). Expected output must match what the program prints.</p>
+        onClick={() =>
+          setContent({
+            ...content,
+            cases: [...content.cases, { label: "", inputs: [], expected: "" }],
+          })
+        }
+      >
+        Add practice example
+      </button>
+      <p>
+        Include 1–10 examples. Leave answers empty for programs that do not use
+        input(). Expected output must match what the program prints.
+      </p>
       <label>
         <input
           type="checkbox"
@@ -209,7 +233,13 @@ export function PythonActivitySettings({
         />
         Published for students
       </label>
-      <button disabled={busy}>{busy ? "Saving..." : activity || createdId ? "Save activity revision" : "Add Python activity"}</button>
+      <button disabled={busy}>
+        {busy
+          ? "Saving..."
+          : activity || createdId
+            ? "Save activity revision"
+            : "Add Python activity"}
+      </button>
       <p role="status">{message}</p>
     </form>
   );

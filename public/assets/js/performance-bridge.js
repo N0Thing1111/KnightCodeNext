@@ -74,12 +74,15 @@
               pending.shift();
               item.resolve(result);
               status(
-                rejected ? "Latest save succeeded, but " + rejected + " earlier record(s) were rejected. Reload after updating the app if this continues." :
-                item.kind === "execution"
-                  ? "Run history saved"
-                  : item.body.telemetry_version === 2
-                    ? "Progress saved"
-                    : "Progress saved — older build; detailed metrics are incomplete",
+                rejected
+                  ? "Latest save succeeded, but " +
+                      rejected +
+                      " earlier record(s) were rejected. Reload after updating the app if this continues."
+                  : item.kind === "execution"
+                    ? "Run history saved"
+                    : item.body.telemetry_version === 2
+                      ? "Progress saved"
+                      : "Progress saved — older build; detailed metrics are incomplete",
               );
               saved = true;
               break;
@@ -87,17 +90,25 @@
               // Invalid records cannot be repaired by retrying the same bytes.
               // Keep auth/network/server errors queued; let later cumulative
               // snapshots recover progress after a permanently invalid record.
-              if (error.code === "SECTION_ARCHIVED" || [400, 413, 422].includes(error.status)) {
+              if (
+                error.code === "SECTION_ARCHIVED" ||
+                [400, 413, 422].includes(error.status)
+              ) {
                 pending.shift();
                 rejected++;
                 item.reject(error);
-                status("A game record was rejected: " + error.message + ". Later saves will still be attempted.");
+                status(
+                  "A game record was rejected: " +
+                    error.message +
+                    ". Later saves will still be attempted.",
+                );
                 saved = true;
                 break;
               }
               if (attempt === 2) {
                 status(
                   "Progress not saved. Keep this page open and press Retry saving.",
+                  true,
                 );
                 return; // Keep this exact sequence for an idempotent retry.
               }
@@ -116,7 +127,7 @@
       try {
         body = normalize(completed, payload);
       } catch (error) {
-        status(error.message);
+        status(error.message, pending.length > 0 && !working);
         return Promise.reject(error);
       }
       return new Promise((resolve, reject) => {

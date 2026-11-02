@@ -1,7 +1,10 @@
 // Unity's WebGL runtime appends its native keyboard editor to document.body.
 // Keep it there: moving a focused field can dismiss the phone keyboard.
 // UnityPlayer fullscreens the document, so body inputs remain eligible for focus.
-export function attachUnityMobileKeyboard(host: HTMLElement, className: string) {
+export function attachUnityMobileKeyboard(
+  host: HTMLElement,
+  className: string,
+) {
   type KeyboardPanel = HTMLElement & {
     input?: HTMLInputElement | HTMLTextAreaElement;
     okButton?: HTMLButtonElement;
@@ -11,27 +14,37 @@ export function attachUnityMobileKeyboard(host: HTMLElement, className: string) 
   const viewport = window.visualViewport;
   const position = () => {
     if (!host.isConnected || !panel?.isConnected) return;
-    const covered = viewport ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop) : 0;
+    const covered = viewport
+      ? Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
+      : 0;
     panel.style.bottom = `${covered}px`;
   };
   const adopt = (node: Node) => {
-    if (!(node instanceof HTMLElement) || node.parentElement !== document.body) return;
+    if (!(node instanceof HTMLElement) || node.parentElement !== document.body)
+      return;
     const candidate = node as KeyboardPanel;
     const input = candidate.input;
     // Match Unity's runtime-owned references, not arbitrary site inputs.
-    if (!(input instanceof HTMLTextAreaElement || input instanceof HTMLInputElement)
-      || input.parentElement !== candidate
-      || !(candidate.okButton instanceof HTMLButtonElement)
-      || candidate.okButton.parentElement !== candidate
-      || typeof candidate.multiline !== "boolean") return;
+    if (
+      !(
+        input instanceof HTMLTextAreaElement ||
+        input instanceof HTMLInputElement
+      ) ||
+      input.parentElement !== candidate ||
+      !(candidate.okButton instanceof HTMLButtonElement) ||
+      candidate.okButton.parentElement !== candidate ||
+      typeof candidate.multiline !== "boolean"
+    )
+      return;
     panel = candidate;
     candidate.classList.add(className);
     input.setAttribute("aria-label", "Game code editor");
     input.setAttribute("autocapitalize", "off");
     position();
   };
-  const observer = new MutationObserver(records => {
-    for (const record of records) for (const node of record.addedNodes) adopt(node);
+  const observer = new MutationObserver((records) => {
+    for (const record of records)
+      for (const node of record.addedNodes) adopt(node);
   });
   observer.observe(document.body, { childList: true });
   for (const node of document.body.children) adopt(node);

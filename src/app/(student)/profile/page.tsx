@@ -16,7 +16,6 @@ export default async function ProfilePage() {
       <ProfileForm
         student={student}
         stats={{
-          rank: stats.rank,
           level: stats.level,
           xp: stats.xp,
           streak: stats.streak,

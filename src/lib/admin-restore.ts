@@ -1,4 +1,3 @@
-import { getSchoolName } from "@/lib/school-name";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import "server-only";
 import { randomBytes } from "node:crypto";
@@ -66,9 +65,13 @@ export function validateRestoreBackup(backup: SchoolBackup) {
     )
       throw Error("Invalid account in save file.");
     if (p.role === "student" && p.student_id != null) {
-      if (typeof p.student_id !== "string") throw Error("Invalid student ID in save file.");
+      if (typeof p.student_id !== "string")
+        throw Error("Invalid student ID in save file.");
       const studentId = p.student_id.trim().toLowerCase();
-      if (studentId && studentIds.has(studentId)) throw Error("Duplicate student ID in save file. Student IDs must be unique across this deployment; nothing was changed.");
+      if (studentId && studentIds.has(studentId))
+        throw Error(
+          "Duplicate student ID in save file. Student IDs must be unique across this deployment; nothing was changed.",
+        );
       if (studentId) studentIds.add(studentId);
     }
     const email = p.email.trim().toLowerCase();
@@ -141,7 +144,9 @@ export async function restoreSchoolBackup(
     if (!r.data || r.data.length < 500) break;
   }
   // Reconcile a copy: the original encrypted save remains unchanged.
-  const profiles = (backup.tables.profiles as any[]).map((profile) => ({ ...profile }));
+  const profiles = (backup.tables.profiles as any[]).map((profile) => ({
+    ...profile,
+  }));
   const mapping: Record<string, string> = {};
   const missing: any[] = [];
   for (const p of profiles) {
@@ -170,7 +175,9 @@ export async function restoreSchoolBackup(
         } else {
           const account = await db.auth.admin.getUserById(byEmail.id);
           if (account.error || !account.data.user)
-            throw Error("Could not verify a restored teacher's email status. No records were replaced.");
+            throw Error(
+              "Could not verify a restored teacher's email status. No records were replaced.",
+            );
           if (account.data.user.email_confirmed_at) {
             p.onboarding_status = "approved";
             p.active = true;
@@ -182,7 +189,7 @@ export async function restoreSchoolBackup(
   const credentials: NonNullable<RestoreResult["credentials"]> = [];
   for (const p of missing) {
     const password = "KC-" + randomBytes(18).toString("base64url") + "!";
-    // Leave unique school identifiers for the atomic transaction, avoiding conflicts
+    // Leave unique account identifiers for the atomic transaction, avoiding conflicts
     // with current records before the restore can be validated in PostgreSQL.
     const created = await db.auth.admin.createUser({
       email: p.email,
@@ -193,7 +200,7 @@ export async function restoreSchoolBackup(
     });
     if (created.error || !created.data.user)
       throw Error(
-        "Could not prepare a missing account. School records were not replaced. Any accounts already prepared can be managed under Teachers/Students.",
+        "Could not prepare a missing account. Platform records were not replaced. Any accounts already prepared can be managed under Teachers/Students.",
       );
     mapping[p.id] = created.data.user.id;
     // createUser already confirmed this account. Restoring an old pending
@@ -221,7 +228,7 @@ export async function restoreSchoolBackup(
     throw Error(
       "Restore was not confirmed: " +
         restored.error.message +
-        " Database validation errors roll back the school-record changes. If the connection was interrupted, check the audit history before retrying. Newly prepared accounts may need a password reset from account management.",
+        " Database validation errors roll back the platform record changes. If the connection was interrupted, check the audit history before retrying. Newly prepared accounts may need a password reset from account management.",
     );
   }
   // Wait for the database transaction to succeed before sending credentials.
@@ -235,7 +242,7 @@ export async function restoreSchoolBackup(
           email: credential.email,
           name: credential.name,
           temporaryPassword: credential.password,
-          schoolLabel: await getSchoolName(db),
+
           reason: "restore" as const,
         };
         try {

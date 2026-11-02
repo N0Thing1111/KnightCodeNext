@@ -7,7 +7,10 @@ import {
 } from "crypto";
 import { gzipSync, gunzipSync } from "zlib";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { MAX_BACKUP_BYTES, MAX_BACKUP_JSON_BYTES } from "@/lib/backup-transfer-rules";
+import {
+  MAX_BACKUP_BYTES,
+  MAX_BACKUP_JSON_BYTES,
+} from "@/lib/backup-transfer-rules";
 export const BACKUP_TABLES = [
   "profiles",
   "lessons",
@@ -40,15 +43,23 @@ export type SchoolBackup = {
   tables: Record<string, unknown[]>;
 };
 export async function captureBackup(adminId: string): Promise<SchoolBackup> {
-  const { data, error } = await createAdminClient().rpc("capture_school_backup", { p_admin: adminId });
-  if (error) throw Error("Could not capture a consistent save. Apply the priority-workflows migration and try again. " + error.message);
+  const { data, error } = await createAdminClient().rpc(
+    "capture_school_backup",
+    { p_admin: adminId },
+  );
+  if (error)
+    throw Error(
+      "Could not capture a consistent save. Apply the priority-workflows migration and try again. " +
+        error.message,
+    );
   return data as SchoolBackup;
 }
 export function encryptBackup(data: SchoolBackup, password: string) {
   if (password.length < 12)
     throw Error("Use a backup password of at least 12 characters.");
   const serialized = Buffer.from(JSON.stringify(data));
-  if (serialized.length > MAX_BACKUP_JSON_BYTES) throw Error("Save contents exceed the 128 MB expanded limit.");
+  if (serialized.length > MAX_BACKUP_JSON_BYTES)
+    throw Error("Save contents exceed the 128 MB expanded limit.");
   const salt = randomBytes(16),
     iv = randomBytes(12),
     key = pbkdf2Sync(password, salt, 210000, 32, "sha256"),
@@ -68,7 +79,10 @@ export function encryptBackup(data: SchoolBackup, password: string) {
       data: body.toString("base64"),
     }),
   );
-  if (file.length > MAX_BACKUP_BYTES) throw Error("This save exceeds the 32 MB transfer limit; request a database-level backup instead.");
+  if (file.length > MAX_BACKUP_BYTES)
+    throw Error(
+      "This save exceeds the 32 MB transfer limit; request a database-level backup instead.",
+    );
   return file;
 }
 export function decryptBackup(file: Buffer, password: string): SchoolBackup {

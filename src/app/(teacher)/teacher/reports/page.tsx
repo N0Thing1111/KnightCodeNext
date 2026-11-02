@@ -1,55 +1,153 @@
 import Link from "next/link";
 import { requireTeacher } from "@/lib/auth";
 import { getTeacherReport } from "@/lib/teacher-reports";
-import { parseReportFilters, reportLabels, reportTypes, reportQuery, reportDate } from "@/lib/report-model";
-import { sectionLabel } from "@/lib/section-label";
-import { Hero } from "@/components/teacher-ui";
+import {
+  parseReportFilters,
+  reportQuery,
+  reportDate,
+  reportDisplayTable,
+} from "@/lib/report-model";
+import { ReportFiltersForm } from "./report-filters";
 import styles from "./reports.module.css";
 
-export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
-  const teacher = await requireTeacher(), query = await searchParams;
-  let data, filters;
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const teacher = await requireTeacher();
+  let data;
   try {
-    filters = parseReportFilters(query);
-    data = await getTeacherReport(teacher, filters);
+    data = await getTeacherReport(
+      teacher,
+      parseReportFilters(await searchParams),
+    );
   } catch (error) {
-    return <section className="teacher-card"><h2>Report unavailable</h2><p role="alert">{error instanceof Error ? error.message : "Could not load this report."}</p><Link className="teacher-btn" href="/teacher/reports">Reset report filters</Link></section>;
+    return (
+      <section className="teacher-card">
+        <h2>Report unavailable</h2>
+        <p role="alert">
+          {error instanceof Error
+            ? error.message
+            : "Could not load this report."}
+        </p>
+        <Link className="teacher-btn" href="/teacher/reports">
+          Reset report filters
+        </Link>
+      </section>
+    );
   }
-  const { report, sections } = data;
+  const { report, filters, sections, lessons, activities } = data;
   const params = reportQuery(filters);
-  return <div className={styles.root}>
-    <Hero eyebrow="DATA & INSIGHTS" title="Reports" description="Review assigned work and download complete, printable records for your sections.">
-      <div className="hero-actions">
-        <a className="teacher-btn" href={"/api/teacher/reports?" + params + "&format=csv"}>Export CSV</a>
-        <a className="teacher-btn primary" href={"/api/teacher/reports?" + params + "&format=pdf"}>Export PDF</a>
-      </div>
-    </Hero>
-    <section className="teacher-card">
-      <nav className={styles.tabs} aria-label="Report types">
-        {reportTypes.map(type => <Link prefetch={false} aria-current={type === filters.type ? "page" : undefined} href={"/teacher/reports?" + reportQuery({ ...filters, type })} key={type}>{reportLabels[type]}</Link>)}
-      </nav>
-      <form className={styles.filters} method="get" action="/teacher/reports">
-        <input type="hidden" name="type" value={filters.type} />
-        <label>Section<select key={filters.section || "all"} name="section" defaultValue={filters.section || ""}><option value="">All your sections</option>{sections.map(section => <option key={section.id} value={section.id}>{sectionLabel(section)}</option>)}</select></label>
-        {filters.type === "activity" && <>
-          <label>From (UTC+08)<input key={"from:" + filters.from} type="date" name="from" defaultValue={filters.from} /></label>
-          <label>Through (UTC+08)<input key={"to:" + filters.to} type="date" name="to" defaultValue={filters.to} /></label>
-        </>}
-        <button className="teacher-btn" type="submit">Apply filters</button>
-      </form>
-    </section>
-    <section className={"teacher-card " + styles.report}>
-      <div className={styles.heading}><div><span className="teacher-eyebrow">{report.school}</span><h2>{report.title}</h2><p>{report.section} · School year: {report.schoolYear}</p></div><p>Teacher: {report.teacher}<br />Generated: {reportDate(report.generatedAt)} (UTC+08)<br />{report.period}</p></div>
-      <div className={styles.summary}>{report.summary.map(item => <div key={item.label}><span>{item.label}</span><strong>{item.value}</strong></div>)}</div>
-      <p className={styles.note}>{report.note}</p>
-      <p className={styles.count}>{report.rows.length} records · All matching records are included in both exports.</p>
-      <div className={styles.tableWrap} tabIndex={0} role="region" aria-label={report.title + " table"}>
-        <table className={styles.table}>
-          <caption className={styles.caption}>{report.title} — {report.section}</caption>
-          <thead><tr>{report.columns.map(column => <th scope="col" key={column}>{column}</th>)}</tr></thead>
-          <tbody>{report.rows.length ? report.rows.map((row, index) => <tr key={index}>{row.map((cell, i) => <td key={i}>{cell}</td>)}</tr>) : <tr><td colSpan={report.columns.length}>No matching records for this report.</td></tr>}</tbody>
-        </table>
-      </div>
-    </section>
-  </div>;
+  const table = report ? reportDisplayTable(report) : null;
+  return (
+    <div className={styles.root}>
+      <header className={styles.intro}>
+        <h2>Python activity reports</h2>
+        <p>
+          Export activity grades and feedback from each student’s latest
+          reviewed submission.
+        </p>
+      </header>
+      <section className="teacher-card" aria-label="Choose report">
+        <ReportFiltersForm
+          key={params}
+          filters={filters}
+          sections={sections}
+          lessons={lessons}
+          activities={activities}
+        />
+      </section>
+      {report ? (
+        <section className={"teacher-card " + styles.report}>
+          <div className={styles.heading}>
+            <div>
+              <h2>{report.activity}</h2>
+              <p>
+                {report.lesson} · {report.section}
+              </p>
+            </div>
+            <div className={styles.exports}>
+              <a
+                className="teacher-btn"
+                href={"/api/teacher/reports?" + params + "&format=csv"}
+              >
+                Export CSV
+              </a>
+              <a
+                className="teacher-btn primary"
+                href={"/api/teacher/reports?" + params + "&format=pdf"}
+              >
+                Export PDF
+              </a>
+            </div>
+          </div>
+          <p className={styles.count}>
+            {report.rows.length} assigned students · Generated{" "}
+            {reportDate(report.generatedAt)} (UTC+08)
+          </p>
+          <details className={styles.explanation}>
+            <summary>How results and grades work</summary>
+            <p>{report.note}</p>
+            <p>
+              No reviewed submission means no grade yet. This is an activity
+              grade, not an overall subject grade.
+            </p>
+          </details>
+          <div
+            className={styles.tableWrap}
+            tabIndex={0}
+            role="region"
+            aria-label="Python activity assessment results"
+          >
+            <table className={styles.table}>
+              <caption className={styles.caption}>
+                {report.activity} — {report.section}
+              </caption>
+              <thead>
+                <tr>
+                  {table!.columns.map((column) => (
+                    <th scope="col" key={column}>
+                      {column}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {report.rows.length ? (
+                  table!.rows.map((row, index) => (
+                    <tr key={index}>
+                      {row.map((cell, i) => (
+                        <td key={i}>{cell}</td>
+                      ))}
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={table!.columns.length}>
+                      No current students are assigned this lesson in the
+                      selected section.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : (
+        <section className={"teacher-card " + styles.empty}>
+          <h3>
+            {activities.length
+              ? "Choose a lesson to view its Python results"
+              : "No assigned Python activities yet"}
+          </h3>
+          <p>
+            {activities.length
+              ? "Select a section and lesson, then choose View report."
+              : "Assign a lesson containing a Python activity to your students. Its results will be available here."}
+          </p>
+        </section>
+      )}
+    </div>
+  );
 }

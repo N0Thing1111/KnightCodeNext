@@ -22,12 +22,10 @@ export async function restoreAdminBackup(
     await verify(admin, String(f.get("admin_password") || ""));
     if (String(f.get("confirmation") || "") !== "RESTORE SAVE FILE")
       throw Error("Type RESTORE SAVE FILE to confirm.");
-    if (!transferPath) throw Error("Upload the save file using the restore form.");
+    if (!transferPath)
+      throw Error("Upload the save file using the restore form.");
     const bytes = await readTransfer(transferPath, admin.id);
-    const backup = decryptBackup(
-      bytes,
-      String(f.get("backup_password") || ""),
-    );
+    const backup = decryptBackup(bytes, String(f.get("backup_password") || ""));
     result = await restoreSchoolBackup(backup, admin.id);
   } catch (e) {
     return {
@@ -37,7 +35,8 @@ export async function restoreAdminBackup(
           : "Restore could not be confirmed. Check audit history before retrying.",
     };
   } finally {
-    if (transferPath) await discardTransfer(transferPath, admin.id).catch(() => {});
+    if (transferPath)
+      await discardTransfer(transferPath, admin.id).catch(() => {});
   }
   revalidatePath("/", "layout");
   return result;

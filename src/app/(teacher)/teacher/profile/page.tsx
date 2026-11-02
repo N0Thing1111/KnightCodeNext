@@ -158,11 +158,7 @@ export default async function Page({
             </label>
             <label>
               New password
-              <PasswordInput
-                name="new_password"
-                minLength={8}
-                required
-              />
+              <PasswordInput name="new_password" minLength={8} required />
             </label>
             <button className="teacher-btn">Update Password</button>
           </form>

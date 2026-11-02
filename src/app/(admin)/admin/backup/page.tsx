@@ -20,16 +20,18 @@ export default async function Page({
         <section className="teacher-card">
           <h3>Download a platform save file</h3>
           <p className="teacher-note">
-            Includes curriculum, accounts, sections, assignments, notifications,
-            achievements, and recorded performance. Authentication password
-            hashes and uploaded image files are not included. Keep the original
-            image storage separately.
+            Saves curriculum, accounts, sections, assignments, notifications,
+            achievements, and learning records. Excludes passwords and uploaded
+            images; keep image files separately.
           </p>
           <DownloadBackupForm />
         </section>
         <section className="teacher-card">
           <h3>Restore a platform save</h3>
-          <p className="teacher-note">Restoration replaces saved platform records for everyone. It can roll back other users&apos; work since the save. This is not a selective student or section undo. Accounts absent from the save are not automatically deleted.</p>
+          <p className="teacher-note">
+            Rolls back everyone&apos;s platform records to this save. Ask users
+            to stop games and code runs first.
+          </p>
           <RestoreBackupForm />
         </section>
       </div>

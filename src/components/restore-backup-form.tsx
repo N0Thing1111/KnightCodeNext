@@ -1,5 +1,8 @@
 "use client";
-import { prepareRestoreUpload, discardBackupTransfer } from "@/app/actions/backup-transfer";
+import {
+  prepareRestoreUpload,
+  discardBackupTransfer,
+} from "@/app/actions/backup-transfer";
 import { createClient } from "@/lib/supabase/client";
 import { BACKUP_BUCKET, MAX_BACKUP_BYTES } from "@/lib/backup-transfer-rules";
 import { useActionState } from "react";
@@ -10,33 +13,53 @@ export function RestoreBackupForm() {
   const [state, action, pending] = useActionState<RestoreResult, FormData>(
     async (_previous, form) => {
       const file = form.get("save_file");
-      if (!(file instanceof File) || !file.size || file.size > MAX_BACKUP_BYTES) return { error: "Choose a save file up to 32 MB." };
+      if (!(file instanceof File) || !file.size || file.size > MAX_BACKUP_BYTES)
+        return { error: "Choose a save file up to 32 MB." };
       form.delete("save_file");
       form.set("file_size", String(file.size));
       let path: string | undefined;
       try {
         const prepared = await prepareRestoreUpload(form);
-        if (prepared.error || !prepared.path || !prepared.token) return { error: prepared.error || "Upload unavailable." };
+        if (prepared.error || !prepared.path || !prepared.token)
+          return { error: prepared.error || "Upload unavailable." };
         path = prepared.path;
-        const uploaded = await createClient().storage.from(BACKUP_BUCKET).uploadToSignedUrl(path, prepared.token, file, { contentType: "application/octet-stream" });
-        if (uploaded.error) return { error: "Upload failed. No records were restored. " + uploaded.error.message };
+        const uploaded = await createClient()
+          .storage.from(BACKUP_BUCKET)
+          .uploadToSignedUrl(path, prepared.token, file, {
+            contentType: "application/octet-stream",
+          });
+        if (uploaded.error)
+          return {
+            error:
+              "Upload failed. No records were restored. " +
+              uploaded.error.message,
+          };
         form.set("uploaded_path", path);
         return await restoreAdminBackup({}, form);
-      } catch { return { error: "Connection interrupted. Check audit history before retrying the restore." }; }
-      finally { if (path) await discardBackupTransfer(path).catch(() => {}); }
+      } catch {
+        return {
+          error:
+            "Connection interrupted. Check audit history before retrying the restore.",
+        };
+      } finally {
+        if (path) await discardBackupTransfer(path).catch(() => {});
+      }
     },
     {},
   );
   return (
     <>
-      <p className="teacher-note">
-        Replaces curriculum and learning records with the save file. All records
-        are checked in one transaction. Existing accounts keep their current
-        passwords; only missing accounts receive new temporary passwords,
-        emailed to their saved addresses after restoration succeeds. Accounts
-        not included in the save are kept. Uploaded image files are not
-        included. Ask users to leave the game before restoring.
-      </p>
+      <details className="admin-copy-details">
+        <summary>Restore details</summary>
+        <p>
+          Existing accounts keep their passwords. Recreated accounts receive
+          temporary passwords by email after restoration.
+        </p>
+        <p>
+          Accounts absent from the save are kept. Uploaded images are not
+          restored.
+        </p>
+      </details>
       <form action={action} className="teacher-form">
         <label>
           KnightCode save file (up to 32 MB)
@@ -71,9 +94,7 @@ export function RestoreBackupForm() {
           />
         </label>
         <button className="teacher-btn danger" disabled={pending}>
-          {pending
-            ? "Restoring records and emailing recreated accounts..."
-            : "Replace current data with this save"}
+          {pending ? "Restoring..." : "Restore this save"}
         </button>
       </form>
       {state.error && (

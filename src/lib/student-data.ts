@@ -5,7 +5,6 @@ import { isGameLevelAvailable } from "@/lib/game-build";
 import { lessonCompletion, summarizeCompletion } from "@/lib/lesson-completion";
 import { getPythonCompletion } from "@/lib/python-data";
 import { createClient } from "@/lib/supabase/server";
-import { rankForLevel } from "@/lib/format";
 import type {
   Achievement,
   Assignment,
@@ -29,7 +28,13 @@ type Scope = {
 const getAssignments = cache(async (studentId: string) => {
   void studentId;
   const supabase = await createClient();
-  const rows = await allRows(() => supabase.from("assignments").select("*").order("created_at", { ascending: false }).order("id")) as Assignment[];
+  const rows = (await allRows(() =>
+    supabase
+      .from("assignments")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .order("id"),
+  )) as Assignment[];
   const selected = new Map<string, Assignment>();
   for (const row of rows) {
     const contentKey = row.level_id
@@ -79,15 +84,20 @@ const getStudentProgress = cache(async (studentId: string) => {
 
 export const getAssignmentScope = cache(
   async (studentId: string): Promise<Scope> => {
-    const [assignments, activeLevels, activeLessons, independentResult] = await Promise.all([
-      getAssignments(studentId),
-      getActiveLevels(),
-      getActiveLessons(),
-      (await createClient()).rpc("independent_learning_scope"),
-    ]);
+    const [assignments, activeLevels, activeLessons, independentResult] =
+      await Promise.all([
+        getAssignments(studentId),
+        getActiveLevels(),
+        getActiveLessons(),
+        (await createClient()).rpc("independent_learning_scope"),
+      ]);
     if (independentResult.error) throw Error("Unable to load learning access.");
-    const independent = independentResult.data as { independent: boolean; lesson_ids: number[]; python_completed: string[] };
-    const activeLessonIds = new Set(activeLessons.map(lesson => lesson.id));
+    const independent = independentResult.data as {
+      independent: boolean;
+      lesson_ids: number[];
+      python_completed: string[];
+    };
+    const activeLessonIds = new Set(activeLessons.map((lesson) => lesson.id));
     const levelById = new Map(activeLevels.map((level) => [level.id, level]));
     const lessonIds = new Set<number>();
     const fullLessonIds = new Set<number>();
@@ -107,27 +117,44 @@ export const getAssignmentScope = cache(
       }
     }
 
-    if (independent.independent) for (const id of independent.lesson_ids) { lessonIds.add(id); fullLessonIds.add(id); }
+    if (independent.independent)
+      for (const id of independent.lesson_ids) {
+        lessonIds.add(id);
+        fullLessonIds.add(id);
+      }
     const levelIds = new Set(directLevelIds);
     for (const level of activeLevels) {
       if (fullLessonIds.has(level.lesson_id)) levelIds.add(level.id);
     }
-    return { assignments, lessonIds, fullLessonIds, directLevelIds, levelIds, independent: independent.independent, independentPython: independent.python_completed };
+    return {
+      assignments,
+      lessonIds,
+      fullLessonIds,
+      directLevelIds,
+      levelIds,
+      independent: independent.independent,
+      independentPython: independent.python_completed,
+    };
   },
 );
 
 export const getStudentLearningData = cache(async (studentId: string) => {
   // These reads are independent and run together. React cache also ensures the
   // shared layout and page reuse the same results during one navigation.
-  const [scope, allLevels, allLessons, allProgress, python] = await Promise.all([
-    getAssignmentScope(studentId),
-    getActiveLevels(),
-    getActiveLessons(),
-    getStudentProgress(studentId),
-    getPythonCompletion(),
-  ]);
+  const [scope, allLevels, allLessons, allProgress, python] = await Promise.all(
+    [
+      getAssignmentScope(studentId),
+      getActiveLevels(),
+      getActiveLessons(),
+      getStudentProgress(studentId),
+      getPythonCompletion(),
+    ],
+  );
   const levels = allLevels.filter((level) => scope.levelIds.has(level.id));
-  const assignedLessonIds = new Set([...scope.fullLessonIds, ...levels.map((level) => level.lesson_id)]);
+  const assignedLessonIds = new Set([
+    ...scope.fullLessonIds,
+    ...levels.map((level) => level.lesson_id),
+  ]);
   const lessons = allLessons.filter((lesson) =>
     assignedLessonIds.has(lesson.id),
   );
@@ -141,15 +168,43 @@ export const getStudentLearningData = cache(async (studentId: string) => {
 
   for (const lessonId of scope.fullLessonIds) {
     const ordered = levels
-      .filter((level) => level.lesson_id === lessonId && isGameLevelAvailable(level))
+      .filter(
+        (level) => level.lesson_id === lessonId && isGameLevelAvailable(level),
+      )
       .sort((a, b) => a.order_in_lesson - b.order_in_lesson);
     for (const level of ordered) {
       playable.add(level.id);
       if (!progressByLevel.get(level.id)?.completed) break;
     }
   }
-  const completion = new Map(lessons.map(l => [l.id, lessonCompletion(l.id, studentId, levels, progressRows, scope.fullLessonIds.has(l.id) ? python.activities : [], (scope.independent ? scope.independentPython.map(activity_id => ({student_id: studentId, activity_id})) : python.submissions))]));
-  return { scope, lessons, levels, progress: progressRows, playable, python, completion };
+  const completion = new Map(
+    lessons.map((l) => [
+      l.id,
+      lessonCompletion(
+        l.id,
+        studentId,
+        levels,
+        progressRows,
+        scope.fullLessonIds.has(l.id) ? python.activities : [],
+        scope.independent
+          ? scope.independentPython.map((activity_id) => ({
+              student_id: studentId,
+              activity_id,
+              status: "practice_complete" as const,
+            }))
+          : python.submissions,
+      ),
+    ]),
+  );
+  return {
+    scope,
+    lessons,
+    levels,
+    progress: progressRows,
+    playable,
+    python,
+    completion,
+  };
 });
 
 export const getStudentStats = cache(async (student: Profile) => {
@@ -157,7 +212,9 @@ export const getStudentStats = cache(async (student: Profile) => {
     student.id,
   );
   const work = summarizeCompletion([...completion.values()]);
-  const lessonsCompleted = [...completion.values()].filter(c => c.complete).length;
+  const lessonsCompleted = [...completion.values()].filter(
+    (c) => c.complete,
+  ).length;
   const xp =
     student.total_xp ?? progress.reduce((sum, row) => sum + row.xp_earned, 0);
   const level = Math.max(1, Math.floor(xp / 500) + 1);
@@ -165,7 +222,6 @@ export const getStudentStats = cache(async (student: Profile) => {
   return {
     xp,
     level,
-    rank: rankForLevel(level),
     xpPct: Math.min(100, Math.round(levelXp / 5)),
     streak: learningStreak(student).count,
     ...work,
@@ -179,7 +235,6 @@ export const getStudentStats = cache(async (student: Profile) => {
       (sum, row) => sum + row.play_time_seconds,
       0,
     ),
-
   };
 });
 

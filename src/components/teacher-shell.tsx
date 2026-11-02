@@ -19,7 +19,11 @@ export function TeacherShell({
   const pathname = usePathname();
   const [menu, setMenu] = useState(false);
   const [open, setOpen] = useState(false);
-  const { items, setItems, refreshNotifications } = useNotifications(notifications, "/api/teacher/notifications", pathname);
+  const { items, setItems, refreshNotifications } = useNotifications(
+    notifications,
+    "/api/teacher/notifications",
+    pathname,
+  );
   const unread = useMemo(() => items.filter((n) => !n.is_read).length, [items]);
   useEffect(() => {
     document.documentElement.dataset.theme = teacher.theme_preference;
@@ -30,8 +34,7 @@ export function TeacherShell({
     ["/teacher/dashboard", "⌂", "Dashboard"],
     ["/teacher/classes", "▦", "My Sections"],
     ["/teacher/students", "♙", "Students"],
-    ["/teacher/monitoring", "◉", "Student Monitoring"],
-    ["/teacher/results", "◷", "Session Results"],
+    ["/teacher/monitoring", "◉", "Monitoring"],
     ["/teacher/lessons", "▤", "Lessons"],
     ["/teacher/assignments", "✓", "Assignments"],
     ["/teacher/reports", "▥", "Reports"],
@@ -40,7 +43,7 @@ export function TeacherShell({
   const active = (href: string) =>
     pathname === href ||
     (href === "/teacher/classes" && pathname.startsWith("/teacher/class/")) ||
-    (href === "/teacher/monitoring" &&
+    (href === "/teacher/students" &&
       pathname.startsWith("/teacher/student/")) ||
     (href === "/teacher/lessons" && pathname.startsWith("/teacher/lesson/"));
   const photo = teacher.profile_image
@@ -92,6 +95,32 @@ export function TeacherShell({
               <span>{label}</span>
             </Link>
           ))}
+          <span className="teacher-nav-label">History</span>
+          <Link
+            prefetch={false}
+            href="/teacher/results"
+            onClick={() => setMenu(false)}
+            className={
+              "teacher-nav-link " + (active("/teacher/results") ? "active" : "")
+            }
+          >
+            <i aria-hidden="true">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 2" />
+              </svg>
+            </i>
+            <span>Run history</span>
+          </Link>
         </nav>
         <div className="teacher-side-bottom">
           <Link
@@ -135,7 +164,10 @@ export function TeacherShell({
             <button
               className={"teacher-icon-btn " + (unread ? "has-unread" : "")}
               type="button"
-              onClick={() => { setOpen(!open); if (!open) void refreshNotifications(); }}
+              onClick={() => {
+                setOpen(!open);
+                if (!open) void refreshNotifications();
+              }}
               aria-expanded={open}
             >
               🔔{unread > 0 && <b>{unread > 9 ? "9+" : unread}</b>}
@@ -166,7 +198,11 @@ export function TeacherShell({
                       <div>
                         <strong>{n.title}</strong>
                         <small>{n.message}</small>
-                        <time>{new Date(n.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila" })}</time>
+                        <time>
+                          {new Date(n.created_at).toLocaleString("en-PH", {
+                            timeZone: "Asia/Manila",
+                          })}
+                        </time>
                       </div>
                     </Link>
                   ))}
@@ -205,11 +241,11 @@ function title(path: string) {
   if (path.includes("/classes") || path.includes("/class/"))
     return path.includes("/class/") ? "Section Overview" : "My Sections";
   if (path.includes("/students")) return "Students";
-  if (path.includes("/monitoring") || path.includes("/student/"))
-    return "Student Monitoring";
+  if (path.includes("/student/")) return "Student progress";
+  if (path.includes("/monitoring")) return "Monitoring";
   if (path.includes("/lessons") || path.includes("/lesson/")) return "Lessons";
   if (path.includes("/assignments")) return "Assignments";
-  if (path.includes("/results")) return "Session Results";
+  if (path.includes("/results")) return "Run history";
   if (path.includes("/reports")) return "Reports";
   if (path.includes("/announcements")) return "Announcements";
   if (path.includes("/profile")) return "Teacher Profile";

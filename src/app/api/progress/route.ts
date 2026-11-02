@@ -48,16 +48,28 @@ export async function POST(request: Request) {
     p_level_id: parsed.data.level_id,
     p_payload: parsed.data,
   });
-  if (error?.message.startsWith("SECTION_ARCHIVED:")) return NextResponse.json({ code: "SECTION_ARCHIVED", message: error.message.slice(17).trim() }, { status: 403 });
+  if (error?.message.startsWith("SECTION_ARCHIVED:"))
+    return NextResponse.json(
+      { code: "SECTION_ARCHIVED", message: error.message.slice(17).trim() },
+      { status: 403 },
+    );
   if (error) {
-    const invalid = ["Invalid telemetry", "Cumulative telemetry decreased", "Level mismatch"].includes(error.message);
-    const denied = error.message.includes("not assigned") || error.message.includes("locked");
+    const invalid = [
+      "Invalid telemetry",
+      "Cumulative telemetry decreased",
+      "Level mismatch",
+    ].includes(error.message);
+    const denied =
+      error.message.includes("not assigned") ||
+      error.message.includes("locked");
     return NextResponse.json(
       {
         ok: false,
         message: denied
           ? "This level is not assigned or is still locked."
-          : invalid ? "The game sent an invalid progress record." : "Unable to save progress right now.",
+          : invalid
+            ? "The game sent an invalid progress record."
+            : "Unable to save progress right now.",
       },
       { status: denied ? 403 : invalid ? 422 : 500 },
     );

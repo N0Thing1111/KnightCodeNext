@@ -158,3 +158,25 @@ select {
 .profile-page .achievements-full {
   margin-bottom: 0;
 }
+
+/* Assessment states on student lesson and assignment cards. */
+.status-chip.status-awaiting-review,
+.level-status.awaiting-review {
+  color: #80c5ff;
+  background: #112b49;
+}
+.status-chip.status-needs-revision,
+.level-status.needs-revision {
+  color: #ffd18a;
+  background: #382a19;
+}
+[data-theme="light"] .status-chip.status-awaiting-review,
+[data-theme="light"] .level-status.awaiting-review {
+  color: #174e87;
+  background: #e4f0ff;
+}
+[data-theme="light"] .status-chip.status-needs-revision,
+[data-theme="light"] .level-status.needs-revision {
+  color: #704200;
+  background: #fff0d6;
+}

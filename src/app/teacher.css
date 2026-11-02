@@ -41,8 +41,7 @@ html[data-theme="light"] {
 }
 .teacher-shell {
   min-height: 100vh;
-  background:
-    var(--t-bg);
+  background: var(--t-bg);
 }
 .teacher-sidebar {
   position: fixed;
@@ -347,8 +346,7 @@ html[data-theme="light"] .teacher-nav-link.active {
   padding: 25px 28px;
   border: 1px solid var(--t-border2);
   border-radius: 18px;
-  background:
-    var(--t-surface);
+  background: var(--t-surface);
   box-shadow: none;
   margin-bottom: 20px;
 }
@@ -900,12 +898,7 @@ html[data-theme="light"] .teacher-nav-link.active {
   font-size: 10px;
   line-height: 1.7;
 }
-.monitor-legend {
-  display: flex;
-  gap: 7px;
-  flex-wrap: wrap;
-  margin: -5px 0 15px;
-}
+
 .student-hero {
   display: flex;
   justify-content: space-between;
@@ -1185,8 +1178,7 @@ html[data-theme="light"] .teacher-nav-link.active {
   gap: 16px;
   padding: 18px;
   border-radius: 13px;
-  background:
-    var(--t-surface2);
+  background: var(--t-surface2);
   border: 1px solid var(--t-border);
 }
 .teacher-profile-avatar {
@@ -1369,8 +1361,7 @@ html[data-theme="light"] .teacher-nav-link.active {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background:
-    #081632;
+  background: #081632;
 }
 .teacher-login-brand {
   display: flex;
@@ -1877,8 +1868,7 @@ body.teacher-body {
 
 /* Strong, deliberate light-theme contrast. */
 html[data-theme="light"] .teacher-shell {
-  background:
-    var(--t-bg);
+  background: var(--t-bg);
 }
 html[data-theme="light"] .teacher-sidebar {
   box-shadow: 8px 0 30px rgba(40, 70, 110, 0.05);
@@ -1894,8 +1884,7 @@ html[data-theme="light"] .teacher-page-hero {
   box-shadow: none;
 }
 html[data-theme="light"] .teacher-login-visual {
-  background:
-    #e8f1fc;
+  background: #e8f1fc;
   color: #17243a;
 }
 html[data-theme="light"] .teacher-login-visual p {
@@ -3185,8 +3174,7 @@ body.teacher-body {
 }
 .teacher-shell[data-theme="light"] {
   color-scheme: light;
-  background:
-    var(--t-bg);
+  background: var(--t-bg);
 }
 .teacher-shell[data-theme="light"] .teacher-sidebar {
   box-shadow: 8px 0 30px rgba(40, 70, 110, 0.05);
@@ -3391,17 +3379,29 @@ body.teacher-body {
 }
 :is(.teacher-auth-layout, .admin-auth-layout) .auth-visual .auth-logo,
 :is(.teacher-auth-layout, .admin-auth-layout) .auth-visual .auth-logo span,
-:is(.teacher-auth-layout, .admin-auth-layout) .auth-visual .auth-visual-content h1,
-:is(.teacher-auth-layout, .admin-auth-layout) .auth-visual .auth-feature-grid b {
+:is(.teacher-auth-layout, .admin-auth-layout)
+  .auth-visual
+  .auth-visual-content
+  h1,
+:is(.teacher-auth-layout, .admin-auth-layout)
+  .auth-visual
+  .auth-feature-grid
+  b {
   color: #f5f8ff !important;
 }
 :is(.teacher-auth-layout, .admin-auth-layout) .auth-visual .auth-logo strong {
   color: #2c9eff !important;
 }
-:is(.teacher-auth-layout, .admin-auth-layout) .auth-visual .auth-visual-content p {
+:is(.teacher-auth-layout, .admin-auth-layout)
+  .auth-visual
+  .auth-visual-content
+  p {
   color: #aebddd;
 }
-:is(.teacher-auth-layout, .admin-auth-layout) .auth-visual .auth-feature-grid small {
+:is(.teacher-auth-layout, .admin-auth-layout)
+  .auth-visual
+  .auth-feature-grid
+  small {
   color: #91a4c4;
 }
 
@@ -3747,91 +3747,9 @@ body.teacher-body {
   }
 }
 
-/* Compact monitoring overview; detailed outcomes stay available on demand. */
-.monitoring-list { min-width: 0; }
-.monitor-table-hint {
-  margin: 12px 0;
-  color: var(--t-muted);
-  font-size: 12px;
-}
-.teacher-table.monitoring-table {
-  min-width: 960px;
-  table-layout: auto;
-}
-.monitoring-table th,
-.monitoring-table td {
-  overflow-wrap: normal;
-  word-break: normal;
-  font-variant-numeric: tabular-nums;
-}
-.teacher-table.monitoring-table th {
-  white-space: nowrap;
-  font-size: 10px;
-  padding: 12px;
-}
-.teacher-table.monitoring-table td {
-  font-size: 12px;
-  padding: 12px;
-}
-.monitoring-table .table-person { min-width: 145px; }
-.monitoring-table td:nth-child(2) { min-width: 112px; }
-.monitoring-table td:nth-child(3),
-.monitoring-table td:nth-child(4) { min-width: 104px; }
-.monitoring-table td:nth-child(5),
-.monitoring-table td:last-child { white-space: nowrap; }
-.monitoring-table td:nth-child(6) { min-width: 108px; }
-.monitoring-table td:nth-child(7) { min-width: 140px; }
-.monitoring-table .table-link {
-  display: inline-flex;
-  align-items: center;
-  min-height: 36px;
-  white-space: nowrap;
-}
-.monitor-cell-note {
-  display: block;
-  margin-top: 4px;
-  color: var(--t-muted);
-  font-size: 11px;
-  white-space: nowrap;
-}
-.monitor-muted { color: var(--t-muted); }
-.monitor-run-details summary,
-.monitor-status-details summary {
-  cursor: pointer;
-  min-height: 32px;
-  align-content: center;
-  white-space: nowrap;
-}
-.monitor-run-details summary { font-weight: 600; }
-.monitor-status-details .status-badge { vertical-align: middle; }
-.monitor-run-details dl { margin: 6px 0 0; min-width: 158px; }
-.monitor-run-details dl > div { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; }
-.monitor-run-details dt { color: var(--t-muted); font-weight: 400; }
-.monitor-run-details dd { margin: 0; font-weight: 600; }
-.monitor-status-details p { max-width: 240px; margin: 6px 0 0; line-height: 1.5; color: var(--t-muted); }
-.monitoring-list summary:focus-visible,
-.monitoring-list .teacher-table-wrap:focus-visible {
-  outline: 2px solid var(--t-accent, #268dff);
-  outline-offset: 3px;
-}
-.monitor-sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
 /* Keep the monitoring explanation separate from neighbouring controls. */
 .teacher-card.monitoring-guide {
   margin-block: 20px 24px;
-}
-.monitoring-guide + .monitor-legend {
-  margin-top: 0;
-  margin-bottom: 20px;
 }
 .monitoring-guide > summary {
   cursor: pointer;
@@ -3858,10 +3776,18 @@ body.teacher-body {
   max-width: 80ch;
   margin: 0 0 16px;
 }
-.monitoring-guide-content > :last-child { margin-bottom: 0; }
-.monitoring-guide-content ol { padding-left: 22px; }
-.monitoring-guide-content li + li { margin-top: 10px; }
-.monitoring-guide-content strong { color: var(--t-text); }
+.monitoring-guide-content > :last-child {
+  margin-bottom: 0;
+}
+.monitoring-guide-content ol {
+  padding-left: 22px;
+}
+.monitoring-guide-content li + li {
+  margin-top: 10px;
+}
+.monitoring-guide-content strong {
+  color: var(--t-text);
+}
 
 /* Staff screens share readable, compact table and form conventions. */
 .teacher-table th {
@@ -3870,58 +3796,140 @@ body.teacher-body {
   word-break: normal;
   overflow-wrap: normal;
 }
-.teacher-table td { font-size: 12px; line-height: 1.55; }
-.teacher-table .table-person strong { font-size: 12px; }
-.teacher-table .table-person small, .teacher-table .status-badge { font-size: 11px; }
-.teacher-card-head { flex-wrap: wrap; }
-.teacher-card-head > a { font-size: 12px; }
-.teacher-empty { font-size: 13px; line-height: 1.6; }
+.teacher-table td {
+  font-size: 12px;
+  line-height: 1.55;
+}
+.teacher-table .table-person strong {
+  font-size: 12px;
+}
+.teacher-table .table-person small,
+.teacher-table .status-badge {
+  font-size: 11px;
+}
+.teacher-card-head {
+  flex-wrap: wrap;
+}
+.teacher-card-head > a {
+  font-size: 12px;
+}
+.teacher-empty {
+  font-size: 13px;
+  line-height: 1.6;
+}
 .teacher-table :is(.teacher-btn, .table-link, .status-badge) {
   word-break: normal;
   overflow-wrap: normal;
 }
-.teacher-table .table-link { white-space: nowrap; }
-.teacher-table-wrap { max-width: 100%; }
-.teacher-form label, .teacher-filterbar label { font-size: 13px; line-height: 1.5; }
-.teacher-note { font-size: 13px; line-height: 1.65; }
+.teacher-table .table-link {
+  white-space: nowrap;
+}
+.teacher-table-wrap {
+  max-width: 100%;
+}
+.teacher-form label,
+.teacher-filterbar label {
+  font-size: 13px;
+  line-height: 1.5;
+}
+.teacher-note {
+  font-size: 13px;
+  line-height: 1.65;
+}
 .teacher-form :is(input, select, textarea),
-.teacher-filterbar :is(input, select) { min-width: 0; max-width: 100%; }
-.teacher-btn { line-height: 1.4; text-align: center; }
-.teacher-btn:focus-visible, .teacher-main summary:focus-visible,
+.teacher-filterbar :is(input, select) {
+  min-width: 0;
+  max-width: 100%;
+}
+.teacher-btn {
+  line-height: 1.4;
+  text-align: center;
+}
+.teacher-btn:focus-visible,
+.teacher-main summary:focus-visible,
 .teacher-main .table-link:focus-visible {
   outline: 2px solid var(--t-blue);
   outline-offset: 3px;
 }
-.teacher-btn:disabled { cursor: not-allowed; opacity: .6; transform: none; }
+.teacher-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
 @media (max-width: 600px) {
-  .teacher-filterbar label { min-width: 0; flex-basis: 100%; }
-  .teacher-form :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea),
-  .teacher-filterbar :is(input, select) { font-size: 16px; }
+  .teacher-filterbar label {
+    min-width: 0;
+    flex-basis: 100%;
+  }
+  .teacher-form
+    :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea),
+  .teacher-filterbar :is(input, select) {
+    font-size: 16px;
+  }
 }
 @media (pointer: coarse) {
-  .teacher-btn { min-height: 44px; }
+  .teacher-btn {
+    min-height: 44px;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .teacher-btn { transition: none; }
-  .teacher-btn:hover, .teacher-btn:active { transform: none; }
+  .teacher-btn {
+    transition: none;
+  }
+  .teacher-btn:hover,
+  .teacher-btn:active {
+    transform: none;
+  }
 }
 
 /* Roster columns must not split numbers or squeeze names to make room for status copy. */
-.teacher-table.student-roster-table { min-width: 1080px; table-layout: auto; }
-.student-roster-table th { white-space: nowrap; }
-.student-roster-table td { padding: 12px 10px; overflow-wrap: normal; word-break: normal; }
-.student-roster-table td:first-child { min-width: 240px; }
-.student-roster-table .table-person { min-width: 220px; }
-.student-roster-table td:nth-child(2) { min-width: 100px; }
+.teacher-table.student-roster-table {
+  min-width: 1080px;
+  table-layout: auto;
+}
+.student-roster-table th {
+  white-space: nowrap;
+}
+.student-roster-table td {
+  padding: 12px 10px;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+.student-roster-table td:first-child {
+  min-width: 240px;
+}
+.student-roster-table .table-person {
+  min-width: 220px;
+}
+.student-roster-table td:nth-child(2) {
+  min-width: 100px;
+}
 .student-roster-table td:nth-child(3),
 .student-roster-table td:nth-child(4),
 .student-roster-table td:nth-child(6),
-.student-roster-table td:last-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
-.student-roster-table td:nth-child(4) { min-width: 64px; }
-.student-roster-table td:nth-child(5) { min-width: 100px; }
-.student-roster-table td:nth-child(7) { min-width: 155px; font-variant-numeric: tabular-nums; }
-.student-roster-table td:nth-child(8) { min-width: 205px; max-width: 240px; }
-.student-roster-table .teacher-note { margin: 4px 0 0; font-size: 12px; line-height: 1.5; }
+.student-roster-table td:last-child {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.student-roster-table td:nth-child(4) {
+  min-width: 64px;
+}
+.student-roster-table td:nth-child(5) {
+  min-width: 100px;
+}
+.student-roster-table td:nth-child(7) {
+  min-width: 155px;
+  font-variant-numeric: tabular-nums;
+}
+.student-roster-table td:nth-child(8) {
+  min-width: 205px;
+  max-width: 240px;
+}
+.student-roster-table .teacher-note {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
 
 /* Top-level panels need separation when they are not inside a gapped grid.
    Scoped to staff pages; nested cards and student layouts keep their own spacing. */
